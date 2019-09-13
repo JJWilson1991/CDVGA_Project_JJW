@@ -15,7 +15,7 @@ csl: ../apa.csl
 
 
 # Summary/Abstract
-_Write a summary of your project._
+Viral spillover is a complex process with a range of viral and host factors at play. Much emphasis has been placed on the ecological and epidemiological factors at play in viral spillover, with changes in reservoir host distribution and increased contact with susceptible spillover hosts being major players. However, there are many more interactions between reservoir host viruses and potential spillover hosts than the number of viruses which indeed spillover. We hypothesise that there may be traits related to the pathogenesis of infection which also play a role in spillover. 
 
 # Illustrating setup
 _This section is only there to show how to insert results from other places in the project and how to cite figures and other references. Delete this whole section at some point._
