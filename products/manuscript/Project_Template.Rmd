@@ -1,5 +1,5 @@
 ---
-title: "Examining the features of viral pathogenesis and the ability to infect spillover hosts"
+title: "Temporal and Spatial Patterns in Distemper Virus Cases Reported to SCWDS 1975-2013"
 subtitle: ""
 author: Jonathan Wilson
 institute: "University of Georgia"
@@ -15,7 +15,10 @@ csl: ../apa.csl
 
 
 # Summary/Abstract
-Viral spillover is a complex process with a range of viral and host factors at play. Much emphasis has been placed on the ecological and epidemiological factors at play in viral spillover, with changes in reservoir host distribution and increased contact with susceptible spillover hosts being major players. However, there are many more interactions between reservoir host viruses and potential spillover hosts than the number of viruses which indeed spillover. We hypothesise that there may be traits related to the pathogenesis of infection which also play a role in spillover. 
+Canine distemper is an important infectious disease that affects many mammal species.  There is evidence of CDV infection in all terrestrial carnivores families and some marine carnivore families. CDV has been detected in wild animal species such as the African lion and Amur tigers and has been responsible for substantial population declines of the animals during outbreaks.
+First seen in domestic dogs in the late 1970’s, CDV spread through the population rapidly (Alison et al 2013). CDV is seen most commonly in domestic cats and dogs but frequent cross species transmission does occur in non-domestic carnivores. In domestic ferrets mortality rates can reach 100%. CDV has been responsible for population declines of endangered mustelids like the black-footed ferret. CDV is also endemic in the eastern U.S. raccoon population. Raccoons are thought to be a reservoir for other wild animals and domestic dogs as well as other species of carnivores. CDV has been found to be persisting in areas like Yellow Stone national park, which has a diverse carnivore population. Multiple outbreaks have occurred in the wolf, coyote and cougar populations 
+Although raccoons are thought to be a major reservoir for CDV, little research has been done to identify the disease dynamics within this population. 
+
 
 # Illustrating setup
 _This section is only there to show how to insert results from other places in the project and how to cite figures and other references. Delete this whole section at some point._
@@ -44,25 +47,27 @@ Note that this cited reference will show up at the end of the document, the refe
 # Introduction (required for part 1)
 
 ## General Background Information
-Viral spillover is a complex process with a range of viral and host factors at play. Much emphasis has been placed on the ecological and epidemiological factors at play in viral spillover, with changes in reservoir host distribution and increased contact with susceptible spillover hosts being major players. However, there are many more interactions between reservoir host viruses and potential spillover hosts than the number of viruses which indeed spillover. We hypothesise that there may be traits related to the pathogenesis of infection which also play a role in spillover. 
+Canine distemper is an important infectious disease that affects many mammal species.  There is evidence of CDV infection in all terrestrial carnivores families and some marine carnivore families. CDV has been detected in wild animal species such as the African lion and Amur tigers and has been responsible for substantial population declines of the animals during outbreaks.
+First seen in domestic dogs in the late 1970’s, CDV spread through the population rapidly (Alison et al 2013). CDV is seen most commonly in domestic cats and dogs but frequent cross species transmission does occur in non-domestic carnivores. In domestic ferrets mortality rates can reach 100%. CDV has been responsible for population declines of endangered mustelids like the black-footed ferret. CDV is also endemic in the eastern U.S. raccoon population. Raccoons are thought to be a reservoir for other wild animals and domestic dogs as well as other species of carnivores. CDV has been found to be persisting in areas like Yellow Stone national park, which has a diverse carnivore population. Multiple outbreaks have occurred in the wolf, coyote and cougar populations 
+Although raccoons are thought to be a major reservoir for CDV, little research has been done to identify the disease dynamics within this population. 
+
 
 ## Description of data and data source
-The data is a series of traits related to the pathogenesis of viral infection in a range of RNA viruses and whether the traits are present or absent in each particular virus. The data is being compiled in the lab currently from searching the available literature.
-
+Data was recorded from Canine distemper positive cases submitted to the Southeastern Cooperative Wildlife Disease Study between 1975 and 2013. Cases were identified as CDV by fluorescent antibody testing and/or histologic diagnosis of characteristic lesions.  Species, date of submission, county of origin, and sex were noted. A total number of 702 positive cases were submitted from 13 states over the 38-year period. Positive cases were comprised of raccoons (n=462), gray foxes (n=211), striped skunks (n=13), coyotes (n=7), red foxes (n=3), gray wolves (n=3) and a black bear.
 
 ## Questions/Hypotheses to be addressed
-1. Is there an association between cell type infected and spillover?
+1.Are there temporal trends in cases diagnosed related to the ecology of the hosts? eg breeding seasons
 
 
-2. Does the level of receptor conservation across species influence the ability to infect a new host species?
+2.Are there patterns in the timing of species being diagnosed suggesting cross species infection? eg raccoons to other species
 
 
-3. Does the ability infect macrophages increase the likelihood of spillover?
+3.Spatial patterns?
 
 
 # Methods and Results
 
-In terms of analysis, the aim is to look for associations between particular traits of the pathogenesis of infection and zoonotic ability.
+
 
 _In most research papers, results and methods are separate. You can combine them here if you find it easier. You are also welcome to structure things such that those are separate sections._
 
