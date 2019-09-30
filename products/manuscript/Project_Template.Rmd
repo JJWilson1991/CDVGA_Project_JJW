@@ -59,10 +59,10 @@ Data was recorded from Canine distemper positive cases submitted to the Southeas
 1.Are there temporal trends in cases diagnosed related to the ecology of the hosts? eg breeding seasons
 
 
-2.Are there patterns in the timing of species being diagnosed suggesting cross species infection? eg raccoons to other species
+2.Are there patterns in the timing of species being diagnosed suggesting cross species infection? (raccoons are considered primary reservoirs, are peaks in raccon infection followed by other species peaks suggesting spillover)
 
 
-3.Spatial patterns?
+3.Are there spatial patterns of infection within the southeast relating to landuse or other ecological features
 
 
 # Methods and Results
