@@ -1,0 +1,159 @@
+---
+title: "CDV_Processing"
+author: "JJWilson"
+date: "11/10/2019"
+output: html_document
+---
+
+```{r}
+library(tidyverse)
+library(plyr)
+library(readr)
+library(dplyr)
+library(forcats)
+
+```
+```{r}
+library(readxl)
+CDV_data_Raw <- read_excel("C:/Users/Jonathan/Desktop/epid8060fall2019/JonathanWilson_Project/data/raw_data/CDV data/SCWDS_CDV - Copy.xls")
+
+Raw_CDV_Mainsheet <- read_excel("C:/Users/Jonathan/Desktop/epid8060fall2019/JonathanWilson_Project/data/raw_data/CDV data/SCWDS_CDV - Copy.xls", sheet = "Data")
+
+Raw_CDV_Mainsheet
+
+glimpse(Raw_CDV_Mainsheet)
+
+#when we look at this data sheet we can see its pretty messy and straight away there are some columns we can remove; case number, and columns 9-14
+
+DFRawCDV <- as.data.frame(Raw_CDV_Mainsheet)
+DFRawCDV
+
+DFRawCDVcol <- DFRawCDV[-c(1,9, 10, 11, 12, 13, 14)]
+DFRawCDVcol
+
+glimpse(DFRawCDVcol)
+TRawCDVCol <- as_tibble(DFRawCDVcol)
+```
+
+```{r}
+#lets take a look at the unique observations for each variable and see if any recoding needs doen
+
+unique(TRawCDVCol$State)
+
+#states look fine
+```
+```{r}
+unique(TRawCDVCol$Species)
+#there appears to be an observation in species with two species in one, we'll make a note and come back to this, it might be explained by other data
+```
+```{r}
+sort(unique(TRawCDVCol$CollectionYear))
+#years look fine
+
+```
+```{r}
+unique(TRawCDVCol$Age)
+
+#Age is pretty messy and will require some work 
+```
+```{r}
+unique(TRawCDVCol$Sex)
+#the sex column is a little bit messy but should be easuly fixed, observations like "M,F" or "Both, may be linked to the two species observation earlier
+```
+```{r}
+#the county and area data is likely to be messiest and need most cleaning
+
+sort(unique(TRawCDVCol$County))
+
+#there looks to be what may be spelling mistakes here or they may be counties in different staes with different spelling, shall have to look deeper
+
+```
+```{r}
+sort(unique(TRawCDVCol$Area))
+
+#The area data is a real mess, i'm not sure how useful this will be for the analysis i want to do in any case so we will leave this alone for now and focus on cleaning the others
+```
+```{r}
+#lets do the easy stuff first and recode unknowns na etc into NA
+
+library(naniar)
+T2RawCDVCol <- TRawCDVCol %>%  replace_with_na(replace = list(County = "Unknown", Area = c("Unknown", "", "Na"), Age = c("Unknown", "N/A", "UK", "NA"), Sex = c("Unknown", "UK", "NA", "N/A")))
+
+```
+```{r}
+#sex is porobably the most straight forward to recode so lets get that out of the way
+unique(T2RawCDVCol$Sex)
+```
+```{r}
+recodesex <- T2RawCDVCol %>% mutate(Sex = recode(Sex, "F" = "Female", "M" = "Male"))
+#there are still some odd observations with multiple in one observation, but we'll come back to those
+```
+```{r}
+#Age is a bit of a mess
+
+unique(recodesex$Age)
+```
+
+```{r}
+numberperagegroup <- table(recodesex$Age)
+numberperagegroup
+#so a lot of these a re single obsv so we can probably group them inot the larger groups
+#some of these are straight forward, like caps of the same word but it gets muddy with some like age 1yr, which could be an adult for some species and a sub adult for others
+```
+```{r}
+#lets have a fish and see what these weird ages are attached to species wise
+
+recodesex[grep("612 MO", recodesex$Age), ]
+# so presumably 612 MO means 6-12 months, this is quite  a broad range for a small mammal, a Gray Fox reaches sexual maturity around 10 months but are not indepenedetn till around 12months, in this case i'm inclined towards calling this group as Juvenile
+```
+```{r}
+recodesex[grep("45 WK|1 YR|1 yr|1YR", recodesex$Age), ]
+
+#lets look what these other ages refer to
+#raccoons become independent at 8-12 months so i'm going to categorise these 1 year olds as subadult, in the case of the >1 i think they are probably trying to imply that they are adult
+#gray fox indepedent around 12 months, so i'm going to go with subadult for those too
+```
+```{r}
+
+recodeage <- recodesex %>% mutate(Age = recode(Age, "Juvenille" = "Juvenile", "JUV" = "Juvenile", "JUVENILE" = "Juvenile", "<2 months" = "Juvenile", "612 MO" = "Juvenile", "3 YR" = "Adult", "2.5 YR" = "Adult", "ADULT" = "Adult", "1.5 YR" = "Adult",  ">1 yr" = "Adult", "Adul"= "Adult", "SUBADULT" = "Subadult", "Young Adult" = "Subadult", "SUB ADULT" = "Subadult", "SUBAD" = "Subadult", "1 YR" = "Subadult", "1YR" = "Subadult", "1 yr" = "Subadult", "45 WK" = "Subadult"))
+                          
+unique((recodeage$Age))
+#we now have our 3 main age groups brought together, Adult, Subadult and juvenile. the only issue is a few observations with multiple animals.
+#we cant really work with varying ages so we shall leave that, we can still use some of this data when mapping spatially for disease occurance but the muliple animals in single observations cant be used for others
+```
+
+```{r}
+#lets look at the racoon/oppossum
+recodeage[grep("Opossum", recodeage$Species), ]
+#as suspected this observation corresponds with "varying ages so there isn't much we can do with this
+
+```
+
+
+```{r}
+
+CDV_Clean <- recodeage
+
+
+
+glimpse(CDV_Clean)
+
+
+
+```
+
+
+
+#Save the data as an RDS.
+
+
+
+```{r}
+
+
+
+saveRDS(CDV_Clean, file = "../../data/processed_data/CDVprocesseddata.rds")
+
+
+
+```
