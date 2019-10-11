@@ -1,0 +1,84 @@
+---
+title: "ExploratoryAnalysis"
+author: "JJWilson"
+date: "11/10/2019"
+output: html_document
+---
+
+Load the required libraries 
+
+
+
+```{r}
+
+library(readxl)
+
+library(dplyr)
+
+library(tidyverse)
+
+library(forcats)
+
+library(ggthemes)
+
+library(plotly)
+
+library(knitr)
+
+library(naniar)
+
+
+
+```
+
+
+
+Load the processed data from the RDS
+
+
+
+```{r}
+
+CDV_Clean <- readRDS("../../data/processed_data/CDVprocesseddata.rds")
+
+
+
+glimpse(CDV_Clean)
+
+```
+```{r}
+#The data we are most interested in is the Species data over time and the area data over time so we'll begin by exploring these
+
+ggplot(CDV_Clean, aes(Species, fill=Species, color=Species)) +geom_bar()
+
+#we can see that Raccoon and Gray fox are hugely over represented compared to the others so we should focus our analysis on these two species
+```
+```{r}
+SPperYr <- with(CDV_Clean, table(subset(CDV_Clean, Species == c("Raccoon", "Gray Fox"))), CollectionYear)
+ggplot(as.data.frame(SPperYr), aes(CollectionYear, Freq, fill = Species, color = Species, group = Species))  + geom_point() +geom_line()
+
+#looking overtime there appears to be some patterns in the number of postive cases, with definite peaks possibly relating to epidemics of CDV
+#It also looks like there may be a delay in the Gray Fox peak following the peak in Raccoons, this is worth looking into
+```
+
+```{r}
+ggplot(CDV_Clean, aes(State, fill=State, color=State)) +geom_bar()
+
+#GA is the majority of cases which is understanabdle as SCWDS is in Athens, but bthere are enough cases in other south eastern states to possibly gain some insight
+#but i think the bulk of the mapping should focus on the county datat within GA
+
+```
+```{r}
+StperYr <- with(CDV_Clean, table(State, CollectionYear))
+ggplot(as.data.frame(StperYr), aes(CollectionYear, Freq, fill = State, color = State, group = State))  + geom_point() +geom_line()
+
+#the cases per state over time seem to foloow a similar pattern but it may be worth plotting species cases per state and mapping location, maybe certain species are more affected in different states at different times?
+
+
+```
+
+```{r}
+RGFAge <- subset(CDV_Clean, Species == c("Raccoon", "Gray Fox") & Age == c("Adult", "Subadult", "Juvenile"))
+ggplot(RGFAge, aes(Species, color=Species)) +geom_bar(aes(fill = Age))
+```
+
