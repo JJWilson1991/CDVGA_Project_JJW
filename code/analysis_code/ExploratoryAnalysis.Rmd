@@ -58,7 +58,7 @@ ggplot(CDV_Clean, aes(Species, fill=Species, color=Species)) +geom_bar()
 #we can see that Raccoon and Gray fox are hugely over represented compared to the others so we should focus our analysis on these two species
 ```
 ```{r}
-raccoongrayfox <- subset(CDV_Clean, Species == c("Raccoon", "Gray Fox"))
+raccoongrayfox <- subset(CDV_Clean, Species %in% c("Raccoon", "Gray Fox"))
 SPperYr <- with(raccoongrayfox, table(Species, CollectionYear))
 ggplot(as.data.frame(SPperYr), aes(CollectionYear, Freq, fill = Species, color = Species, group = Species))  + geom_point() +geom_line()
 
@@ -83,7 +83,7 @@ ggplot(as.data.frame(StperYr), aes(CollectionYear, Freq, fill = State, color = S
 ```
 
 ```{r}
-RGFAge <- subset(CDV_Clean, Species == c("Raccoon", "Gray Fox") & Age == c("Adult", "Subadult", "Juvenile"))
+RGFAge <- subset(CDV_Clean, Species %in% c("Raccoon", "Gray Fox") & Age %in% c("Adult", "Subadult", "Juvenile"))
 ggplot(RGFAge, aes(Species, color=Species)) +geom_bar(aes(fill = Age))
 ```
 ```{r}
@@ -111,7 +111,7 @@ statescent <- data.frame(state.center, state.abb)
 SECEnt <- subset(statescent, state.abb %in% c("PA","GA", "KS", "SC", "AR", "FL", "KY", "LA", "MD", "MS", "NC", "TN", "VA", "WV", "AL", "MO"))
 ```
 ```{r}
-us <- map_data("usa")
+us <- map_data("state")
 ```
 ```{r}
 ggplot(data = dftr) + geom_polygon(data = us, aes(x = long, y = lat, group = group), color ="gray50", fill = "white") + geom_polygon(aes(x = long, y = lat, fill = Freq, group = group), color = "gray50") + coord_fixed(1.3) +  scale_fill_gradient(low = "white", high = "red", na.value = "azure", trans = "log10") + theme( 
@@ -141,5 +141,34 @@ ggplot(data = cotr) +  geom_polygon(aes(x = long, y = lat, fill = Freq, group = 
   panel.border = element_blank(),
   panel.grid = element_blank(),
   axis.title = element_blank(), legend.position = "right") 
+```
 
+```{r}
+CoYr <- with(CDV_Clean, table(County, CollectionYear))
+COYR <- as.data.frame(CoYr)
+cotry <- left_join(GAC, COYR)
+```
+```{r}
+ggplot(data = cotry) +  geom_polygon(data = GAC, aes(x = long, y = lat, group = group), color ="gray50", fill = "white") + geom_polygon(aes(x = long, y = lat, fill = Freq, group = group), color = "azure4") + coord_fixed(1.3)  + scale_fill_gradient(high = "red", low = "white", na.value="azure") + theme_map() + theme( 
+  axis.text = element_blank(),
+  axis.line = element_blank(),
+  axis.ticks = element_blank(),
+  panel.border = element_blank(),
+  panel.grid = element_blank(),
+  axis.title = element_blank(), legend.position = "right") + facet_wrap( ~ CollectionYear)
+```
+```{r}
+CoSPE <- with(raccoongrayfox, table(County, Species))
+COSPE <- as.data.frame(CoSPE)
+COSPEC <- left_join(GAC, COSPE)
+```
+
+```{r}
+ggplot(data = COSPEC) +  geom_polygon(data = GAC, aes(x = long, y = lat, group = group), color ="gray50", fill = "white") + geom_polygon(aes(x = long, y = lat, fill = Freq, group = group), color = "azure4") + coord_fixed(1.3)  + scale_fill_gradient(high = "purple", low = "white", na.value="azure") + theme_map() + theme( 
+  axis.text = element_blank(),
+  axis.line = element_blank(),
+  axis.ticks = element_blank(),
+  panel.border = element_blank(),
+  panel.grid = element_blank(),
+  axis.title = element_blank(), legend.position = "right") + facet_wrap( ~ Species)
 ```
