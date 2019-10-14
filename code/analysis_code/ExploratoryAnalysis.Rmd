@@ -122,16 +122,23 @@ ggplot(data = dftr) +  geom_polygon(aes(x = long, y = lat, fill = Freq, group = 
 + geom_polygon(data = STFR, aes(fill = Freq), color = "white")
 ```
 
-```
+
 ```{r}
 counties <- map_data("county")
 GA_county <- subset(counties, region == "georgia")
-StFr <- with(CDV_Clean, table(State))
-STFR <- as.data.frame(StFr)
-SEC <- rename(SE, State = region)
-capFirst <- function(s) {paste(toupper(substring(s, 1, 1)), substring(s, 2), sep = "")}
+CoFr <- with(CDV_Clean, table(County))
+COFR <- as.data.frame(CoFr)
+GAC <- rename(GA_county, County = subregion)
+GAC$County <- capFirst(GAC$County)
+cotr <- left_join(GAC, COFR)
+```
+```{r}
+ggplot(data = cotr) +  geom_polygon(aes(x = long, y = lat, fill = Freq, group = group), color = "white") + coord_fixed(1.3) + guides(fill=FALSE) +  theme_map() + theme( 
+  axis.text = element_blank(),
+  axis.line = element_blank(),
+  axis.ticks = element_blank(),
+  panel.border = element_blank(),
+  panel.grid = element_blank(),
+  axis.title = element_blank(), legend.position = "right")
 
-SEC$State <- capFirst(SEC$State)
-
-dftr <- inner_join(SEC, STFR)
-ggplot(data = GA_county) +  geom_polygon(aes(x = long, y = lat, fill = region, group = group), color = "white") + coord_fixed(1.3) + guides(fill=FALSE) + 
+```
