@@ -27,7 +27,11 @@ library(knitr)
 
 library(naniar)
 
+library(ggplot2)
 
+library(maps)
+
+library(ggmap)
 
 ```
 
@@ -54,7 +58,8 @@ ggplot(CDV_Clean, aes(Species, fill=Species, color=Species)) +geom_bar()
 #we can see that Raccoon and Gray fox are hugely over represented compared to the others so we should focus our analysis on these two species
 ```
 ```{r}
-SPperYr <- with(CDV_Clean, table(subset(CDV_Clean, Species == c("Raccoon", "Gray Fox"))), CollectionYear)
+raccoongrayfox <- subset(CDV_Clean, Species == c("Raccoon", "Gray Fox"))
+SPperYr <- with(raccoongrayfox, table(Species, CollectionYear))
 ggplot(as.data.frame(SPperYr), aes(CollectionYear, Freq, fill = Species, color = Species, group = Species))  + geom_point() +geom_line()
 
 #looking overtime there appears to be some patterns in the number of postive cases, with definite peaks possibly relating to epidemics of CDV
@@ -81,4 +86,31 @@ ggplot(as.data.frame(StperYr), aes(CollectionYear, Freq, fill = State, color = S
 RGFAge <- subset(CDV_Clean, Species == c("Raccoon", "Gray Fox") & Age == c("Adult", "Subadult", "Juvenile"))
 ggplot(RGFAge, aes(Species, color=Species)) +geom_bar(aes(fill = Age))
 ```
+```{r}
+statelines <- map_data("state")
+ggplot(data = statelines) +  geom_polygon(aes(x = long, y = lat, fill = region, group = group), color = "white") + coord_fixed(1.3) + guides(fill=FALSE)
+```
 
+```{r}
+statelines <- map_data("state")
+SE <- subset(statelines, region %in% c("pennsylvania","georgia", "kansas", "south carolina", "arkansas", "florida", "kentucky", "louisiana", "maryland", "mississippi", "north carolina", "tennessee", "virginia", "west virginia", "alabama", "missouri"))
+ggplot(data = SE) +  geom_polygon(aes(x = long, y = lat, fill = region, group = group), color = "white") + coord_fixed(1.3) + guides(fill=FALSE) 
+```
+```{r}
+StFr <- with(CDV_Clean, table(State))
+STFR <- as.data.frame(StFr)
+SEC <- rename(SE, State = region)
+dftr <- inner_join(SEC, STFR)
+```
++ geom_polygon(data = STFR, aes(fill = Freq), color = "white")
+```
+
+```
+```{r}
+counties <- map_data("county")
+GA_county <- subset(counties, region == "georgia")
+StFr <- with(CDV_Clean, table(State))
+STFR <- as.data.frame(StFr)
+SEC <- rename(SE, State = region)
+dftr <- inner_join(SEC, STFR)
+ggplot(data = GA_county) +  geom_polygon(aes(x = long, y = lat, fill = region, group = group), color = "white") + coord_fixed(1.3) + guides(fill=FALSE) + 
