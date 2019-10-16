@@ -5,7 +5,7 @@ date: "11/10/2019"
 output: html_document
 ---
 
-Load the required libraries 
+#Load the required libraries 
 
 
 
@@ -37,7 +37,7 @@ library(ggmap)
 
 
 
-Load the processed data from the RDS
+#Load the processed data from the RDS
 
 
 
@@ -53,21 +53,25 @@ glimpse(CDV_Clean)
 ```{r}
 #The data we are most interested in is the Species data over time and the area data over time so we'll begin by exploring these
 
-ggplot(CDV_Clean, aes(Species, fill=Species, color=Species)) +geom_bar()
+ggplot(CDV_Clean, aes(Species, fill=Species, color=Species)) +geom_bar()  + theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 8), legend.position = "none")
 
 #we can see that Raccoon and Gray fox are hugely over represented compared to the others so we should focus our analysis on these two species
 ```
 ```{r}
+#are there any obvious differneces in species by state?
+ggplot(CDV_Clean, aes(Species, fill=Species, color=Species)) +geom_bar()  + theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 8), legend.position = "none") +facet_wrap( ~ State)
+```
+```{r}
 raccoongrayfox <- subset(CDV_Clean, Species %in% c("Raccoon", "Gray Fox"))
 SPperYr <- with(raccoongrayfox, table(Species, CollectionYear))
-ggplot(as.data.frame(SPperYr), aes(CollectionYear, Freq, fill = Species, color = Species, group = Species))  + geom_point() +geom_line()
+ggplot(as.data.frame(SPperYr), aes(CollectionYear, Freq, fill = Species, color = Species, group = Species))  + geom_point() +geom_line() + theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 6))
 
-#looking overtime there appears to be some patterns in the number of postive cases, with definite peaks possibly relating to epidemics of CDV
+#looking overtime there appears to be some patterns in the number of postive cases, with definite peaks possibly relating to epizootics of CDV
 #It also looks like there may be a delay in the Gray Fox peak following the peak in Raccoons, this is worth looking into
 ```
 
 ```{r}
-ggplot(CDV_Clean, aes(State, fill=State, color=State)) +geom_bar()
+ggplot(CDV_Clean, aes(State, fill=State, color=State)) +geom_bar() + theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 8), legend.position = "none")
 
 #GA is the majority of cases which is understanabdle as SCWDS is in Athens, but bthere are enough cases in other south eastern states to possibly gain some insight
 #but i think the bulk of the mapping should focus on the county datat within GA
@@ -75,7 +79,7 @@ ggplot(CDV_Clean, aes(State, fill=State, color=State)) +geom_bar()
 ```
 ```{r}
 StperYr <- with(CDV_Clean, table(State, CollectionYear))
-ggplot(as.data.frame(StperYr), aes(CollectionYear, Freq, fill = State, color = State, group = State))  + geom_point() +geom_line()
+ggplot(as.data.frame(StperYr), aes(CollectionYear, Freq, fill = State, color = State, group = State))  + geom_point() +geom_line() + theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 6))
 
 #the cases per state over time seem to foloow a similar pattern but it may be worth plotting species cases per state and mapping location, maybe certain species are more affected in different states at different times?
 
@@ -83,106 +87,230 @@ ggplot(as.data.frame(StperYr), aes(CollectionYear, Freq, fill = State, color = S
 ```
 
 ```{r}
-RGFAge <- subset(CDV_Clean, Species %in% c("Raccoon", "Gray Fox") & Age %in% c("Adult", "Subadult", "Juvenile"))
-ggplot(RGFAge, aes(Species, color=Species)) +geom_bar(aes(fill = Age))
+#we're basically repaeting the above but including species to see if this varies by state
+SPYRST <- with(CDV_Clean, table(State, CollectionYear, Species))
+ggplot(as.data.frame(SPYRST), aes(CollectionYear, Freq, fill = State, color = State, group = State))  + geom_point() +geom_line() + theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 6)) + facet_wrap( ~ Species)
 ```
 ```{r}
+ggplot(as.data.frame(SPYRST), aes(CollectionYear, Freq, fill = Species, color = Species, group = Species))  + geom_point() +geom_line() + theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 6)) + facet_wrap( ~ State)
+#there does seem to be a little bit of variation here between state over time, maybe theyre epidemics spreading from a nidus? worth investigating in maps
+```
+
+```{r}
+#lets take a look if there is any obvious variation in ages affected between raccoonn and fox
+RGFAge <- subset(CDV_Clean, Species %in% c("Raccoon", "Gray Fox") & Age %in% c("Adult", "Subadult", "Juvenile"))
+ggplot(RGFAge, aes(Species, color=Species)) +geom_bar(aes(fill = Age))
+#there may be something here, worth looking at statistically goi9ng forward
+```
+```{r}
+#now we'll get into the mapping, which is likely to be a major theme with this dataset
+#we'll pull up our basic map iof US states first
 statelines <- map_data("state")
 ggplot(data = statelines) +  geom_polygon(aes(x = long, y = lat, fill = region, group = group), color = "white") + coord_fixed(1.3) + guides(fill=FALSE)
 ```
 
 ```{r}
+#then we'll subset to out states in the ~SE that are represtned in our dataset
 statelines <- map_data("state")
 SE <- subset(statelines, region %in% c("pennsylvania","georgia", "kansas", "south carolina", "arkansas", "florida", "kentucky", "louisiana", "maryland", "mississippi", "north carolina", "tennessee", "virginia", "west virginia", "alabama", "missouri"))
 ggplot(data = SE) +  geom_polygon(aes(x = long, y = lat, fill = region, group = group), color = "white") + coord_fixed(1.3) + guides(fill=FALSE) 
 ```
 ```{r}
-StFr <- with(CDV_Clean, table(State))
-STFR <- as.data.frame(StFr)
+#to be able to join our data sets with dplyr we need to capitalise the state names from the mapping data and change the ttle of the states vaiable to region so we can properly join our datasets
 SEC <- rename(SE, State = region)
 capFirst <- function(s) {paste(toupper(substring(s, 1, 1)), substring(s, 2), sep = "")}
 
 SEC$State <- capFirst(SEC$State)
 
-dftr <- left_join(SEC, STFR)
+StFr <- with(CDV_Clean, table(State))
+STFR <- as.data.frame(StFr) 
+SECC <- SEC %>% mutate(State = recode(State, "North carolina" = "North Carolina", "South carolina" = "South Carolina"))
+
+
+dftr <- left_join(SECC, STFR)
+
 library(viridis)
+
+
 library(rgeos)
+
+#we also want some state abbreviations we can put in the centre of our states on the map so we shall pull that data together
 statescent <- data.frame(state.center, state.abb)
 SECEnt <- subset(statescent, state.abb %in% c("PA","GA", "KS", "SC", "AR", "FL", "KY", "LA", "MD", "MS", "NC", "TN", "VA", "WV", "AL", "MO"))
 ```
 ```{r}
+#we also want some major cites that we can plot on our final map
 us <- map_data("state")
+uscitiesdf <- as.data.frame(us.cities)
+Bigcities <- uscitiesdf %>% filter(pop >2000000)
 ```
 ```{r}
-ggplot(data = dftr) + geom_polygon(data = us, aes(x = long, y = lat, group = group), color ="gray50", fill = "white") + geom_polygon(aes(x = long, y = lat, fill = Freq, group = group), color = "gray50") + coord_fixed(1.3) +  scale_fill_gradient(low = "white", high = "red", na.value = "azure", trans = "log10") + theme( 
+#now we'll pull all these layers togetehr in ggplot
+SEC1 <- ggplot(data = dftr) + geom_polygon(data = us, aes(x = long, y = lat, group = group), color ="gray50", fill = "white") + geom_polygon(aes(x = long, y = lat, fill = Freq, group = group), color = "gray50") + coord_fixed(1.3) +  scale_fill_gradient(low = "white", high = "dodgerblue4", na.value = "azure", trans = "log10") 
+
+SEC2 <- SEC1 + theme( 
   axis.text = element_blank(),
   axis.line = element_blank(),
   axis.ticks = element_blank(),
   panel.border = element_blank(),
   panel.grid = element_blank(),
-  axis.title = element_blank(), legend.position = "right") +  geom_text(data = SECEnt, aes(x = x, y = y, label = state.abb, group = NULL))
+  axis.title = element_blank(), legend.position = "right")
+
+SEC3 <- SEC2 +  geom_text(data = SECEnt, aes(x = x, y = y, label = state.abb, group = NULL, size = )) + labs(fill= "Number of cases")
+
+SEC4 <- SEC3 + geom_point(data = Bigcities, aes(x = long, y = lat), alpha = 0.5) + geom_text(data = Bigcities, aes(x = long, y = lat, label = name, group = NULL, size = 1), position = position_jitter(width=0.3,height=0.3)) 
+
+SEC4
+#we also needed to recode the carolinas to capiatlise both words so we could properly join 
+#i used a log scale here as GA is massively overrrepresented and it made it difficult to percive what other states are involved
+```
+```{r}
+#now lets look at the state maps per year using facet wrap
+SPYdf <- as.data.frame(StperYr)
+spyrsttt <- left_join(SECC, SPYdf)
+SECt1 <- ggplot(data = spyrsttt) + geom_polygon(data = us, aes(x = long, y = lat, group = group), color ="gray50", fill = "gray70") + geom_polygon(aes(x = long, y = lat, fill = Freq, group = group), color = "gray50") + coord_fixed(1.3) +  scale_fill_gradient(low = "white", high = "slateblue4", na.value = "white", trans = "log10") 
+
+SECt2 <- SECt1 + theme( 
+  axis.text = element_blank(),
+  axis.line = element_blank(),
+  axis.ticks = element_blank(),
+  panel.border = element_blank(),
+  panel.grid = element_blank(),
+  axis.title = element_blank(), legend.position = "right")
+
+SECt3 <- SECt2 + labs(fill= "Number of cases")
+
+
+SECt3 + facet_wrap(~ CollectionYear)
 ```
 
 ```{r}
+#having looked broadly at the data from the South East its clear that GA is where we should focus our county analysis
+#so we'll pull map data for US counties and subset for GA
 library(RColorBrewer)
 counties <- map_data("county")
-GA_county <- subset(counties, region == "georgia")
-CoFr <- with(CDV_Clean, table(County))
-COFR <- as.data.frame(CoFr)
+GA_county <- subset(counties, region %in% "georgia") %>% as.data.frame()
+
 GAC <- rename(GA_county, County = subregion)
 GAC$County <- capFirst(GAC$County)
-cotr <- left_join(GAC, COFR)
+CDVGA <- subset(CDV_Clean, State %in% "Georgia")
+CoFr <- with(CDVGA, table(County))
+COFR <- as.data.frame(CoFr)
 ```
 ```{r}
-ggplot(data = cotr) +  geom_polygon(aes(x = long, y = lat, fill = Freq, group = group), color = "azure4") + coord_fixed(1.3)  + scale_fill_gradient(high = "magenta4", low = "white", na.value="azure", trans = "log10") + theme_map() + theme( 
+#Quick bar chart of counties to see if some are over represented
+ggplot(CDVGA, aes(County, fill=County, color=County)) +geom_bar() + theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 8), legend.position = "none")
+```
+
+```{r}
+#we'll look at what unique county names we have to look for obvious typos
+table(sort(unique(COFR$County)))
+```
+
+```{r}
+#we'll recode chatoogna and dekalb but there isn't much to do with the 3 counties in one so it won't be plotted as it won't join our other data
+CDVGA2 <- CDVGA %>% mutate(County = recode(County, "Chattoogna" = "Chattooga", "Dekalb" = "DeKalb"))
+#repeat process for county map data to see if therte are mismatches which will cause us to lose dtat when we join
+table(sort(unique(GAC$County)))
+```
+```{r}
+#recode dekalb county and jeff davis
+GAC <-  GAC %>% mutate(County = recode(County, "De kalb" = "DeKalb", "Jeff davis" = "Jeff Davis"))
+```
+```{r}
+#pull the frequency data for positive cases per county and join to county mapping dtata
+GACOFR <- with(CDVGA2, table(County))
+GACOFRdf <- as.data.frame(GACOFR)
+cotr <- left_join(GAC, GACOFRdf)
+```
+```{r}
+#we'll do a full join to check to make sure the spelling all matches
+FJC <- full_join(GAC, GACOFRdf)
+table(sort(unique(FJC$County)))
+```
+
+```{r}
+#like we did earlier for our national map, lets get some data for the larger cities in georgia as reference points
+GAcitiesspread <- uscitiesdf %>% subset(country.etc %in% "GA") %>% filter(pop>100000)
+#now plot all the positive data by county
+g1 <- ggplot(data = cotr) +  geom_polygon(aes(x = long, y = lat, fill = Freq, group = group), color = "azure4") + coord_fixed(1.3)  + scale_fill_gradient(high = "magenta4", low = "white", na.value="azure", trans = "log10") + theme_map() 
+
+g2 <- g1 + theme( 
+  axis.text = element_blank(),
+  axis.line = element_blank(),
+  axis.ticks = element_blank(),
+  panel.border = element_blank(),
+  panel.grid = element_blank(),
+  axis.title = element_blank(), legend.position = "right")  + labs(fill= "Number of cases") 
+
+g3 <- g2 + geom_point(data = GAcitiesspread, aes(x = long, y = lat, size = pop), alpha = 0.5) + geom_text(data = GAcitiesspread, aes(x = long, y = lat, label = name, group = NULL), position = position_jitter(width=0.3,height=0.3)) 
+g3
+
+```
+
+```{r}
+#now wew'll repeat the county process over time
+CoYr <- with(CDV_Clean, table(County, CollectionYear))
+COYR <- as.data.frame(CoYr)
+cotry <- left_join(GAC, COYR)
+```
+```{r}
+ggplot(data = cotry) +  geom_polygon(data = GAC, aes(x = long, y = lat, group = group), color ="gray50", fill = "white") + geom_polygon(aes(x = long, y = lat, fill = Freq, group = group), color = "azure4") + coord_fixed(1.3)  + scale_fill_gradient(high = "red", low = "white", na.value="azure", trans = "log10") + theme_map() + theme( 
+  axis.text = element_blank(),
+  axis.line = element_blank(),
+  axis.ticks = element_blank(),
+  panel.border = element_blank(),
+  panel.grid = element_blank(),
+  axis.title = element_blank(), legend.position = "right") + facet_wrap( ~ CollectionYear)  + labs(fill= "Number of cases")
+```
+```{r}
+#now we'll subset for raccoon and gray fow and compare the couty distribution
+Cospe <- subset(CDVGA2, Species %in% c("Raccoon", "Gray Fox"))
+CoSPE <- with(Cospe, table(County, Species))
+COSPE <- as.data.frame(CoSPE)
+COSPEC <- left_join(GAC, COSPE)
+```
+
+```{r}
+SP1 <- ggplot(data = COSPEC) +  geom_polygon(data = GAC, aes(x = long, y = lat, group = group), color ="gray50", fill = "white") + geom_polygon(aes(x = long, y = lat, fill = Freq, group = group), color = "azure4") + coord_fixed(1.3)  
+
+SP2 <- SP1 + scale_fill_gradient(high = "purple", low = "white", na.value="azure", trans = "log10") + theme_map() + theme( 
   axis.text = element_blank(),
   axis.line = element_blank(),
   axis.ticks = element_blank(),
   panel.border = element_blank(),
   panel.grid = element_blank(),
   axis.title = element_blank(), legend.position = "right") 
-```
-
-```{r}
-CoYr <- with(CDV_Clean, table(County, CollectionYear))
-COYR <- as.data.frame(CoYr)
-cotry <- left_join(GAC, COYR)
+SP3 <- SP2 +  geom_point(data = GAcitiesspread, aes(x = long, y = lat), size = 1, fill = "black", alpha = 0.5) + geom_text(data = GAcitiesspread, aes(x = long, y = lat, label = name, group = NULL), position = position_jitter(width=0.3,height=0.3), size=2) 
+SP3 + facet_wrap( ~ Species)  + labs(fill= "Number of cases")
 ```
 ```{r}
-ggplot(data = cotry) +  geom_polygon(data = GAC, aes(x = long, y = lat, group = group), color ="gray50", fill = "white") + geom_polygon(aes(x = long, y = lat, fill = Freq, group = group), color = "azure4") + coord_fixed(1.3)  + scale_fill_gradient(high = "red", low = "white", na.value="azure") + theme_map() + theme( 
-  axis.text = element_blank(),
-  axis.line = element_blank(),
-  axis.ticks = element_blank(),
-  panel.border = element_blank(),
-  panel.grid = element_blank(),
-  axis.title = element_blank(), legend.position = "right") + facet_wrap( ~ CollectionYear)
-```
-```{r}
-CoSPE <- with(raccoongrayfox, table(County, Species))
-COSPE <- as.data.frame(CoSPE)
-COSPEC <- left_join(GAC, COSPE)
-```
-
-```{r}
-ggplot(data = COSPEC) +  geom_polygon(data = GAC, aes(x = long, y = lat, group = group), color ="gray50", fill = "white") + geom_polygon(aes(x = long, y = lat, fill = Freq, group = group), color = "azure4") + coord_fixed(1.3)  + scale_fill_gradient(high = "purple", low = "white", na.value="azure", trans = "log10") + theme_map() + theme( 
-  axis.text = element_blank(),
-  axis.line = element_blank(),
-  axis.ticks = element_blank(),
-  panel.border = element_blank(),
-  panel.grid = element_blank(),
-  axis.title = element_blank(), legend.position = "right") + facet_wrap( ~ Species)
-```
-```{r}
-RACMAP <- with(CDV_Clean, table(County, Species, CollectionYear))
+#now we want just the racoon dtata over time so we can compare any pattern to gray fox
+RACMAP <- with(CDVGA2, table(County, Species, CollectionYear))
 RRACMAP<- as.data.frame(RACMAP)
 racmap <- left_join(GAC, RRACMAP)
 RMP <- subset(racmap, Species %in% "Raccoon")
+```
+```{r}
 ggplot(data = RMP) +  geom_polygon(data = GAC, aes(x = long, y = lat, group = group), color ="gray50", fill = "white") + geom_polygon(aes(x = long, y = lat, fill = Freq, group = group), color = "azure4") + coord_fixed(1.3)  + scale_fill_gradient(high = "purple", low = "white", na.value="azure", trans = "log10") + theme_map() + theme( 
   axis.text = element_blank(),
   axis.line = element_blank(),
   axis.ticks = element_blank(),
   panel.border = element_blank(),
   panel.grid = element_blank(),
-  axis.title = element_blank(), legend.position = "right") + facet_wrap( ~ CollectionYear)
+  axis.title = element_blank(), legend.position = "right") + facet_wrap( ~ CollectionYear)  + labs(fill= "Number of cases")
 ```
-#can i get these 2 overtime?, add pop centres to map
+```{r}
+
+GFMP <- subset(racmap, Species %in% "Gray Fox")
+```
+```{r}
+ggplot(data = GFMP) +  geom_polygon(data = GAC, aes(x = long, y = lat, group = group), color ="gray50", fill = "white") + geom_polygon(aes(x = long, y = lat, fill = Freq, group = group), color = "azure4") + coord_fixed(1.3)  + scale_fill_gradient(high = "purple", low = "white", na.value="azure", trans = "log10") + theme_map() + theme( 
+  axis.text = element_blank(),
+  axis.line = element_blank(),
+  axis.ticks = element_blank(),
+  panel.border = element_blank(),
+  panel.grid = element_blank(),
+  axis.title = element_blank(), legend.position = "right") + facet_wrap( ~ CollectionYear)  + labs(fill= "Number of cases")
+```
+#can i get these 2 overtime?, add population centres to map
