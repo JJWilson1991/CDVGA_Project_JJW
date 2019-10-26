@@ -15,9 +15,9 @@ library(forcats)
 ```
 ```{r}
 library(readxl)
-CDV_data_Raw <- read_excel("C:/Users/Jonathan/Desktop/epid8060fall2019/JonathanWilson_Project/data/raw_data/CDV data/SCWDS_CDV - Copy.xls")
+CDV_data_Raw <- read_excel("./data/raw_data/CDV data/SCWDS_CDV - Copy.xls")
 
-Raw_CDV_Mainsheet <- read_excel("C:/Users/Jonathan/Desktop/epid8060fall2019/JonathanWilson_Project/data/raw_data/CDV data/SCWDS_CDV - Copy.xls", sheet = "Data")
+Raw_CDV_Mainsheet <- read_excel("/SCWDS_CDV - Copy.xls", sheet = "Data")
 
 Raw_CDV_Mainsheet
 
@@ -33,6 +33,9 @@ DFRawCDVcol
 
 glimpse(DFRawCDVcol)
 TRawCDVCol <- as_tibble(DFRawCDVcol)
+#lets look where data is missing
+vis_miss(DFRawCDVcol)
+#not bad, the only variable whihc looks like it may be somewhat problematic is Area
 ```
 
 ```{r}

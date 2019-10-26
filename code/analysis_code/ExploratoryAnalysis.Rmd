@@ -58,8 +58,9 @@ ggplot(CDV_Clean, aes(Species, fill=Species, color=Species)) +geom_bar()  + them
 #we can see that Raccoon and Gray fox are hugely over represented compared to the others so we should focus our analysis on these two species
 ```
 ```{r}
+library(RColorBrewer)
 #are there any obvious differneces in species by state?
-ggplot(CDV_Clean, aes(Species, fill=Species, color=Species)) +geom_bar()  + theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 8), legend.position = "none") +facet_wrap( ~ State)
+ggplot(CDV_Clean, aes(Species, fill=Species, color=Species)) +geom_bar()   + theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 8), legend.position = "none") +facet_wrap( ~ State)
 ```
 ```{r}
 raccoongrayfox <- subset(CDV_Clean, Species %in% c("Raccoon", "Gray Fox"))
@@ -76,6 +77,9 @@ ggplot(CDV_Clean, aes(State, fill=State, color=State)) +geom_bar() + theme(axis.
 #GA is the majority of cases which is understanabdle as SCWDS is in Athens, but bthere are enough cases in other south eastern states to possibly gain some insight
 #but i think the bulk of the mapping should focus on the county datat within GA
 
+```
+```{r}
+ggplot(CDV_Clean, aes(State, fill=State, color=State)) +geom_bar() + theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 8), legend.position = "none") + facet_wrap(~Species)
 ```
 ```{r}
 StperYr <- with(CDV_Clean, table(State, CollectionYear))
@@ -250,7 +254,7 @@ g3
 
 ```{r}
 #now wew'll repeat the county process over time
-CoYr <- with(CDV_Clean, table(County, CollectionYear))
+CoYr <- with(CDVGA2, table(County, CollectionYear))
 COYR <- as.data.frame(CoYr)
 cotry <- left_join(GAC, COYR)
 ```
@@ -313,4 +317,54 @@ ggplot(data = GFMP) +  geom_polygon(data = GAC, aes(x = long, y = lat, group = g
   panel.grid = element_blank(),
   axis.title = element_blank(), legend.position = "right") + facet_wrap( ~ CollectionYear)  + labs(fill= "Number of cases")
 ```
+
+
+```{r}
+ggplot(data = cotry) +  geom_polygon(data = GAC, aes(x = long, y = lat, group = group), color ="gray50", fill = "white")  + coord_fixed(1.3) + geom_polygon(aes(x = long, y = lat, fill = Freq, group = group), color = "azure4")
+```
+```{r}
+library(RColorBrewer)
+just <- cotry %>% filter(Freq>0) %>%select(long, lat, County, CollectionYear)  
+ggplot(data = just) +  geom_polygon(data = GAC, aes(x = long, y = lat, group = group), color ="gray50", fill = "white") + geom_polygon(aes(x = long, y = lat, fill = CollectionYear, group = County), color = "azure4") + coord_fixed(1.3)  + scale_fill_viridis_d(option = "D")+ theme_map() + theme( 
+  axis.text = element_blank(),
+  axis.line = element_blank(),
+  axis.ticks = element_blank(),
+  panel.border = element_blank(),
+  panel.grid = element_blank(),
+  axis.title = element_blank(), legend.position = "right") 
+```
+```{r}
+just2 <- cotry %>% filter(Freq>0) %>% subset(CollectionYear %in% c("2000", "2001", "2002", "2003", "2004", "2005", "2006", "2007")) %>%select(long, lat, County, CollectionYear)  
+ggplot(data = just2) +  geom_polygon(data = GAC, aes(x = long, y = lat, group = group), color ="gray50", fill = "white") + geom_polygon(aes(x = long, y = lat, fill = CollectionYear, group = County), color = "azure4") + coord_fixed(1.3)  + scale_fill_viridis_d(option = "D")+ theme_map() + theme( 
+  axis.text = element_blank(),
+  axis.line = element_blank(),
+  axis.ticks = element_blank(),
+  panel.border = element_blank(),
+  panel.grid = element_blank(),
+  axis.title = element_blank(), legend.position = "right") 
+```
+```{r}
+yearsss <- cotry %>% group(CollectionYear, )
+```
+yearsub <- cotry %>% mutate(CollectionYear = recode(CollectionYear, c("1976", "1977", "1978", "1979","1980") = "1976-80"))
+
+`#``{r}
+library(rgeos)
+corod <- GAC[,c(1,2,6)]
+trueCentroids <- gCentroid(corod, byid=TRUE)
+plot(GAC)
+points(coordinates(GAC),pch=1)
+points(trueCentroids,pch=2)
+#gCentroid(GAC, byid=TRUE)
+```
+```{r}
+ggplot(data = cotry) +  geom_polygon(data = GAC, aes(x = long, y = lat, group = group), color ="gray50", fill = "white") + geom_polygon(aes(x = long, y = lat, fill = Freq, group = group), color = "azure4") + coord_fixed(1.3)  + scale_fill_gradient(high = "red", low = "white", na.value="azure", trans = "log10") + theme_map() + theme( 
+  axis.text = element_blank(),
+  axis.line = element_blank(),
+  axis.ticks = element_blank(),
+  panel.border = element_blank(),
+  panel.grid = element_blank(),
+  axis.title = element_blank(), legend.position = "right") + facet_wrap( ~ CollectionYear)  + labs(fill= "Number of cases")
+#can i get the case data for different counties in different years ploted on same map usiong diff colours per year?
+
 #can i get these 2 overtime?, add population centres to map
