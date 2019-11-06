@@ -160,20 +160,12 @@ ggsave(filename = "../../results/RacFox_Age.png",plot = RacFox_Age)
 #there may be something here, worth looking at statistically going forward
 ```
 ```{r}
-AGESE <- with(RGFAge,table(Species, Age))
- AGESE 
-Tibage<- as.tibble(AGESE) 
-TibageSP <-spread(Tibage,Age,n)
-TibageSP %>% mutate(sumrow = rowSums((2,)))#%>% dplyr:: mutate(total= sum("Adult", "Juvenile", "Subadult"))
-```
-```{r}
 Species <- c("Gray Fox", "Raccoon")
 Total <- c(199,434)
 fudge <-data.frame(Species, Total)
 
-tb<- left_join(TibageSP,fudge)
+tb<- left_join(TibageSP,fudge) %>% mutate_at(vars(Adult, Juvenile, Subadult), funs(./Total))
 tb
-tb %>% mutate_at(vars(Adult, Juvenile, Subadult), funs(./Total))
 
 ```
 #```{r}
@@ -183,9 +175,40 @@ tb %>% mutate_at(vars(Adult, Juvenile, Subadult), funs(./Total))
 #```
 ```{r}
 #i forgot to plot age by species wrap.. its pretty uninteresting
+
 ggplot(CDV_Clean, aes(Sex)) + geom_bar() +facet_wrap(~Species)
 ```
+```{r}
+RGFSex <- subset(CDV_Clean, Species %in% c("Raccoon", "Gray Fox") & Sex %in% c("Male", "Female"))
 
+RacFox_Sex <- ggplot(RGFSex, aes(Sex)) + 
+  geom_bar() +
+  facet_wrap(~Species)
+RacFox_Sex
+
+ggsave(filename = "../../results/RacFox_Sex.png",plot = RacFox_Sex)
+# There may be a significant difference in the M/F distribution for gray foxes, worth analsing
+```
+```{r}
+#as there seemed to potnetially be some difference in gender distribution, lets look at gender difference over time between raccoon and gray fox
+#ceratinly in the earlier time frame there seems to be more female gray foxes affected, has this got a role in why there were many fewer cases after this as population has fallen?
+RGFSEXYEAR<- with(RGFSex, table(Species, CollectionYear, Sex))
+Gender_year <- ggplot(as.data.frame(RGFSEXYEAR), aes(CollectionYear, Freq, fill = Sex, color = Sex, group = Sex))  + 
+  geom_point() +geom_line() + 
+  theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 6)) + facet_wrap(~Species)
+
+Gender_year
+```
+
+```{r}
+#If we quickly plot a histogram using latitude it suggest there are some geographic differences in distribution 
+LAT <- left_join(GAC, CDVGA2, by= "County") %>% subset( Species %in% c("Raccoon", "Gray Fox"))
+
+ggplot(LAT, aes(lat)) + geom_histogram()  +
+ facet_wrap(~Species)
+
+#This is interesting, there are two disticnt latitudinal peaks for raccoons but only 1 for gray foxes
+```
 ```{r}
 #now we'll get into the mapping, which is likely to be a major theme with this dataset
 #we'll pull up our basic map iof US states first
