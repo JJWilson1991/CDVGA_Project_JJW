@@ -135,18 +135,54 @@ ggsave(filename = "../../results/point_casesyear_state_wrap_species.png",plot = 
 #the number of cases in species other than gray fox and raccon is so low its probably better to just focus on those 2 species gping forward
 ```
 ```{r}
-ggplot(as.data.frame(SPYRST), aes(CollectionYear, Freq, fill = Species, color = Species, group = Species))  + geom_point() +geom_line() + theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 6)) + facet_wrap( ~ State)
+SP_Fr_Yr_WrapState <- ggplot(as.data.frame(SPYRST), aes(CollectionYear, Freq, fill = Species, color = Species, group = Species))  + 
+  geom_point() +
+  geom_line() + 
+  theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 6)) + 
+  facet_wrap( ~ State)
+
+SP_Fr_Yr_WrapState
+
+ggsave(filename = "../../results/SP_Fr_Yr_WrapState.png",plot = SP_Fr_Yr_WrapState)
+
+
 #there does seem to be a little bit of variation here between state over time, maybe theyre epidemics spreading from a nidus? worth investigating in maps
 ```
 
 ```{r}
-#lets take a look if there is any obvious variation in ages affected between raccoonn and fox
+#lets take a look if there is any obvious variation in ages affected between raccoon and  gray fox
 RGFAge <- subset(CDV_Clean, Species %in% c("Raccoon", "Gray Fox") & Age %in% c("Adult", "Subadult", "Juvenile"))
-ggplot(RGFAge, aes(Species, color=Species)) +geom_bar(aes(fill = Age))
-#there may be something here, worth looking at statistically goi9ng forward
+RacFox_Age <- ggplot(RGFAge, aes(Species, color=Species)) +geom_bar(aes(fill = Age))
+
+RacFox_Age
+
+ggsave(filename = "../../results/RacFox_Age.png",plot = RacFox_Age)
+#there may be something here, worth looking at statistically going forward
 ```
 ```{r}
+AGESE <- with(RGFAge,table(Species, Age))
+ AGESE 
+Tibage<- as.tibble(AGESE) 
+TibageSP <-spread(Tibage,Age,n)
+TibageSP %>% mutate(sumrow = rowSums((2,)))#%>% dplyr:: mutate(total= sum("Adult", "Juvenile", "Subadult"))
+```
+```{r}
+Species <- c("Gray Fox", "Raccoon")
+Total <- c(199,434)
+fudge <-data.frame(Species, Total)
 
+tb<- left_join(TibageSP,fudge)
+tb
+tb %>% mutate_at(vars(Adult, Juvenile, Subadult), funs(./Total))
+
+```
+#```{r}
+#ggplot(tb, aes(Species)) +
+ # geom_bar(aes(fill=Age))
+
+#```
+```{r}
+#i forgot to plot age by species wrap.. its pretty uninteresting
 ggplot(CDV_Clean, aes(Sex)) + geom_bar() +facet_wrap(~Species)
 ```
 
@@ -209,6 +245,8 @@ SEC3 <- SEC2 +  geom_text(data = SECEnt, aes(x = x, y = y, label = state.abb, gr
 SEC4 <- SEC3 + geom_point(data = Bigcities, aes(x = long, y = lat), alpha = 0.5) + geom_text(data = Bigcities, aes(x = long, y = lat, label = name, group = NULL, size = 1), position = position_jitter(width=0.3,height=0.3)) 
 
 SEC4
+
+ggsave(filename = "../../results/Cases_per_State.png",plot = SEC4)
 #we also needed to recode the carolinas to capiatlise both words so we could properly join 
 #i used a log scale here as GA is massively overrrepresented and it made it difficult to percive what other states are involved
 ```
@@ -229,7 +267,12 @@ SECt2 <- SECt1 + theme(
 SECt3 <- SECt2 + labs(fill= "Number of cases")
 
 
-SECt3 + facet_wrap(~ CollectionYear)
+SECT4 <- SECt3 + facet_wrap(~ CollectionYear)
+
+SECT4
+
+ggsave(filename = "../../results/Cases_per_State_WrapYear.png",plot = SECT4)
+
 ```
 
 ```{r}
@@ -247,7 +290,11 @@ COFR <- as.data.frame(CoFr)
 ```
 ```{r}
 #Quick bar chart of counties to see if some are over represented
-ggplot(CDVGA, aes(County, fill=County, color=County)) +geom_bar() + theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 8), legend.position = "none")
+Countysquared<- ggplot(CDVGA, aes(County, fill=County, color=County)) +
+  geom_bar() + 
+  theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 8), legend.position = "none")
+
+ggsave(filename = "../../results/County_per_Year.png",plot = Countysquared)
 ```
 
 ```{r}
@@ -281,9 +328,14 @@ table(sort(unique(FJC$County)))
 #like we did earlier for our national map, lets get some data for the larger cities in georgia as reference points
 GAcitiesspread <- uscitiesdf %>% subset(country.etc %in% "GA") %>% filter(pop>100000)
 #now plot all the positive data by county
-g1 <- ggplot(data = cotr) +  geom_polygon(aes(x = long, y = lat, fill = Freq, group = group), color = "azure4") + coord_fixed(1.3)  + scale_fill_gradient(high = "magenta4", low = "white", na.value="azure", trans = "log10") + theme_map() 
+g1 <- ggplot(data = cotr) +  
+  geom_polygon(aes(x = long, y = lat, fill = Freq, group = group), color = "azure4") + 
+  coord_fixed(1.3)  + 
+  scale_fill_gradient(high = "magenta4", low = "white", na.value="azure", trans = "log10") + 
+  theme_map() 
 
-g2 <- g1 + theme( 
+g2 <- g1 + 
+  theme( 
   axis.text = element_blank(),
   axis.line = element_blank(),
   axis.ticks = element_blank(),
@@ -291,8 +343,12 @@ g2 <- g1 + theme(
   panel.grid = element_blank(),
   axis.title = element_blank(), legend.position = "right")  + labs(fill= "Number of cases") 
 
-g3 <- g2 + geom_point(data = GAcitiesspread, aes(x = long, y = lat, size = pop), alpha = 0.5) + geom_text(data = GAcitiesspread, aes(x = long, y = lat, label = name, group = NULL), position = position_jitter(width=0.3,height=0.3)) 
+g3 <- g2 + 
+  geom_point(data = GAcitiesspread, aes(x = long, y = lat, size = pop), alpha = 0.5) + 
+  geom_text(data = GAcitiesspread, aes(x = long, y = lat, label = name, group = NULL), position = position_jitter(width=0.3,height=0.3)) 
 g3
+
+ggsave(filename = "../../results/County_map.png",plot = g3)
 #I introduced a log scale as it is more informative for the dynamics of distemper as either the presenc e of absence of clinical cases demonstrates an outbreak, so whether there is 1 case or 100 cases in an area isn't that importnat
 ```
 
@@ -304,7 +360,7 @@ cotry <- left_join(GAC, COYR)
 ```
 ```{r}
 cotry_complete <- cotry %>% filter(!is.na(CollectionYear))
-ggplot(data = cotry_complete) +  
+c<- ggplot(data = cotry_complete) +  
   geom_polygon(data = GAC, aes(x = long, y = lat, group = group), color ="gray50", fill = "white") + 
   geom_polygon(aes(x = long, y = lat, fill = Freq, group = group), color = "azure4") + 
   coord_fixed(1.3)  + 
@@ -315,6 +371,10 @@ ggplot(data = cotry_complete) +
   panel.border = element_blank(),
   panel.grid = element_blank(),
   axis.title = element_blank(), legend.position = "right") + facet_wrap( ~ CollectionYear)  + labs(fill= "Number of cases")
+
+c
+
+ggsave(filename = "../../results/County_WrapYear.png",plot = c)
 ```
 
 ```{r}
@@ -334,6 +394,8 @@ p <- ggplot(data = cotry_comp, aes(frame = CollectionYear)) +  geom_polygon(data
 
 p2 <- ggplotly(p)
 
+p2
+
 ```
 ```{r}
 
@@ -350,27 +412,42 @@ COSPEC <- left_join(GAC, COSPE)
 ```
 
 ```{r}
-SP1 <- ggplot(data = COSPEC) +  geom_polygon(data = GAC, aes(x = long, y = lat, group = group), color ="gray50", fill = "white") + geom_polygon(aes(x = long, y = lat, fill = Freq, group = group), color = "azure4") + coord_fixed(1.3)  
+SP1 <- ggplot(data = COSPEC) +  
+  geom_polygon(data = GAC, aes(x = long, y = lat, group = group), color ="gray50", fill = "white") + 
+  geom_polygon(aes(x = long, y = lat, fill = Freq, group = group), color = "azure4") + 
+  coord_fixed(1.3)  
 
-SP2 <- SP1 + scale_fill_gradient(high = "purple", low = "white", na.value="azure", trans = "log10") + theme_map() + theme( 
+SP2 <- SP1 + 
+  scale_fill_gradient(high = "purple", low = "white", na.value="azure", trans = "log10") + 
+  theme_map() + 
+  theme( 
   axis.text = element_blank(),
   axis.line = element_blank(),
   axis.ticks = element_blank(),
   panel.border = element_blank(),
   panel.grid = element_blank(),
   axis.title = element_blank(), legend.position = "right") 
-SP3 <- SP2 +  geom_point(data = GAcitiesspread, aes(x = long, y = lat), size = 1, fill = "black", alpha = 0.5) + geom_text(data = GAcitiesspread, aes(x = long, y = lat, label = name, group = NULL), position = position_jitter(width=0.3,height=0.3), size=2) 
-SP3 + facet_wrap( ~ Species)  + labs(fill= "Number of cases")
+SP3 <- SP2 +  
+  geom_point(data = GAcitiesspread, aes(x = long, y = lat), size = 1, fill = "black", alpha = 0.5) + 
+  geom_text(data = GAcitiesspread, aes(x = long, y = lat, label = name, group = NULL), position = position_jitter(width=0.3,height=0.3), size=2) 
+
+SP4 <- SP3 + 
+  facet_wrap( ~ Species)  + 
+  labs(fill= "Number of cases")
+
+SP4
+
+ggsave(filename = "../../results/CountyCases_WrapSpecies.png",plot = SP4)
 ```
 ```{r}
-#now we want just the racoon dtata over time so we can compare any pattern to gray fox
+#now we want just the racoon data over time so we can compare any pattern to gray fox
 RACMAP <- with(CDVGA2, table(County, Species, CollectionYear))
 RRACMAP<- as.data.frame(RACMAP)
 racmap <- left_join(GAC, RRACMAP)
 RMP <- subset(racmap, Species %in% "Raccoon")
 ```
 ```{r}
-ggplot(data = RMP) +  
+Raccoonplot<- ggplot(data = RMP) +  
   geom_polygon(data = GAC, aes(x = long, y = lat, group = group), color ="gray50", fill = "white") + 
   geom_polygon(aes(x = long, y = lat, fill = Freq, group = group), color = "azure4") +
   coord_fixed(1.3)  + scale_fill_gradient(high = "purple", low = "white", na.value="azure", trans = "log10") + theme_map() + theme( 
@@ -380,34 +457,22 @@ ggplot(data = RMP) +
   panel.border = element_blank(),
   panel.grid = element_blank(),
   axis.title = element_blank(), legend.position = "right") + facet_wrap( ~ CollectionYear)  + labs(fill= "Number of cases")
+
+Raccoonplot
+
+ggsave(filename = "../../results/Rac_County_WrapYear.png",plot = Raccoonplot)
+
 ```
 ```{r}
 
 GFMP <- subset(racmap, Species %in% "Gray Fox")
 ```
 ```{r}
-ggplot(data = GFMP) +  geom_polygon(data = GAC, aes(x = long, y = lat, group = group), color ="gray50", fill = "white") + geom_polygon(aes(x = long, y = lat, fill = Freq, group = group), color = "azure4") + coord_fixed(1.3)  + scale_fill_gradient(high = "purple", low = "white", na.value="azure", trans = "log10") + theme_map() + theme( 
-  axis.text = element_blank(),
-  axis.line = element_blank(),
-  axis.ticks = element_blank(),
-  panel.border = element_blank(),
-  panel.grid = element_blank(),
-  axis.title = element_blank(), legend.position = "right") + facet_wrap( ~ CollectionYear)  + labs(fill= "Number of cases")
-```
-
-
-```{r}
-ggplot(data = cotry) +  
-  geom_polygon(data = GAC, aes(x = long, y = lat, group = group), color ="gray50", fill = "white")  + 
-  coord_fixed(1.3) + 
-  geom_polygon(aes(x = long, y = lat, fill = Freq, group = group), color = "azure4")
-```
-```{r}
-library(RColorBrewer)
-just <- cotry %>% filter(Freq>0) %>%select(long, lat, County, CollectionYear)  
-ggplot(data = just) +  
+GrayFoxPlot <- ggplot(data = GFMP) +  
   geom_polygon(data = GAC, aes(x = long, y = lat, group = group), color ="gray50", fill = "white") + 
-  geom_polygon(aes(x = long, y = lat, fill = CollectionYear, group = County), color = "azure4") + coord_fixed(1.3)  + scale_fill_viridis_d(option = "D")+ 
+  geom_polygon(aes(x = long, y = lat, fill = Freq, group = group), color = "azure4") + 
+  coord_fixed(1.3)  + 
+  scale_fill_gradient(high = "purple", low = "white", na.value="azure", trans = "log10") + 
   theme_map() + 
   theme( 
   axis.text = element_blank(),
@@ -415,22 +480,13 @@ ggplot(data = just) +
   axis.ticks = element_blank(),
   panel.border = element_blank(),
   panel.grid = element_blank(),
-  axis.title = element_blank(), legend.position = "right") 
+  axis.title = element_blank(), legend.position = "right") + facet_wrap( ~ CollectionYear)  + labs(fill= "Number of cases")
+
+GrayFoxPlot
+
+ggsave(filename = "../../results/Gray_County_WrapYear.png",plot = GrayFoxPlot)
 ```
-```{r}
-just2 <- cotry %>% filter(Freq>0) %>% subset(CollectionYear %in% c("2000", "2001", "2002", "2003", "2004", "2005", "2006", "2007")) %>%select(long, lat, County, CollectionYear)  
-ggplot(data = just2) +  
-  geom_polygon(data = GAC, aes(x = long, y = lat, group = group), color ="gray50", fill = "white") + 
-  geom_polygon(aes(x = long, y = lat, fill = CollectionYear, group = County), color = "azure4") + 
-  coord_fixed(1.3)  + 
-  scale_fill_viridis_d(option = "D")+ theme_map() + theme( 
-  axis.text = element_blank(),
-  axis.line = element_blank(),
-  axis.ticks = element_blank(),
-  panel.border = element_blank(),
-  panel.grid = element_blank(),
-  axis.title = element_blank(), legend.position = "right") 
-```
+
 
 ```{r}
 #lets change the freq data to TRUE or FALSE as presence vs absence is more important than the number of cases
@@ -440,9 +496,10 @@ cotry_comp$Freq <- ifelse(cotry_comp$Freq >0 ,TRUE, FALSE) #%>% replace_na(list(
 #presence_absence<- cotry_complete
 ```
 ```{r}
-ggplot(data = cotry_comp) +  
+Presence <- ggplot(data = cotry_comp) +  
   geom_polygon(data = GAC, aes(x = long, y = lat, group = group), color ="gray50", fill = "white") + 
-  geom_polygon(aes(x = long, y = lat, fill = Freq, group = group), color = "azure4") + scale_fill_manual(values = c('white', 'turquoise4')) +
+  geom_polygon(aes(x = long, y = lat, fill = Freq, group = group), color = "azure4") + 
+  scale_fill_manual(values = c('white', 'turquoise4')) +
   coord_fixed(1.3)  + 
   theme_map() + theme( 
   axis.text = element_blank(),
@@ -450,14 +507,14 @@ ggplot(data = cotry_comp) +
   axis.ticks = element_blank(),
   panel.border = element_blank(),
   panel.grid = element_blank(),
-  axis.title = element_blank(), legend.position = "right") + facet_wrap( ~ CollectionYear)  + labs(fill= "Presence")
+  axis.title = element_blank(), legend.position = "right") + facet_wrap( ~ CollectionYear)  + 
+  labs(fill= "Presence")
 
+Presence
+
+ggsave(filename = "../../results/Presence_WrapYear.png",plot = Presence)
 ```
-#```{r}
-#COAT <- full_join(COYR, GAC)
-#COAT$Freq <- ifelse(COAT$Freq >0 ,TRUE, FALSE)
-#COAT <- COAT %>% mutate(CollectionYear = #as.numeric(as.character(CollectionYear)))
-#```
+
 ```{r}
 
 PA <- ggplot(data = cotry_comp, aes(frame = CollectionYear)) +  geom_polygon(data = cotry_comp, aes(x = long, y = lat, group=group), color = "gray50", fill = "white") + 
