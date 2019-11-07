@@ -33,6 +33,10 @@ library(maps)
 
 library(ggmap)
 
+library(maptools)
+
+library(sf)
+
 ```
 
 
@@ -160,19 +164,16 @@ ggsave(filename = "../../results/RacFox_Age.png",plot = RacFox_Age)
 #there may be something here, worth looking at statistically going forward
 ```
 ```{r}
-Species <- c("Gray Fox", "Raccoon")
-Total <- c(199,434)
-fudge <-data.frame(Species, Total)
+tib <-  as.data.frame(with(RGFAge, table(Age, Species)))
+          
+TibageSP <- tib %>% spread(key = Age, value = Freq)
+TibageSPd <- TibageSP%>% dplyr::mutate(Total = (Adult + Subadult +Juvenile))
 
-tb<- left_join(TibageSP,fudge) %>% mutate_at(vars(Adult, Juvenile, Subadult), funs(./Total))
+tb<- TibageSPd %>% mutate_at(vars(Adult, Juvenile, Subadult), funs(./Total))
 tb
 
 ```
-#```{r}
-#ggplot(tb, aes(Species)) +
- # geom_bar(aes(fill=Age))
 
-#```
 ```{r}
 #i forgot to plot age by species wrap.. its pretty uninteresting
 
@@ -209,391 +210,275 @@ ggplot(LAT, aes(lat)) + geom_histogram()  +
 
 #This is interesting, there are two disticnt latitudinal peaks for raccoons but only 1 for gray foxes
 ```
+
+
+
+
+
+
+
 ```{r}
-#now we'll get into the mapping, which is likely to be a major theme with this dataset
-#we'll pull up our basic map iof US states first
-statelines <- map_data("state")
-ggplot(data = statelines) +  geom_polygon(aes(x = long, y = lat, fill = region, group = group), color = "white") + coord_fixed(1.3) + guides(fill=FALSE)
+#exper
+library('tidyr')
+library('dplyr')
+library('forcats')
+library('ggplot2')
+library('corrplot') #to make a correlation plot. You can use other options/packages.
+library('visdat') #for missing data visualization
+library('caret') #for model fitting
+library('earth')
+glimpse(allmod)
+ remove_NA <- allmod[!is.na(allmod$Sex), ]  
+ remo2 <- remove_NA[!is.na(remove_NA$Species), ]
+  
+  remo3 <- remo2[!is.na(remo2$Age), ]
+   remo4 <- remo3[!is.na(remo3$lat), ]
+   remo5 <- remo4[!is.na(remo4$long), ]
+ 
+   vis_miss(remo5)
+```   
+```{r}  
+   d<- remo5
+set.seed(123)
+trainset <- caret::createDataPartition(y = d$lat, p = 0.7, list = FALSE)
+data_train = d[trainset,] 
+#extract observations/rows for training, assign to new variable
+data_test = d[-trainset,] 
+#do the same for the test set
 ```
 
-```{r}
-#then we'll subset to out states in the ~SE that are represtned in our dataset
-statelines <- map_data("state")
-SE <- subset(statelines, region %in% c("pennsylvania","georgia", "kansas", "south carolina", "arkansas", "florida", "kentucky", "louisiana", "maryland", "mississippi", "north carolina", "tennessee", "virginia", "west virginia", "alabama", "missouri"))
-ggplot(data = SE) +  geom_polygon(aes(x = long, y = lat, fill = region, group = group), color = "white") + coord_fixed(1.3) + guides(fill=FALSE) 
-```
-```{r}
-#to be able to join our data sets with dplyr we need to capitalise the state names from the mapping data and change the ttle of the states vaiable to region so we can properly join our datasets
-SEC <- rename(SE, State = region)
-capFirst <- function(s) {paste(toupper(substring(s, 1, 1)), substring(s, 2), sep = "")}
+:::note
+Since the above code involves drawing samples, and we want to do that reproducible, we also set a random number seed with `set.seed()`. With that, each time we perform this sampling, it will be the same, unless we change the seed. If nothing about the code changes, setting the seed once at the beginning is enough. If you want to be extra sure, it is a good idea to set the seed at the beginning of every code chunk that involves random numbers (i.e., sampling or some other stochastic/random procedure). We do that here.
+:::
 
-SEC$State <- capFirst(SEC$State)
+## A null model
 
-StFr <- with(CDV_Clean, table(State))
-STFR <- as.data.frame(StFr) 
-SECC <- SEC %>% mutate(State = recode(State, "North carolina" = "North Carolina", "South carolina" = "South Carolina"))
+Now let's begin with the model fitting. We'll start by looking at a _null model_, which is just the mean of the data. This is, of course, a stupid "model" but provides some baseline for performance.
 
+```{r clean-na}
+#write code that computes the RMSE for a null model, which is just the mean of the outcome
+#remember that from now on until the end, everything happens with the training data
 
-dftr <- left_join(SECC, STFR)
-
-library(viridis)
-
-
-library(rgeos)
-
-#we also want some state abbreviations we can put in the centre of our states on the map so we shall pull that data together
-statescent <- data.frame(state.center, state.abb)
-SECEnt <- subset(statescent, state.abb %in% c("PA","GA", "KS", "SC", "AR", "FL", "KY", "LA", "MD", "MS", "NC", "TN", "VA", "WV", "AL", "MO"))
-```
-```{r}
-#we also want some major cites that we can plot on our final map
-us <- map_data("state")
-uscitiesdf <- as.data.frame(us.cities)
-Bigcities <- uscitiesdf %>% filter(pop >2000000)
-```
-```{r}
-#now we'll pull all these layers togetehr in ggplot
-SEC1 <- ggplot(data = dftr) + geom_polygon(data = us, aes(x = long, y = lat, group = group), color ="gray50", fill = "white") + geom_polygon(aes(x = long, y = lat, fill = Freq, group = group), color = "gray50") + coord_fixed(1.3) +  scale_fill_gradient(low = "white", high = "dodgerblue4", na.value = "azure", trans = "log10") 
-
-SEC2 <- SEC1 + theme( 
-  axis.text = element_blank(),
-  axis.line = element_blank(),
-  axis.ticks = element_blank(),
-  panel.border = element_blank(),
-  panel.grid = element_blank(),
-  axis.title = element_blank(), legend.position = "right")
-
-SEC3 <- SEC2 +  geom_text(data = SECEnt, aes(x = x, y = y, label = state.abb, group = NULL, size = )) + labs(fill= "Number of cases")
-
-SEC4 <- SEC3 + geom_point(data = Bigcities, aes(x = long, y = lat), alpha = 0.5) + geom_text(data = Bigcities, aes(x = long, y = lat, label = name, group = NULL, size = 1), position = position_jitter(width=0.3,height=0.3)) 
-
-SEC4
-
-ggsave(filename = "../../results/Cases_per_State.png",plot = SEC4)
-#we also needed to recode the carolinas to capiatlise both words so we could properly join 
-#i used a log scale here as GA is massively overrrepresented and it made it difficult to percive what other states are involved
-```
-```{r}
-#now lets look at the state maps per year using facet wrap
-SPYdf <- as.data.frame(StperYr)
-spyrsttt <- left_join(SECC, SPYdf)
-SECt1 <- ggplot(data = spyrsttt) + geom_polygon(data = us, aes(x = long, y = lat, group = group), color ="gray50", fill = "gray70") + geom_polygon(aes(x = long, y = lat, fill = Freq, group = group), color = "gray50") + coord_fixed(1.3) +  scale_fill_gradient(low = "white", high = "slateblue4", na.value = "white", trans = "log10") 
-
-SECt2 <- SECt1 + theme( 
-  axis.text = element_blank(),
-  axis.line = element_blank(),
-  axis.ticks = element_blank(),
-  panel.border = element_blank(),
-  panel.grid = element_blank(),
-  axis.title = element_blank(), legend.position = "right")
-
-SECt3 <- SECt2 + labs(fill= "Number of cases")
-
-
-SECT4 <- SECt3 + facet_wrap(~ CollectionYear)
-
-SECT4
-
-ggsave(filename = "../../results/Cases_per_State_WrapYear.png",plot = SECT4)
-
-```
-
-```{r}
-#having looked broadly at the data from the South East its clear that GA is where we should focus our county analysis
-#so we'll pull map data for US counties and subset for GA
-library(RColorBrewer)
-counties <- map_data("county")
-GA_county <- subset(counties, region %in% "georgia") %>% as.data.frame()
-
-GAC <- rename(GA_county, County = subregion)
-GAC$County <- capFirst(GAC$County)
-CDVGA <- subset(CDV_Clean, State %in% "Georgia")
-CoFr <- with(CDVGA, table(County))
-COFR <- as.data.frame(CoFr)
-```
-```{r}
-#Quick bar chart of counties to see if some are over represented
-Countysquared<- ggplot(CDVGA, aes(County, fill=County, color=County)) +
-  geom_bar() + 
-  theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 8), legend.position = "none")
-
-ggsave(filename = "../../results/County_per_Year.png",plot = Countysquared)
-```
-
-```{r}
-#we'll look at what unique county names we have to look for obvious typos
-table(sort(unique(COFR$County)))
-```
-
-```{r}
-#we'll recode chatoogna and dekalb but there isn't much to do with the 3 counties in one so it won't be plotted as it won't join our other data
-CDVGA2 <- CDVGA %>% mutate(County = recode(County, "Chattoogna" = "Chattooga", "Dekalb" = "DeKalb"))
-#repeat process for county map data to see if therte are mismatches which will cause us to lose dtat when we join
-table(sort(unique(GAC$County)))
-```
-```{r}
-#recode dekalb county and jeff davis
-GAC <-  GAC %>% mutate(County = recode(County, "De kalb" = "DeKalb", "Jeff davis" = "Jeff Davis"))
-```
-```{r}
-#pull the frequency data for positive cases per county and join to county mapping dtata
-GACOFR <- with(CDVGA2, table(County))
-GACOFRdf <- as.data.frame(GACOFR)
-cotr <- left_join(GAC, GACOFRdf)
-```
-```{r}
-#we'll do a full join to check to make sure the spelling all matches
-FJC <- full_join(GAC, GACOFRdf)
-table(sort(unique(FJC$County)))
-```
-
-```{r}
-#like we did earlier for our national map, lets get some data for the larger cities in georgia as reference points
-GAcitiesspread <- uscitiesdf %>% subset(country.etc %in% "GA") %>% filter(pop>100000)
-#now plot all the positive data by county
-g1 <- ggplot(data = cotr) +  
-  geom_polygon(aes(x = long, y = lat, fill = Freq, group = group), color = "azure4") + 
-  coord_fixed(1.3)  + 
-  scale_fill_gradient(high = "magenta4", low = "white", na.value="azure", trans = "log10") + 
-  theme_map() 
-
-g2 <- g1 + 
-  theme( 
-  axis.text = element_blank(),
-  axis.line = element_blank(),
-  axis.ticks = element_blank(),
-  panel.border = element_blank(),
-  panel.grid = element_blank(),
-  axis.title = element_blank(), legend.position = "right")  + labs(fill= "Number of cases") 
-
-g3 <- g2 + 
-  geom_point(data = GAcitiesspread, aes(x = long, y = lat, size = pop), alpha = 0.5) + 
-  geom_text(data = GAcitiesspread, aes(x = long, y = lat, label = name, group = NULL), position = position_jitter(width=0.3,height=0.3)) 
-g3
-
-ggsave(filename = "../../results/County_map.png",plot = g3)
-#I introduced a log scale as it is more informative for the dynamics of distemper as either the presenc e of absence of clinical cases demonstrates an outbreak, so whether there is 1 case or 100 cases in an area isn't that importnat
-```
-
-```{r}
-#now wew'll repeat the county process over time
-CoYr <- with(CDVGA2, table(County, CollectionYear))
-COYR <- as.data.frame(CoYr)
-cotry <- left_join(GAC, COYR)
-```
-```{r}
-cotry_complete <- cotry %>% filter(!is.na(CollectionYear))
-c<- ggplot(data = cotry_complete) +  
-  geom_polygon(data = GAC, aes(x = long, y = lat, group = group), color ="gray50", fill = "white") + 
-  geom_polygon(aes(x = long, y = lat, fill = Freq, group = group), color = "azure4") + 
-  coord_fixed(1.3)  + 
-  scale_fill_gradient(high = "red", low = "white", na.value="azure", trans = "log10") + theme_map() + theme( 
-  axis.text = element_blank(),
-  axis.line = element_blank(),
-  axis.ticks = element_blank(),
-  panel.border = element_blank(),
-  panel.grid = element_blank(),
-  axis.title = element_blank(), legend.position = "right") + facet_wrap( ~ CollectionYear)  + labs(fill= "Number of cases")
-
-c
-
-ggsave(filename = "../../results/County_WrapYear.png",plot = c)
-```
-
-```{r}
-cotry_comp <- cotry %>% mutate(CollectionYear = as.numeric(as.character(CollectionYear)))
-p <- ggplot(data = cotry_comp, aes(frame = CollectionYear)) +  geom_polygon(data = cotry_comp, aes(x = long, y = lat, group=group), color = "gray50", fill = "white") + 
-  geom_polygon(aes(x = long, y = lat, fill = Freq, group = group), color = "azure4") + 
-  coord_fixed(1.3)  + 
-  scale_fill_gradient(high = "red4", low = "red", na.value="white", trans = "log10") + 
-  theme_map() + 
-  theme( 
-  axis.text = element_blank(),
-  axis.line = element_blank(),
-  axis.ticks = element_blank(),
-  panel.border = element_blank(),
-  panel.grid = element_blank(),
-  axis.title = element_blank(), legend.position = "right") +  labs(fill= "Number of cases")
-
-p2 <- ggplotly(p)
-
-p2
-
-```
-```{r}
-
-p2 <- p2 %>% animation_opts( mode= "immediate", transition= 0, easing = "linear-out" , redraw = FALSE)
-p2
-#the data isn't right here, no 1988 in glynn co.
-```
-```{r}
-#now we'll subset for raccoon and gray fow and compare the couty distribution
-Cospe <- subset(CDVGA2, Species %in% c("Raccoon", "Gray Fox"))
-CoSPE <- with(Cospe, table(County, Species))
-COSPE <- as.data.frame(CoSPE)
-COSPEC <- left_join(GAC, COSPE)
-```
-
-```{r}
-SP1 <- ggplot(data = COSPEC) +  
-  geom_polygon(data = GAC, aes(x = long, y = lat, group = group), color ="gray50", fill = "white") + 
-  geom_polygon(aes(x = long, y = lat, fill = Freq, group = group), color = "azure4") + 
-  coord_fixed(1.3)  
-
-SP2 <- SP1 + 
-  scale_fill_gradient(high = "purple", low = "white", na.value="azure", trans = "log10") + 
-  theme_map() + 
-  theme( 
-  axis.text = element_blank(),
-  axis.line = element_blank(),
-  axis.ticks = element_blank(),
-  panel.border = element_blank(),
-  panel.grid = element_blank(),
-  axis.title = element_blank(), legend.position = "right") 
-SP3 <- SP2 +  
-  geom_point(data = GAcitiesspread, aes(x = long, y = lat), size = 1, fill = "black", alpha = 0.5) + 
-  geom_text(data = GAcitiesspread, aes(x = long, y = lat, label = name, group = NULL), position = position_jitter(width=0.3,height=0.3), size=2) 
-
-SP4 <- SP3 + 
-  facet_wrap( ~ Species)  + 
-  labs(fill= "Number of cases")
-
-SP4
-
-ggsave(filename = "../../results/CountyCases_WrapSpecies.png",plot = SP4)
-```
-```{r}
-#now we want just the racoon data over time so we can compare any pattern to gray fox
-RACMAP <- with(CDVGA2, table(County, Species, CollectionYear))
-RRACMAP<- as.data.frame(RACMAP)
-racmap <- left_join(GAC, RRACMAP)
-RMP <- subset(racmap, Species %in% "Raccoon")
-```
-```{r}
-Raccoonplot<- ggplot(data = RMP) +  
-  geom_polygon(data = GAC, aes(x = long, y = lat, group = group), color ="gray50", fill = "white") + 
-  geom_polygon(aes(x = long, y = lat, fill = Freq, group = group), color = "azure4") +
-  coord_fixed(1.3)  + scale_fill_gradient(high = "purple", low = "white", na.value="azure", trans = "log10") + theme_map() + theme( 
-  axis.text = element_blank(),
-  axis.line = element_blank(),
-  axis.ticks = element_blank(),
-  panel.border = element_blank(),
-  panel.grid = element_blank(),
-  axis.title = element_blank(), legend.position = "right") + facet_wrap( ~ CollectionYear)  + labs(fill= "Number of cases")
-
-Raccoonplot
-
-ggsave(filename = "../../results/Rac_County_WrapYear.png",plot = Raccoonplot)
-
-```
-```{r}
-
-GFMP <- subset(racmap, Species %in% "Gray Fox")
-```
-```{r}
-GrayFoxPlot <- ggplot(data = GFMP) +  
-  geom_polygon(data = GAC, aes(x = long, y = lat, group = group), color ="gray50", fill = "white") + 
-  geom_polygon(aes(x = long, y = lat, fill = Freq, group = group), color = "azure4") + 
-  coord_fixed(1.3)  + 
-  scale_fill_gradient(high = "purple", low = "white", na.value="azure", trans = "log10") + 
-  theme_map() + 
-  theme( 
-  axis.text = element_blank(),
-  axis.line = element_blank(),
-  axis.ticks = element_blank(),
-  panel.border = element_blank(),
-  panel.grid = element_blank(),
-  axis.title = element_blank(), legend.position = "right") + facet_wrap( ~ CollectionYear)  + labs(fill= "Number of cases")
-
-GrayFoxPlot
-
-ggsave(filename = "../../results/Gray_County_WrapYear.png",plot = GrayFoxPlot)
+mean(data_train$lat)
 ```
 
 
+## Single predictor models
+
+Now we'll fit the outcome to each predictor one at a time. To evaluate our model performance, we will use cross-validation and the caret package. Note that we just fit a linear model. `caret` itself is not a model. Instead, it provides an interface that allows easy access to many different models and has functions to do a lot of steps quickly - as you will see below. Most of the time, you can do all our work through the `caret` (or `mlr`) workflow. The problem is that because `caret` calls another package/function, sometimes things are not as clear, especially when you get an error message. So occasionally, if you know you want to use a specific model and want more control over things, you might want to not use `caret` and instead go straight to the model function (e.g. `lm` or `glm` or...). We've done a bit of that before, for the remainder of the class we'll mostly access underlying functions through `caret`.
+
 ```{r}
-#lets change the freq data to TRUE or FALSE as presence vs absence is more important than the number of cases
-
-
-cotry_comp$Freq <- ifelse(cotry_comp$Freq >0 ,TRUE, FALSE) #%>% replace_na(list(Freq = FALSE)) 
-#presence_absence<- cotry_complete
-```
-```{r}
-Presence <- ggplot(data = cotry_comp) +  
-  geom_polygon(data = GAC, aes(x = long, y = lat, group = group), color ="gray50", fill = "white") + 
-  geom_polygon(aes(x = long, y = lat, fill = Freq, group = group), color = "azure4") + 
-  scale_fill_manual(values = c('white', 'turquoise4')) +
-  coord_fixed(1.3)  + 
-  theme_map() + theme( 
-  axis.text = element_blank(),
-  axis.line = element_blank(),
-  axis.ticks = element_blank(),
-  panel.border = element_blank(),
-  panel.grid = element_blank(),
-  axis.title = element_blank(), legend.position = "right") + facet_wrap( ~ CollectionYear)  + 
-  labs(fill= "Presence")
-
-Presence
-
-ggsave(filename = "../../results/Presence_WrapYear.png",plot = Presence)
+#put outcome ie. fracinf first
+data_train <- data_train[, c(1,2,3,4,5,6,7)]
+#There is probably a nicer tidyverse way of doing this. I just couldn't think of it, so did it this way.
+set.seed(1111) 
+#makes each code block reproducible
+fitControl <- trainControl(method="repeatedcv",number=5,repeats=5) #setting CV method for caret
+Npred <- ncol(data_train)-1 
+# number of predictors
+resultmat <- data.frame(Variable = names(data_train)[-1], RMSE = rep(0,Npred)) 
+#store values for RMSE for each variable
+for (n in 2:ncol(data_train)) 
+  #loop over each predictor. For this to work, outcome must be in 1st column
+{
+  fit1 <- train( as.formula(paste("lat ~",names(data_train)[n])) , data = data_train, method = "lm", trControl = fitControl) 
+ resultmat[n-1,2]= fit1$results$RMSE  
+}
+print(resultmat)
 ```
 
+This analysis shows 2 things that might need closer inspections. We get some error/warning messages, and most RMSE of the single-predictor models are not better than the null model. Usually, this is cause for more careful checking until you fully understand what is going on. But for this exercise, let's blindly press on!
+
+
+## Multi-predictor models
+
+Now let's perform fitting with multiple predictors. Use the same setup as the code above to fit the outcome to all predictors at the same time. Do that for 3 different models: linear (`lm`), regression splines (`earth`), K nearest neighbor (`knn`). You might have to install/load some extra R packages for that. If that's the case, `caret` will tell you.
+
 ```{r}
+set.seed(1111) #makes each code block reproducible
+#write code that uses the train function in caret to fit the outcome to all predictors using the 3 methods specified.
+#report the RMSE for each method. Note that knn and earth perform some model tuning (we'll discuss this soon) and report multiple RMSE. Use the lowest value.
 
-PA <- ggplot(data = cotry_comp, aes(frame = CollectionYear)) +  geom_polygon(data = cotry_comp, aes(x = long, y = lat, group=group), color = "gray50", fill = "white") + 
-  geom_polygon(aes(x = long, y = lat, fill = Freq, group = group), color = "azure4") + 
-  coord_fixed(1.3)  + 
-  scale_fill_manual(values = c('white', 'turquoise4')) +
-  theme_map() + 
-  theme( 
-  axis.text = element_blank(),
-  axis.line = element_blank(),
-  axis.ticks = element_blank(),
-  panel.border = element_blank(),
-  panel.grid = element_blank(),
-  axis.title = element_blank(), legend.position = "right") +  labs(fill= "Presence")
+lm_fit <- train(lat~., data=data_train,method="lm", trControl = fitControl)
 
-PA2 <- ggplotly(PA)
+lm_fit
+
+```
+```{r}
+set.seed(1111)
+
+earth_fit_1 <- train(lat~., data=data_train,method="earth", trControl = fitControl)
+
+earth_fit_1 
+
 
 ```
 
 ```{r}
+set.seed(1111) 
 
-PA2 <- PA2 %>% animation_opts( transition= 1,  redraw = FALSE)
-PA2
+knn_fit <- train(lat~., data=data_train,method="knn", trControl = fitControl)
+
+knn_fit 
+
+#lowest RMSE = 10.61300
 ```
+So we find that some of these models do better than the null model and the single-predictor ones. KNN seems the best of those 3. Next, we want to see if pre-processing our data a bit more might lead to even better results.
+
+
+## Multi-predictor models with pre-processing
+
+Above, we fit outcome and predictors without doing anything to them. Let's see if some further processing improves the performance of our multi-predictor models.
+
+First, we look at near-zero variance predictors. Those are predictors that have very little variation. For instance, for a categorical predictor, if 99% of the values are a single category, it is likely not a useful predictor. A similar idea holds for continuous predictors. If they have very little spread, they might likely not contribute much 'signal' to our fitting and instead mainly contain noise. Some models, such as trees, which we'll cover soon, can ignore useless predictors and just remove them. Other models, e.g., linear models, are generally performing better if we remove such useless predictors.
+
+Note that in general, one should apply all these processing steps to the training data only. Otherwise, you would use information from the test set to decide on data manipulations for all data (called data leakage). It is a bit hard to say when to make the train/test split. Above, we did a good bit of cleaning on the full dataset before we split. One could argue that one should split right at the start, then do the cleaning. However, this doesn't work for certain procedures (e.g., removing observations with NA). 
+
 ```{r}
-htmlwidgets::saveWidget(as_widget(PA2), "Presence_time.html")
+#write code using the caret function `nearZeroVar` to look at potential uninformative predictors. Set saveMetrics to TRUE. Look at the results 
+nearZeroVar(data_train, saveMetrics = TRUE)
 
 ```
-```{r}
-RACnum <- racmap %>% mutate(CollectionYear = as.numeric(as.character(CollectionYear)))
-RACnum$Freq <- ifelse(RACnum$Freq >0 ,TRUE, FALSE)
 
-RACFOX <- subset(RACnum, Species %in% c("Raccoon", "Gray Fox"))
-```
+You'll see that several variables are flagged as having near-zero variance. Look for instance at `Deaths`, you'll see that almost all outbreaks have zero deaths. It is a judgment call if we should remove all those flagged as near-zero-variance or not. For this exercise, we will.
+
 
 ```{r}
+#write code that removes all variables with near zero variance from the data 
 
-RA <- ggplot(data = RACFOX, aes(frame = CollectionYear)) +  geom_polygon(data = RACFOX, aes(x = long, y = lat, group=group), color = "gray50", fill = "white") + 
-  geom_polygon(aes(x = long, y = lat, fill = Freq, group = group), color = "azure4") + 
-  coord_fixed(1.3)  + 
-  scale_fill_manual(values = c('white', 'turquoise4')) +
-  theme_map() + 
-  theme( 
-  axis.text = element_blank(),
-  axis.line = element_blank(),
-  axis.ticks = element_blank(),
-  panel.border = element_blank(),
-  panel.grid = element_blank(),
-  axis.title = element_blank(), legend.position = "right") +  labs(fill= "Presence") +
-  facet_wrap(~Species)
+#nearZero <- nearZeroVar(data_train)
 
-RA2 <- ggplotly(RA) %>% animation_opts( transition= 1,  redraw = FALSE)
+#trainDrop <- data_train[, -nearZero]
 
-RA2
+#glimpse(trainDrop)
 ```
 
-#can i get the case data for different counties in different years ploted on same map usiong diff colours per year?
+You should be left with 13 variables (including the outcome).
 
-#can i get these 2 overtime?, add population centres to map
+
+Next, we noticed during our exploratory analysis that it might be useful to center and scale predictors. So let's do that now. With caret, one can do that by providing the `preProc` setting inside the `train` function. Set it to center and scale the data, then run the 3 models from above again.
+
+
+```{r processed-fit}
+#write code that repeats the multi-predictor fits from above, but this time applies centering and scaling of variables.
+#look at the RMSE for the new fits
+
+set.seed(1111) 
+
+fitControl <- trainControl(method="repeatedcv",number=5,repeats=5)
+
+
+lmfit2 <- train(lat~ ., data = data_train, method = "lm", preProc = c("center", "scale"), trControl = fitControl) 
+
+
+
+print(lmfit2)
+
+
+
+```
+
+```{r}
+set.seed(1111) 
+
+
+
+fitControl <- trainControl(method="repeatedcv",number=5,repeats=5)
+
+
+
+earthfit2 <- train(lat~ ., data = data_train, method = "earth", preProc = c("center", "scale"), trControl = fitControl) 
+
+
+
+print(earthfit2)
+```
+
+```{r}
+set.seed(1111) #Preprocessed knn fit
+
+
+
+fitControl <- trainControl(method="repeatedcv",number=5,repeats=5)
+
+
+
+knnfit2 <- train(lat~ ., data = data_train, method = "knn", preProc = c("center", "scale"), trControl = fitControl) 
+
+
+
+print(knnfit2)
+
+
+
+```
+
+So it looks like the linear mode got a bit better, KNN actually got worse, and MARS didn't change much. Since for KNN, "the data is the model", removing some predictors might have had a detrimental impact. Though to say something more useful, I would want to look much closer into what's going on and if these pre-processing steps are useful or not. For this exercise, let's move on.
+
+## Model uncertainty
+
+We can look at the uncertainty in model performance, e.g., the RMSE. Let's look at it for the models fit to the un-processed data.
+
+```{r uncertainty}
+#Use the `resamples` function in caret to extract uncertainty from the 3 models fit to the data  that doesn't have predictor pre-processing, then plot it
+
+resamples_nonprocessed <- resamples(list(knn_fit, lm_fit, earth_fit_1))
+
+
+
+resamples_nonprocessed %>% ggplot()
+```
+
+It seems that the model uncertainty for the outcome is fairly narrow for all models. We can (and in a real setting should) do further explorations to decide which model to choose. This is based part on what the model results are, and part on what we want. If we want a very simple, interpretable model, we'd likely use the linear model. If we want a model that has better performance, we might use MARS or - with the un-processed dataset - KNN.
+
+
+## Residual plots
+
+For this exercise, let's just pick one model. We'll go with the best performing one, namely KNN (fit to non-pre-processed data). Let's take a look at the residual plot.
+
+```{r}
+data_train$knn_predict <- predict(knn_fit)
+
+
+
+ggplot(data_train, aes(x = data_train$knn_predict, y = data_train$lat)) + geom_point() +xlab("Predicted") + ylab("Actual")
+#Write code to get model predictions for the outcome on the training data, and plot it as function of actual outcome values.
+#also compute residuals (the difference between prediction and actual outcome) and plot that
+
+data_train$knn_residuals <- residuals(knn_fit)
+
+
+
+ggplot(data_train, aes(x = data_train$knn_predict, y = data_train$knn_residuals)) + geom_point() + xlab("Predicted") + ylab("Residuals")
+
+```
+
+Both plots look ok, predicted vs. outcome is along the 45-degree line, and the residual plot shows no major pattern. Of course, for a real analysis, we would again want to dig a bit deeper. But we'll leave it at this for now. 
+
+
+## Final model evaluation
+
+Let's do a final check, evaluate the performance of our final model on the test set.
+
+```{r}
+#Write code that computes model predictions and for test data, then compute SSR and RMSE.
+
+data_test$knn_predict <- predict(knn_fit, data_test)
+
+ggplot(data_test, aes(x = data_test$knn_predict, y = data_test$lat)) + geom_point() +xlab("Predicted") + ylab("Actual")
+
+
+test_residuals <- residuals(knn_fit, data_test)
+
+
+RMSE(data_test$lat, data_test$knn_predict) 
+#RMSE = 11.1628
+
+
+sum(test_residuals^2) 
+
+
+
+
+
+```
