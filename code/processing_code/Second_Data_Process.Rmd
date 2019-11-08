@@ -53,6 +53,10 @@ RFD<- ggplot(CDVGA_months, aes(Month)) + geom_bar()
 RFD
 ```
 ```{r}
+ggplot(CDVGA_months, aes(x=Date)) +geom_histogram(bins = 360)
+```
+```{r}
+#as exact dates is now available look for any trends in case number
 RFMonth <- as.data.frame(with(CDVGA_months, table(Species.x, Month)))
 
 RFM<- ggplot(RFMonth, aes(Month, Freq, fill = Species.x, color = Species.x, group = Species.x))  + 
@@ -62,6 +66,7 @@ RFM<- ggplot(RFMonth, aes(Month, Freq, fill = Species.x, color = Species.x, grou
 RFM
 ```
 ```{r}
+#look at fox vs raccon data on a monthly scale over the whole time frame
 RFPoint <- as.data.frame(with(CDVGA_months, table(Species.x, CollectionYear, Month)))
 
 RFP<- ggplot(RFPoint, aes(Month, Freq, fill = Species.x, color = Species.x, group = Species.x))  + 
@@ -72,6 +77,7 @@ RFP
 ```
 
 ```{r}
+#attempt to combine spatial data with new date data
 pest3 <- left_join(CDVGA_months, GA_centroid, by=c("County.x" = "County"))
 glimpse(pest3)
 pest4 <- pest3 %>% mutate(tosplit= as.character(geometry))
