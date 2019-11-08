@@ -55,7 +55,7 @@ glimpse(CDV_Clean)
 ```
 ```{r}
 #to be able to join our data sets with dplyr we need to capitalise the state names from the mapping data and change the ttle of the states vaiable to region so we can properly join our datasets
-SEC <- rename(SE, State = region)
+SEC <- dplyr :: rename(SE, State = region)
 capFirst <- function(s) {paste(toupper(substring(s, 1, 1)), substring(s, 2), sep = "")}
 
 SEC$State <- capFirst(SEC$State)
@@ -138,9 +138,10 @@ library(RColorBrewer)
 counties <- map_data("county")
 GA_county <- subset(counties, region %in% "georgia") %>% as.data.frame()
 #lets just focus on raccoon and gray fox from here
-GAC <- rename(GA_county, County = subregion)
+GAC <- dplyr :: rename(GA_county, County = subregion)
 GAC$County <- capFirst(GAC$County)
 CDVGA <- subset(CDV_Clean, State %in% "Georgia" & Species %in% c("Raccoon", "Gray Fox"))
+
 CoFr <- with(CDVGA, table(County))
 COFR <- as.data.frame(CoFr)
 
@@ -166,12 +167,13 @@ table(sort(unique(COFR$County)))
 ```{r}
 #we'll recode chatoogna and dekalb but there isn't much to do with the 3 counties in one so it won't be plotted as it won't join our other data
 CDVGA2 <- CDVGA %>% mutate(County = recode(County, "Chattoogna" = "Chattooga", "Dekalb" = "DeKalb"))
+saveRDS(CDVGA2, file = "../../data/processed_data/CDVGA2.rds")
 #repeat process for county map data to see if therte are mismatches which will cause us to lose dtat when we join
 table(sort(unique(GAC$County)))
 ```
 ```{r}
 #recode dekalb county and jeff davis +ben hill
-GAC <-  GAC %>% mutate(County = recode(County, "De kalb" = "DeKalb", "Jeff davis" = "Jeff Davis", "Ben hill = Ben Hill"))
+GAC <-  GAC %>% mutate(County = recode(County, "De kalb" = "DeKalb", "Jeff davis" = "Jeff Davis", "Ben hill" = "Ben Hill"))
 ```
 ```{r}
 #pull the frequency data for positive cases per county and join to county mapping dtata
@@ -537,4 +539,17 @@ g3 <- g2 +
  
 g4 <- ggplotly(g3) %>% animation_opts( transition= 1,  redraw = FALSE) 
 g4
+```
+```{r}
+w1<- k2+ stat_density2d(data=centrLL, aes(x=long, y=lat, fill=..level.., alpha=..level..), 
+                 size=2, bins=5, geom='polygon')+
+  geom_point(data = centrLL, aes(x = long, y = lat, color= Species), alpha = 0.5, position = position_jitter(width=0.05,height=0.05 ) ) 
+ w1
+```
+```{r}
+#returning to the north-south issue, as georgia has distinct geographical areas, mountain north, piedmont plateau and then coastal plain in the south, lets divide are data using twiggs county as the state centre
+GA_centroid[grep("Twiggs", GA_centroid$County), ]
+
+NorthGA <- centrLL %>% filter(lat>=32.67328)
+SouthGA <- centrLL %>% filter(lat<32.67328)
 ```

@@ -27,7 +27,7 @@ glimpse(Raw_CDV_Mainsheet)
 DFRawCDV <- as.data.frame(Raw_CDV_Mainsheet)
 DFRawCDV
 
-DFRawCDVcol <- DFRawCDV[-c(1,9, 10, 11, 12, 13, 14)]
+DFRawCDVcol <- DFRawCDV[-c(9, 10, 11, 12, 13, 14)]
 DFRawCDVcol
 
 glimpse(DFRawCDVcol)

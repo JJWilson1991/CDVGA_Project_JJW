@@ -73,8 +73,7 @@ _In most research papers, results and methods are separate. You can combine them
 
 
 ## Data aquisition
-_As applicable, explain where and how you got the data. If you directly import the data from an online source, you can combine this section with the next._
-
+Data of animals brought to SCWDS between 1975 and 2013, which were diagnosed as having CDV at post mortem. Data includes date, species, age, gender, state and county. 
 ## Data import and cleaning
 Detailed description of data analysis and cleaning in supplemtary folder
 
