@@ -14,6 +14,7 @@ bibliography: ../references.bib
 csl: ../apa.csl
  always_allow_html: true
  ---
+ 
 ```{r}
 library(ggplot2)
 library(plotly)
@@ -34,16 +35,16 @@ This paper [@Leek2015a] discusses types of analyses.
 
 Figure \@ref(fig:resultfigure) shows a result figure from the analysis.
 
-```{r resultfigure,  fig.cap='Analysis figure.', echo=FALSE}
+#`#``{r resultfigure,  fig.cap='Analysis figure.', echo=FALSE}
 knitr::include_graphics("../../results/resultfigure.png")
-```
+#```
 
 Table \@ref(tab:resulttable) shows a result table from the analysis.
 
-```{r resulttable,  echo=FALSE}
+#```{r resulttable,  echo=FALSE}
 resulttable=readRDS("../../results/resulttable.rds")
 knitr::kable(resulttable, caption = 'Result Table.')
-```
+#```
 
 
 Note that this cited reference will show up at the end of the document, the reference formatting is determined by the CSL file specified in the YAML header. Many more style files for almost any journal [are available](https://www.zotero.org/styles). You also specify the location of your bibtex reference file in the YAML. You can call your reference file anything you like, I just used the generic word `references.bib` but giving it a more descriptive name is probably better.
@@ -78,8 +79,7 @@ _In most research papers, results and methods are separate. You can combine them
 
 
 ## Data aquisition
-Data of animals brought to SCWDS between 1975 and 2013, which were diagnosed as having CDV at post mortem. Data includes date, species, age, gender, state and county. 
-
+Data of animals brought to SCWDS between 1975 and 2013, which were diagnosed as having CDV at post mortem. Cases were identified as CDV by fluorescent antibody testing and/or histologic diagnosis of characteristic lesions.  Species, date of submission, county of origin, and sex were noted. 
 ##Overview of Data
 
 ```{r}
@@ -150,6 +150,7 @@ _Summarize what you did, what you found and what it means._
 
 ## Strengths and Limitations
 The major flaw in this data set is that it only contains postive cases. In an ideal world, all cases submitted in this time would be available so that prevalence and icidence could be evaluated. This is also not systematically sampled and is dependent on DNR officers submitted cases.
+
 _Discuss what you perceive as strengths and limitations of your analysis._
 
 ## Conclusions
