@@ -219,6 +219,31 @@ ggplot(LAT, aes(lat)) + geom_histogram()  +
 #This is interesting, there are two disticnt latitudinal peaks for raccoons but only 1 for gray foxes
 ```
 
+```{r}
+#bivariate mosaic plot of Sex and species
+SexSpecies_Mosaic <- ggplot(RGFSex) +geom_mosaic(aes(x=product(Sex, Species), fill=Sex))
 
+SexSpecies_Mosaic
 
+ggsave(filename = "../../results/SexSpecies_Mosaic.png",plot = SexSpecies_Mosaic)
+```
 
+```{r}
+#Bivariate of Age and Species
+ggplot(RGFSex) +geom_mosaic(aes(x=product(Age, Species), fill=Age), na.rm = TRUE)
+#The age measurement is too subjective to read much into really, also depends on reproductive strategy and life history of species... are there more offspring? are they hidden?
+
+```
+```{r}
+
+RGFSex %>% crosstab(Species, Sex, Age, percentages  = TRUE)
+
+```
+```{r}
+RGFSex %>% crosstab(Species, Sex, chi_square =  TRUE)
+
+```
+```{r}
+RGFSex %>% crosstab(Species, Age, chi_square =  TRUE)
+
+```
