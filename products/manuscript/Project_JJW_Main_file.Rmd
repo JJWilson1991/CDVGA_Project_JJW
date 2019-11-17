@@ -87,7 +87,6 @@ Data of animals brought to SCWDS between 1975 and 2013, which were diagnosed as 
 CDV_Clean <-   readRDS("../../data/processed_data/CDVprocesseddata.rds")
 
 
-
 str(CDV_Clean)
 
 ```
@@ -108,6 +107,7 @@ _Use a combination of text/tables/figures to explore and describe your data. You
 _Create plots or tables and compute simple statistics (e.g. t-tests, simple regression model with 1 predictor, etc.) to look for associations between your outcome(s) and each individual predictor variable_
 
 ##Spatial Mapping of Georgia Data
+
 
 ```{r}
 library(ggmap)
@@ -141,6 +141,7 @@ g4
 ## Full analysis
 
 The aim is to produce a time series analysis of the Raccoon and Gray fox data as it is suggested that the virus spills over from raccoons to other species. If this is the case a time delay would be suspected. In Progress...
+Ripley's K analsis of Spatial data...
 _Use one or several suitable statistical/machine learning methods to analyze your data and to produce meaningful figures, tables, etc. This might again be code that is best placed in one or several separate R scripts that need to be well documented. You can then load the results produced by this code_
 
 # Discussion

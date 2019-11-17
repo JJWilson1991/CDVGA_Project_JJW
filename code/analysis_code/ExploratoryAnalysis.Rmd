@@ -86,7 +86,7 @@ RacFox_year<- ggplot(as.data.frame(SPperYr), aes(CollectionYear, Freq, fill = Sp
 RacFox_year <- ggplotly(RacFox_year)
 RacFox_year 
 
-ggsave(filename = "../../results/RacFox_year.png",plot = RacFox_year)
+#ggsave(filename = "../../results/RacFox_year.png",plot = RacFox_year)
 #looking overtime there appears to be some patterns in the number of postive cases, with definite peaks possibly relating to epizootics of CDV
 #It also looks like there may be a delay in the Gray Fox peak following the peak in Raccoons, this is worth looking into
 #Would be good to run a time series analysis on this data to see if peaks in raccoon cases are predicitive of grayfox peaks

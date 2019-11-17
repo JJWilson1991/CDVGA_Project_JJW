@@ -1,0 +1,17 @@
+---
+title: "Spatial Analysis"
+output: html_notebook
+---
+```{r}
+
+library(spatstat)
+centrLL
+```
+
+```{r}
+centrnum<- centrLL %>% mutate(lat = as.numeric(as.double(lat))) %>% mutate(long = as.numeric(as.double(long)))
+
+ mypattern <- ppp(centrnum[,10], centrLL[,11], c(0,409), c(0,409)) 
+#plot(Kest(k4))
+
+```

@@ -48,7 +48,7 @@ CDVGA_months <- left_join(CDVGA2, f3, by = "CaseNumber" )
 ```
 ```{r}
 CDVGA_months <- CDVGA_months %>% mutate(Month = as.integer(as.character(Month)))
-RFD<- ggplot(CDVGA_months, aes(Month)) + geom_bar()
+RFD<- ggplot(CDVGA_months, aes(Month, fill=Species.x)) + geom_bar()
 
 RFD
 ```
@@ -75,7 +75,14 @@ RFP<- ggplot(RFPoint, aes(Month, Freq, fill = Species.x, color = Species.x, grou
 
 RFP
 ```
+```{r}
+RFY<- ggplot(RFPoint, aes(Month, Freq, fill = CollectionYear, color = CollectionYear, group = CollectionYear))  + 
+  geom_point() +geom_line() + 
+  theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 6)) 
 
+RFY
+
+```
 ```{r}
 #attempt to combine spatial data with new date data
 pest3 <- left_join(CDVGA_months, GA_centroid, by=c("County.x" = "County"))
