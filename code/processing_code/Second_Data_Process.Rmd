@@ -15,12 +15,12 @@ library(readr)
 library(dplyr)
 library(forcats)
 library(lubridate)
+library(here)
 ```
 ```{r}
-library(here)
+
 library(visdat)
-library(readr)
-CDVMONTHS <- read_csv(here( "Canine_Distemper_Virus_Reports.csv"))
+CDVMONTHS <- read_csv(here( "data", "raw_data", "Canine_Distemper_Virus_Reports.csv"))
 
 ```
 ```{r}
@@ -39,65 +39,23 @@ CDVMONTHScol <- CDVMONTHS[-c(2, 5, 11, 12, 13)]
   f1 <- CDVMONTHScol %>% separate(`Date Rec.`, c("Month", "Day", "Year2"), "-")
 f2 <- f1 %>% mutate(`Case Number` = as.numeric(as.character(`Case Number`)))
 f3 <- dplyr :: rename(f2, CaseNumber = `Case Number`)
+f3
 ```
 
+
 ```{r}
-CDVGA2 <-    readRDS("../../data/processed_data/CDVGA2.rds")
+CDVGA2 <-    readRDS(here("data","processed_data","CDVGA2.rds"))
 CDVGA2 <- CDVGA2%>% mutate(CaseNumber = as.numeric(as.character(CaseNumber)))
 CDVGA_months <- left_join(CDVGA2, f3, by = "CaseNumber" )
-```
-```{r}
-CDVGA_months <- CDVGA_months %>% mutate(Month = as.integer(as.character(Month)))
-RFD<- ggplot(CDVGA_months, aes(Month, fill=Species.x)) + geom_bar()
+CDVGA_months<- CDVGA_months [-c(8:14)]
 
-RFD
-```
-```{r}
-ggplot(CDVGA_months, aes(x=Date)) +geom_histogram(bins = 360)
-```
-```{r}
-#as exact dates is now available look for any trends in case number
-RFMonth <- as.data.frame(with(CDVGA_months, table(Species.x, Month)))
-
-RFM<- ggplot(RFMonth, aes(Month, Freq, fill = Species.x, color = Species.x, group = Species.x))  + 
-  geom_point() +geom_line() + 
-  theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 6)) 
-
-RFM
-```
-```{r}
-#look at fox vs raccon data on a monthly scale over the whole time frame
-RFPoint <- as.data.frame(with(CDVGA_months, table(Species.x, CollectionYear, Month)))
-
-RFP<- ggplot(RFPoint, aes(Month, Freq, fill = Species.x, color = Species.x, group = Species.x))  + 
-  geom_point() +geom_line() + 
-  theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 6)) +facet_wrap(~CollectionYear)
-
-RFP
-```
-```{r}
-RFY<- ggplot(RFPoint, aes(Month, Freq, fill = CollectionYear, color = CollectionYear, group = CollectionYear))  + 
-  geom_point() +geom_line() + 
-  theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 6)) 
-
-RFY
+CDVGA_months %>% saveRDS(here("data", "processed_data", "CDVGA_months.rds"))
 
 ```
-```{r}
-#attempt to combine spatial data with new date data
-pest3 <- left_join(CDVGA_months, GA_centroid, by=c("County.x" = "County"))
-glimpse(pest3)
-pest4 <- pest3 %>% mutate(tosplit= as.character(geometry))
 
-pest4$tosplit <- sub(pest4$tosplit, pattern = "c", replacement = "")
-pest4$tosplit <- sub(pest4$tosplit, pattern = "[(]", replacement = "")
-pest4$tosplit <- sub(pest4$tosplit, pattern = "[)]", replacement = "")
-pest4$tosplit<- sub(pest4$tosplit, pattern = "[,]", replacement = "")
-pest5 <- pest4 %>% separate(tosplit, c("long", "lat"), " ")
-centroMonth<- pest5 %>% mutate(lat = as.numeric(as.character(lat))) %>% mutate(long = as.numeric(as.character(long)))
 
-```
-```{r}
-t1<- left_join(CDVGA_months,RACnum)
 
-```
+
+
+
+

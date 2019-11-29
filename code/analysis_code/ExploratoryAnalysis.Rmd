@@ -37,6 +37,7 @@ library(maptools)
 
 library(sf)
 
+library(ggmosaic)
 ```
 
 
@@ -47,7 +48,7 @@ library(sf)
 
 ```{r}
 
-CDV_Clean <-   readRDS("../../data/processed_data/CDVprocesseddata.rds")
+CDV_Clean <-   readRDS(here("data", "processed_data", "CDVprocesseddata.rds"))
 
 
 
@@ -55,36 +56,45 @@ glimpse(CDV_Clean)
 
 ```
 ```{r}
-#The data we are most interested in is the Species data over time and the area data over time so we'll begin by exploring these
 
-Species_freq <- ggplot(CDV_Clean, aes(Species, fill=Species, color=Species)) +geom_bar()  +
-theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 8), legend.position = "none")
+
+
+#The data we are most interested in is the Species data over time and the area data over time so we'll begin by exploring these
+CDV_Clean_spec<- CDV_Clean%>%dplyr :: filter(Species != "Raccoon, Opossum")
+Species_freq <- ggplot(CDV_Clean_spec, aes(Species, fill=Species, color=Species)) +geom_bar()  +
+theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 8), legend.position = "none") +labs(y="Number of Cases")
 
 Species_freq
+ggsave(here("results", "Figures", "Species_freq.png"), plot = Species_freq)
 
-ggsave(filename = "../../results/Species_freq.png",plot = Species_freq)
+Speciestable<- as.data.frame(with(CDV_Clean_spec, table(Species))) 
+colnames(Speciestable)[2] <- "n"
+
+Speciestable %>% saveRDS(here("results", "Tables","Speciestable.rds"))
 #we can see that Raccoon and Gray fox are hugely over represented compared to the others so we should focus our analysis on these two species
 ```
 ```{r}
 library(RColorBrewer)
 #are there any obvious differneces in species by state?
-Species_by_state <- ggplot(CDV_Clean, aes(Species, fill=Species, color=Species)) +
+Species_by_state <- ggplot(CDV_Clean_spec, aes(Species, fill=Species, color=Species)) +
 geom_bar()   + 
 theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 8), legend.position = "none") +facet_wrap( ~ State)
 
-Species_by_state
-
-ggsave(filename = "../../results/Species_by_state.png",plot = Species_by_state)
+Species_by_state 
+ggsave(here("results", "Figures","Species_by_state.png"), plot = Species_by_state )
 ```
 ```{r}
 raccoongrayfox <- subset(CDV_Clean, Species %in% c("Raccoon", "Gray Fox"))
 SPperYr <- with(raccoongrayfox, table(Species, CollectionYear))
 RacFox_year<- ggplot(as.data.frame(SPperYr), aes(CollectionYear, Freq, fill = Species, color = Species, group = Species))  + 
   geom_point() +geom_line() + 
-  theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 6))
+  theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 6)) +labs(x="Collection Year, 1975-2013", y= "No. of Cases")
 
-RacFox_year <- ggplotly(RacFox_year)
-RacFox_year 
+RacFox_year
+ggsave(here("results", "Figures", "RacFox_year.png"), plot = RacFox_year)
+
+RacFox_yearp <- ggplotly(RacFox_year, tooltip = c("Species", "Freq", "CollectionYear"))
+RacFox_yearp 
 
 #ggsave(filename = "../../results/RacFox_year.png",plot = RacFox_year)
 #looking overtime there appears to be some patterns in the number of postive cases, with definite peaks possibly relating to epizootics of CDV
@@ -100,11 +110,10 @@ tr <- ggplotly(RacFoxTest)
 ```
 
 ```{r}
-State_freq <- ggplot(CDV_Clean, aes(State, fill=State, color=State)) +geom_bar() + theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 8), legend.position = "none")
+State_freq <- ggplot(CDV_Clean, aes(State, fill=State, color=State)) +geom_bar() + theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 8), legend.position = "none") +labs(y="Number of Cases")
 
 State_freq
-
-ggsave(filename = "../../results/State_freq.png",plot = State_freq)
+ggsave(here("results", "Figures", "State_freq.png"), plot = State_freq)
 #GA is the majority of cases which is understandable as SCWDS is in Athens, but there are enough cases in other south eastern states to possibly gain some insight
 #but i think the bulk of the mapping should focus on the county data within GA
 
@@ -114,8 +123,12 @@ State_wrap_species <- ggplot(CDV_Clean, aes(State, fill=State, color=State)) +ge
   facet_wrap(~Species)
 
 State_wrap_species
+ggsave(here("results", "Figures", "State_wrap_species.png"), plot=State_wrap_species)
+```
+```{r}
+#i forgot to plot age by species wrap.. its pretty uninteresting
 
-ggsave(filename = "../../results/State_wrap_species.png",plot = State_wrap_species)
+ggplot(CDV_Clean, aes(Sex)) + geom_bar() +facet_wrap(~Species)
 ```
 ```{r}
 StperYr <- with(CDV_Clean, table(State, CollectionYear))
@@ -125,8 +138,7 @@ point_casesyear_state <- ggplot(as.data.frame(StperYr), aes(CollectionYear, Freq
   theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 6))
 
 point_casesyear_state
-
-ggsave(filename = "../../results/point_casesyear_state.png",plot = point_casesyear_state)
+ggsave(here("results", "Figures",  "point_casesyear_state.png"), plot=point_casesyear_state)
 #the cases per state over time seem to follow a similar pattern but it may be worth plotting species cases per state and mapping location, maybe certain species are more affected in different states at different times?
 
 
@@ -140,9 +152,9 @@ point_casesyear_state_wrap_species <-    ggplot(as.data.frame(SPYRST), aes(Colle
   theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 6)) + 
   facet_wrap( ~ Species)
 
-point_casesyear_state_wrap_species
+point_casesyear_state_wrap_species 
 
-ggsave(filename = "../../results/point_casesyear_state_wrap_species.png",plot = point_casesyear_state_wrap_species)
+ggsave(here("results", "Figures", "point_casesyear_state_wrap_species.png"), plot=point_casesyear_state_wrap_species)
 
 #the number of cases in species other than gray fox and raccon is so low its probably better to just focus on those 2 species gping forward
 ```
@@ -153,23 +165,31 @@ SP_Fr_Yr_WrapState <- ggplot(as.data.frame(SPYRST), aes(CollectionYear, Freq, fi
   theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 6)) + 
   facet_wrap( ~ State)
 
-SP_Fr_Yr_WrapState
 
-ggsave(filename = "../../results/SP_Fr_Yr_WrapState.png",plot = SP_Fr_Yr_WrapState)
+ggsave(here("results", "Figures",  "SP_Fr_Yr_WrapState.png"), plot = SP_Fr_Yr_WrapState)
 
 
 #there does seem to be a little bit of variation here between state over time, maybe theyre epidemics spreading from a nidus? worth investigating in maps
 ```
-
 ```{r}
+#make plot of all cases over time for uni analysis
+All_Cases_Year<- ggplot(CDV_Clean, aes(CollectionYear)) + geom_bar() +labs(x= "Collection Year, 1975-2013", y= "No. of Cases")
+
+ggsave(here("results", "Figures", "All_Cases_Year.png"), plot = All_Cases_Year)
+```
+```{r}
+#From here lets just focus on Georgia, Foxes, Raccoons, 
+
+CDV_Clean2 <-  subset(CDV_Clean, Species %in% c("Raccoon", "Gray Fox") & State=="Georgia")
 #lets take a look if there is any obvious variation in ages affected between raccoon and  gray fox
-RGFAge <- subset(CDV_Clean, Species %in% c("Raccoon", "Gray Fox") & Age %in% c("Adult", "Subadult", "Juvenile"))
-RacFox_Age <- ggplot(RGFAge, aes(Species, color=Species)) +geom_bar(aes(fill = Age))
+RGFAge <- subset(CDV_Clean2, Age %in% c("Adult", "Subadult", "Juvenile"))
+RacFox_Age <- ggplot(RGFAge, aes(Species)) +geom_bar(aes(fill = Age)) +labs(y="No. of Cases")
 
 RacFox_Age
-
-ggsave(filename = "../../results/RacFox_Age.png",plot = RacFox_Age)
+ggsave(here("results", "Figures", "RacFox_Age.png"),plot = RacFox_Age)
 #there may be something here, worth looking at statistically going forward
+
+
 ```
 ```{r}
 tib <-  as.data.frame(with(RGFAge, table(Age, Species)))
@@ -182,20 +202,27 @@ tb
 
 ```
 
-```{r}
-#i forgot to plot age by species wrap.. its pretty uninteresting
 
-ggplot(CDV_Clean, aes(Sex)) + geom_bar() +facet_wrap(~Species)
-```
 ```{r}
-RGFSex <- subset(CDV_Clean, Species %in% c("Raccoon", "Gray Fox") & Sex %in% c("Male", "Female"))
+RGFSex <- subset(CDV_Clean2, Sex %in% c("Male", "Female") )
+
+Sextable<- as.data.frame(with(RGFSex, table(Species, Sex))) %>% spread(key = Sex, value = Freq)
+
+Sextable %>% saveRDS(here("results","Tables","Sextable.rds"))
+
+
+Sextableperc <- Sextable%>% dplyr::mutate(Total = (Male + Female)) %>% mutate_at(vars(Male, Female), funs(./Total))
+ colnames(Sextableperc)[2] <- "Percentage Female"
+ colnames(Sextableperc)[3] <- "Percentage Male"
+
+Sextableperc %>% saveRDS(here("results","Tables","Sexpercentage.rds"))
 
 RacFox_Sex <- ggplot(RGFSex, aes(Sex)) + 
   geom_bar() +
   facet_wrap(~Species)
 RacFox_Sex
 
-ggsave(filename = "../../results/RacFox_Sex.png",plot = RacFox_Sex)
+ggsave(here("results", "Figures", "RacFox_Sex2.png"),plot = RacFox_Sex)
 # There may be a significant difference in the M/F distribution for gray foxes, worth analsing
 ```
 ```{r}
@@ -207,10 +234,183 @@ Gender_year <- ggplot(as.data.frame(RGFSEXYEAR), aes(CollectionYear, Freq, fill 
   theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 6)) + facet_wrap(~Species)
 
 Gender_year
+
+ggsave(here("results", "Figures", "Gender_Species_year.png"), plot = Gender_year)
+```
+
+
+
+```{r}
+#bivariate mosaic plot of Sex and species
+SexSpecies_Mosaic <- ggplot(RGFSex) +geom_mosaic(aes(x=product(Sex, Species), fill=Sex))
+
+SexSpecies_Mosaic
+
+ggsave(here("results", "Figures","SexSpecies_Mosaic.png"),plot = SexSpecies_Mosaic)
+```
+
+```{r}
+#Bivariate of Age and Species
+agemos <- ggplot(RGFSex) +geom_mosaic(aes(x=product(Age, Species), fill=Age), na.rm = TRUE) + labs(x= "Species", y="Age")
+#The age measurement is too subjective to read much into really, also depends on reproductive strategy and life history of species... are there more offspring? are they hidden?
+
+ggsave(here("results", "Figures", "RGFAge_mosaic.png"), plot = agemos)
+```
+```{r}
+library(tidycomm)
+na.omit(RGFSex) %>% crosstab(Species, Sex, Age, percentages  = TRUE)
+
+```
+```{r}
+na.omit(RGFSex) %>% crosstab(Species, Sex, chi_square =  TRUE)
+
+```
+```{r}
+na.omit(RGFSex) %>% crosstab(Species, Age, chi_square =  TRUE)
+
+```
+
+```{r}
+#continued exploration, using month data
+
+
+library(ggmosaic)
+
+CDVGA_months <- readRDS(here("data", "processed_data", "CDVGA_months.rds"))
+
+CDVGA_months <- CDVGA_months %>% mutate(Month = as.integer(as.character(Month)))
+RFD<- ggplot(CDVGA_months, aes(Month, fill=Species.x)) + geom_bar()
+
+RFD
+
+Speciesmonth_Mosaic <- ggplot(CDVGA_months) +geom_mosaic(aes(x=product(Species.x, Month), fill=Species.x))
+
+Speciesmonth_Mosaic
+```
+
+
+```{r}
+RFS<- ggplot(CDVGA_months, aes(Month, fill=Sex.x)) + geom_bar()
+
+RFS
+
+```
+```{r}
+library(ggmosaic)
+sexMR<- CDVGA_months %>% subset( Sex.x %in% c("Male", "Female")) %>% subset( Species.x %in% c("Raccoon"))
+Sexmonth_MosaicR <- ggplot(sexMR) +geom_mosaic(aes(x=product(Sex.x, Month), fill=Sex.x)) 
+
+Sexmonth_MosaicR
+
+sexMGF<- CDVGA_months %>% subset( Sex.x %in% c("Male", "Female")) %>% subset (Species.x %in% c("Gray Fox"))
+Sexmonth_MosaicGF <- ggplot(sexMGF) +geom_mosaic(aes(x=product(Sex.x, Month), fill=Sex.x)) 
+
+Sexmonth_MosaicGF
+```
+```{r}
+ffrt <- CDVGA_months[c(4,6,8)] %>% dplyr :: filter(Sex.x %in% c("Male", "Female")) %>% 
+  group_by(Species.x, Sex.x, Month) %>%
+  dplyr::summarise(n = n()) %>%
+  dplyr::ungroup() %>% spread(Sex.x,n) %>%
+  mutate(Male = ifelse(is.na(Male), 0, Male)) %>%  
+  mutate(Female = ifelse(is.na(Female), 0, Female)) %>% 
+  dplyr::mutate(Proportion_Female= (Female/(Female+Male)))
+
+ggplot(ffrt, aes(Month, Proportion_Female, fill = Species.x, color = Species.x, group = Species.x))  + 
+  geom_point() +geom_line() + geom_point() 
+
+
+```
+```{r}
+ggplot(CDVGA_months, aes(x=Date)) +geom_histogram(bins = 360)
+```
+```{r}
+#as exact dates is now available look for any trends in case number
+RFMonth <- as.data.frame(with(CDVGA_months, table(Species.x, Month)))
+
+RFM<- ggplot(RFMonth, aes(Month, Freq, fill = Species.x, color = Species.x, group = Species.x))  + 
+  geom_point() +geom_line() + 
+  theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 6)) 
+
+RFM
+#There does appear to be monthly variations, is this related to breeding season?
+```
+```{r}
+#look at fox vs raccon data on a monthly scale over the whole time frame
+RFPoint <- as.data.frame(with(CDVGA_months, table(Species.x, CollectionYear, Month)))
+
+RFP<- ggplot(RFPoint, aes(Month, Freq, fill = Species.x, color = Species.x, group = Species.x))  + 
+  geom_point() +geom_line() + 
+  theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 6)) +facet_wrap(~CollectionYear)
+
+RFP
+#1988 seems to have a very large number of cases compared to other years, this could be skewing the mointhly trend, lets quickly plot the monthly cases with 1988 removed to see if the trend remains
+```
+```{r}
+RF_no8 <- CDVGA_months %>% dplyr:: filter(CollectionYear != 1988)
+RF_no88 <- as.data.frame(with(RF_no8, table(Species.x, Month)))
+
+RF88<- ggplot(RF_no88, aes(Month, Freq, fill = Species.x, color = Species.x, group = Species.x))  + 
+  geom_point() +geom_line() + 
+  theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 6)) 
+
+RF88
+#the trend appears largley unchanged which is nice
+```
+
+
+```{r}
+RFY<- ggplot(RFPoint, aes(Month, Freq, fill = CollectionYear, color = CollectionYear, group = CollectionYear))  + 
+  geom_point() +geom_line() + 
+  theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 6)) +
+  geom_smooth()
+
+RFY
+
+```
+```{r}
+GA_centroid <-   readRDS(here("data", "processed_data", "GA_centroid.rds"))
+
+#attempt to combine spatial data with new date data
+pest3 <- left_join(CDVGA_months, GA_centroid, by=c("County.x" = "County"))
+glimpse(pest3)
+pest4 <- pest3 %>% mutate(tosplit= as.character(geometry))
+
+pest4$tosplit <- sub(pest4$tosplit, pattern = "c", replacement = "")
+pest4$tosplit <- sub(pest4$tosplit, pattern = "[(]", replacement = "")
+pest4$tosplit <- sub(pest4$tosplit, pattern = "[)]", replacement = "")
+pest4$tosplit<- sub(pest4$tosplit, pattern = "[,]", replacement = "")
+pest5 <- pest4 %>% separate(tosplit, c("long", "lat"), " ")
+centroMonth<- pest5 %>% mutate(lat = as.numeric(as.character(lat))) %>% mutate(long = as.numeric(as.character(long)))
+
+```
+```{r}
+RACnum <- readRDS(here("data", "processed_data", "RaCFoxMappingData.rds"))
+t1<- left_join(CDVGA_months,RACnum)
+
+```
+```{r}
+#CDVGA_months %>% crosstab(Species, Month, chi_square =  TRUE)
+tyu<- CDVGA_months %>% dplyr::select(Species.x,  Month) %>% group_by(Species.x, Month) %>%
+  dplyr::summarise(n = n()) %>%
+  dplyr::ungroup() %>% spread(key = Species.x, value = n) 
+
+```
+```{r}
+tyu1<- tyu%>% dplyr :: filter(Month %in% c(1,2,3,4,5,6,7,8,9,10,11,12))
+chisq <- chisq.test(tyu1 )
+chisq
+```
+```{r}
+library(tidycomm)
+CDVGA_months %>% crosstab(Species.x, Month, chi_square =  TRUE)
+
 ```
 
 ```{r}
 #If we quickly plot a histogram using latitude it suggest there are some geographic differences in distribution 
+CDVGA2 <- readRDS(here("data", "processed_data", "CDVGA2.rds"))
+GAC<- readRDS(here("data", "processed_data", "Georgia_County_Map_Data.rds"))   
 LAT <- left_join(GAC, CDVGA2, by= "County") %>% subset( Species %in% c("Raccoon", "Gray Fox"))
 
 ggplot(LAT, aes(lat)) + geom_histogram()  +
@@ -220,30 +420,94 @@ ggplot(LAT, aes(lat)) + geom_histogram()  +
 ```
 
 ```{r}
-#bivariate mosaic plot of Sex and species
-SexSpecies_Mosaic <- ggplot(RGFSex) +geom_mosaic(aes(x=product(Sex, Species), fill=Sex))
+glimpse(centroMonth)
 
-SexSpecies_Mosaic
+cennew<- centroMonth %>% dplyr:: mutate(NS= lat)  %>% dplyr::mutate(NS= 
 
-ggsave(filename = "../../results/SexSpecies_Mosaic.png",plot = SexSpecies_Mosaic)
-```
+                      ifelse(NS < "32.67328", "South",
 
-```{r}
-#Bivariate of Age and Species
-ggplot(RGFSex) +geom_mosaic(aes(x=product(Age, Species), fill=Age), na.rm = TRUE)
-#The age measurement is too subjective to read much into really, also depends on reproductive strategy and life history of species... are there more offspring? are they hidden?
+                      ifelse(NS >= "32.67328", "North", "no")))
 
 ```
 ```{r}
+RFNS <- as.data.frame(with(cennew, table(NS, Month)))
+NSP<- ggplot(RFNS, aes(Month, Freq, fill = NS, color = NS, group = NS))  + 
+  geom_point() +geom_line() + 
+  theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 6)) 
+NSP
 
-RGFSex %>% crosstab(Species, Sex, Age, percentages  = TRUE)
 
 ```
 ```{r}
-RGFSex %>% crosstab(Species, Sex, chi_square =  TRUE)
+RFNSSP <- as.data.frame(with(cennew, table(NS, Month, Species.x)))
+NSPSP<- ggplot(RFNSSP, aes(Month, Freq, fill = NS, color = NS, group = NS))  + 
+  geom_point() +geom_line() + 
+  theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 6)) + facet_wrap(~Species.x) 
+NSPSP
+
+#there doesn't appear to be any difference in peak cases in this rough look at north vs south... 
 
 ```
 ```{r}
-RGFSex %>% crosstab(Species, Age, chi_square =  TRUE)
+library(corrplot)
+RFNSfreq <- as.data.frame(with(cennew, table(NS, Species.x))) %>% spread(key = NS, value = Freq) %>% dplyr::mutate(Total = (North + South)) %>% mutate_at(vars(North, South), funs(./Total))
+
+
+RFNSfreq2 <- as.data.frame(with(cennew, table(NS, Species.x))) %>% spread(key = Species.x, value = Freq) 
+colnames(RFNSfreq2)[2] <- "Gray_Fox"
+RFNSfreq3<- RFNSfreq2 %>% dplyr::mutate(Total = (Gray_Fox + Raccoon)) %>% mutate_at(vars(Gray_Fox, Raccoon), funs(./Total))
+
+tt<- with(cennew, table(NS, Species.x))
+
+chisp <- chisq.test(tt)
+chisp$observed
+
+round(chisp$expected,2)
+
+chisp$residuals
+
+corrplot(chisp$residuals, is.corr = F)
+
+contrib <- 100*chisp$residuals^2/chisp$statistic
+round(contrib, 3)
+
+corrplot(contrib, is.cor = FALSE)
+```
+
+```{r}
+#split into breeding season
+#split months into breeding and non-breding- feb-july, or split further into mating, lactating and non-breeding? m,j,j -> lactating in GF, feb, march, april -> mating and prenancy, rest of year as non-breeding
+
+
+glimpse(centroMonth)
+
+censea<- as.data.frame(centroMonth) %>% dplyr:: mutate(Season= Month)  %>% mutate(Season = as.character(as.integer(Season))) %>% dplyr::mutate(Season= recode(Season, "2"="Breeding", "3"= "Breeding", "4"="Breeding", "5"= "Lactation", "6"="Lactation", "7"="Lactation", "8"= "Non-Breeding", "9"= "Non-Breeding","10" ="Non-Breeding", "11"= "Non-Breeding", "12" = "Non-Breeding", "1"= "Non-Breeding" ))
+
+
+breeding <- as.data.frame(with(censea, table(Season, Species.x)))
+#adjust for length of seasons
+breedingadj1 <- breeding %>% dplyr :: mutate(lengthSea= c(3,3,6,3,3,6))
+ breedingadj2 <- breedingadj1 %>% dplyr:: mutate(SeaAdj = (Freq/lengthSea))
+
+ ggplot(breedingadj2, aes(Season, SeaAdj, fill = Species.x, color = Species.x, group = Species.x)) + geom_point() +geom_line()
+```
+```{r}
+#as there was suggested to possibly be more female gray foxes, does the proportion change accroding to breeding season?
+censea2 <- censea%>% dplyr::filter(Species.x=="Gray Fox")
+Sexseas_Mosaic <- ggplot(censea2) +geom_mosaic(aes(x=product(Sex.x, Season), fill=Sex.x))
+
+Sexseas_Mosaic
+# not really
+```
+```{r}
+
+breeding2 <- as.data.frame(with(censea, table(Season, Species.x, Sex.x))) %>% dplyr::filter(Sex.x %in% c("Male", "Female"))
+#adjust for length of seasons
+breeding2adj1 <- breeding2 %>% dplyr :: mutate(lengthSea= c(3,3,6,3,3,6,3,3,6,3,3,6))
+ breeding2adj2 <- breeding2adj1 %>% dplyr:: mutate(SeaAdj = (Freq/lengthSea))
+
+ggplot(breeding2adj2, aes(Season, SeaAdj, fill = Sex.x, color = Sex.x, group = Sex.x)) + geom_point() +geom_line() + facet_wrap(Species.x)
+
+season_Spec <-breeding2adj2[,c(1,2,6)] %>% spread(key = Season, value = SeaAdj)
 
 ```

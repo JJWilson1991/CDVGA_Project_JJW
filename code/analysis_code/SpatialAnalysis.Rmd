@@ -5,23 +5,163 @@ output: html_notebook
 ```{r}
 
 library(spatstat)
-centrLL
+GAcentre <- readRDS(here("data", "processed_data", "GACentroiddata.rds"))
+GAcentre
 ```
 
 
 ```{r}
 riprange<-   owin(xrange=c(-86,-81), yrange=c(30,35), poly=NULL, mask=NULL,
 unitname=NULL, xy=NULL)
-ripPointmap<-ppp(x=centrLL$long,y=centrLL$lat, window= riprange)
+ripPointmap<-ppp(x=GAcentre$long,y=GAcentre$lat, window= riprange)
 plot(ripPointmap)
 
  
 
-plot(Kest(ripPointmap))
+plot(Kest(ripPointmap)) 
+
+#There is significant clustering of points as the K hat is above the K poi
+
+
+Ripleys_K<- envelope(ripPointmap)
+
+Ripleys_Cases <- plot(Ripleys_K)
+
+png(here("results", "Figures", "RipK.png"))
+plot(Ripleys_K)
+dev.off()
+
 
 ```
 ```{r}
 pcfplot <-pcf(ripPointmap)
 plot(pcfplot)
+
+```
+```{r}
+#Check for Raccoon and Gray Fox serpeately
+RCen <- GAcentre %>% dplyr::filter(Species=="Raccoon")
+RripPointmap<-ppp(x=RCen$long,y=RCen$lat, window= riprange)
+plot(RripPointmap)
+
+ 
+
+plot(Kest(RripPointmap)) 
+```
+```{r}
+GFCen <- GAcentre %>% dplyr::filter(Species=="Gray Fox")
+GFripPointmap<-ppp(x=GFCen$long,y=GFCen$lat, window= riprange)
+plot(GFripPointmap)
+
+ 
+
+plot(Kest(GFripPointmap)) 
+#Both have significant clustering
+```
+
+```{r}
+
+makePlot <- Kest(ppp(x=GAcentre$long,y=GAcentre$lat, window= riprange))
+#plot(ripPointmap)
+
+ 
+
+#plot(Kest(ripPointmap)) 
+lapply(unique(GAcentre$CollectionYear), makePlot)
+
+```
+
+```{r}
+#repeat ripleys k for 1988, can run loop for each year? probably
+#doing analysis for each year probably isn't very useful as most years have a small number of cases
+riprange<-   owin(xrange=c(-86,-81), yrange=c(30,35), poly=NULL, mask=NULL,
+unitname=NULL, xy=NULL)
+
+GA88 <- GAcentre %>% dplyr::filter(CollectionYear==1988)
+ripPointmap88<-ppp(x=GA88$long,y=GA88$lat, window= riprange)
+plot(ripPointmap88)
+
+ 
+
+plot(Kest(ripPointmap88)) 
+
+
+plot(envelope(ripPointmap88))
+```
+```{r}
+GA75 <- GAcentre %>% dplyr::filter(CollectionYear==1975)
+ripPointmap75<-ppp(x=GA75$long,y=GA75$lat, window= riprange)
+plot(ripPointmap75)
+
+ 
+
+plot(Kest(ripPointmap75)) 
+
+
+plot(envelope(ripPointmap75))
+
+```
+```{r}
+#How about for 5 yearly intervals?
+GA75_79 <- GAcentre %>% dplyr::filter(CollectionYear %in% 1975:1979)
+ripPointmap75_79<-ppp(x=GA75_79$long,y=GA75_79$lat, window= riprange)
+plot(ripPointmap75_79)
+
+ 
+
+plot(Kest(ripPointmap75_79)) 
+
+
+plot(envelope(ripPointmap75_79))
+
+```
+```{r}
+#How about for 5 yearly intervals?
+GA80_84 <- GAcentre %>% dplyr::filter(CollectionYear %in% 1980:1984)
+ripPointmap80_84<-ppp(x=GA80_84$long,y=GA80_84$lat, window= riprange)
+plot(ripPointmap80_84)
+
+ 
+
+plot(Kest(ripPointmap80_84)) 
+
+
+plot(envelope(ripPointmap80_84)) 
+
+```
+
+```{r}
+#Cases looik less clustered inn the southern oart of the state, lets compare
+NSrip<- GAcentre %>% dplyr:: mutate(NS= lat)  %>% dplyr::mutate(NS= 
+
+                      ifelse(NS < "32.67328", "South",
+
+                      ifelse(NS >= "32.67328", "North", "no")))
+GANorth <- NSrip %>% dplyr::filter(NS == "North")
+ripNorth<-ppp(x=GANorth$long,y=GANorth$lat, window= riprange)
+plot(ripNorth)
+
+ 
+
+plot(Kest(ripNorth)) 
+
+
+plot(envelope(ripNorth)) 
+
+
+```
+```{r}
+
+GASouth <- NSrip %>% dplyr::filter(NS == "South")
+ripSouth<-ppp(x=GASouth$long,y=GASouth$lat, window= riprange)
+plot(ripSouth)
+
+ 
+
+plot(Kest(ripSouth)) 
+
+
+plot(envelope(ripSouth)) 
+
 
 ```

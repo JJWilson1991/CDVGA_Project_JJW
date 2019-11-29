@@ -17,7 +17,7 @@ tTSCDV<-ts(TSCDV)
 #plot.ts(tTSCDV)
 ```
 ```{r}
-#RACnum <- readRDS("../../data/processed_data/RaCFoxMappingData.rds")
+RACnum <- readRDS("../../data/processed_data/RaCFoxMappingData.rds")
 RGFAges <- subset(RGFAge, State %in% c("Georgia"))
 
 RGFTS<-  as.data.frame(with(RGFAges, table(Species, CollectionYear)))
@@ -26,10 +26,11 @@ RGFTSS <- RGFTS %>% spread(key = Species, value = Freq)
 ```
 ```{r}
 tsrt<- ts(RGFTSS)
+
 ```
 
 ```{r}
-autoplot(tsrt[,c("Raccoon", "Gray Fox")]) +
+autoplot(tsrt[,c(2,3)]) +
   ylab("Cases") + xlab("Year")
 
 
@@ -44,16 +45,235 @@ dfRF<- dplyr :: rename(dfRF, GrayFox = "Gray Fox")
     geom_point() +
     geom_smooth(method="lm", se=FALSE) + coord_fixed(1)
 ```
+
 ```{r}
-fit.consMR <- tslm("Raccoon" ~ "Gray Fox", data=tsrt)
-summary(fit.consMR)
+
+CDVGA_months<- readRDS(here("data", "processed_data", "CDVGA_months.rds"))
+f4 <- CDVGA_months %>% 
+  filter(State.x=="Georgia", Species.x %in% c("Raccoon", "Gray Fox")) %>% 
+  dplyr::select(Species.x, MY, CollectionYear, Month, Date) #%>% 
+  # dplyr::group_by(Species.x, MY) %>% 
+  # dplyr::summarise(n=n()) %>% 
+  # dplyr::ungroup()
+
+f4 <- f4 %>% mutate(Date_new = lubridate::floor_date(Date, unit ="month")) %>% 
+  group_by(Species.x, Date_new) %>%
+  dplyr::summarise(n = n()) %>%
+  dplyr::ungroup()
+
+f5 <- data.frame(Date_seq = rep(seq.Date(from = min(f4$Date_new, na.rm = T), to = max(f4$Date_new, na.rm = T), by = "month"), 2))
+
+f5$Species <- rep(c("Gray Fox", "Raccoon"), each = dim(f5)[1]/2)
+
+f5 <- left_join(f5, f4, by = c("Species" = "Species.x", "Date_seq" = "Date_new")) 
+
+f5 <- f5 %>% mutate(n = ifelse(is.na(n), 0, n))
+
+f6 <- f5 %>% spread(key = Species, value = n) %>% select(-Date_seq)
+colnames(f6)[1] <- "Gray_Fox"
+
+f6_ts <- ts(f6, start = c(1975, 4), frequency = 12)
+
+
+
+plot(f6_ts)
+
+```
+
+```{r}
+f6GF <- f6[1]
+f6GF_ts <- ts(f6GF, start = c(1975, 4), frequency = 12)
+
+
+
+plot(f6GF_ts)
+
+f6R <- f6[2]
+f6R_ts <- ts(f6R, start = c(1975, 4), frequency = 12)
+
+
+
+plot(f6R_ts)
+
 ```
 ```{r}
-autoplot(tsrt[,'Raccoon'], series="Data") +
-  autolayer(fitted(fit.consMR), series="Fitted") +
-  xlab("Year") + ylab("") +
-  ggtitle("Percent change in US consumption expenditure") +
-  guides(colour=guide_legend(title=" "))
+
+autoplot(f6_ts[,c("Raccoon", "Gray_Fox")]) +
+  ylab("Cases") + xlab("Year")
+
+```
+
+
+```{r}
+
+
+library(tseries)
+adf.test(f6GF_ts) # p-value < 0.05 indicates the TS is stationary
+kpss.test(f6GF_ts)
+
+adf.test(f6R_ts)
+kpss.test(f6R_ts)
+
+#times series are stationary
+```
+
+```{r}
+library(forecast)
+raccoon_mod1 <- tslm(Raccoon ~ Gray_Fox + season, data= f6_ts)
+summary(raccoon_mod1)
+
+fox_mod1 <- tslm(Gray_Fox ~ Raccoon + season, data = f6_ts)
+summary(fox_mod1)
+ #months not useful for model, coefficient less than 2 std away from zero and p value greater than 0.05
+
+
+# Lagged predictors. Test 0, 1, 2 or 3 lags.
+Raccoon_lag <- cbind(
+    RaccoonLag0 = f6_ts[,"Raccoon"],
+    RaccoonLag1 = stats::lag(f6_ts[,"Raccoon"],-1),
+    RaccoonLag2 = stats::lag(f6_ts[,"Raccoon"],-2),
+    RaccoonLag3 = stats::lag(f6_ts[,"Raccoon"],-3)) %>%
+  head(NROW(f6_ts))
+
+Fox_lag <- cbind(
+    FoxLag0 = f6_ts[,"Gray_Fox"],
+    FoxLag1 = stats::lag(f6_ts[,"Gray_Fox"],-1),
+    FoxLag2 = stats::lag(f6_ts[,"Gray_Fox"],-2),
+    FoxLag3 = stats::lag(f6_ts[,"Gray_Fox"],-3)) %>%
+  head(NROW(f6_ts))
+
+
+# Restrict data so models use same fitting period
+n <- dim(f6_ts)[1]
+fit1 <- auto.arima(f6_ts[4:n,1], xreg=Raccoon_lag[4:n,1],
+  stationary=TRUE)
+fit2 <- auto.arima(f6_ts[4:n,1], xreg=Raccoon_lag[4:n,1:2],
+  stationary=TRUE)
+fit3 <- auto.arima(f6_ts[4:n,1], xreg=Raccoon_lag[4:n,1:3],
+  stationary=TRUE)
+fit4 <- auto.arima(f6_ts[4:n,1], xreg=Raccoon_lag[4:n,1:4],
+  stationary=TRUE)
+
+summary(fit1)
+
+#repeat using gray fox to predict raccoon
+#repeat using gray lag to predict and raccoon lag to predict raccoon
+#can use model to predict numbers of one or other if one is easier to sample
+#can either use to predict future or what other species is this month
+
+ #using gray fox to predict raccoon
+fit5 <- auto.arima(f6_ts[4:n,2], xreg=Fox_lag[4:n,1],
+  stationary=TRUE)
+fit6 <- auto.arima(f6_ts[4:n,2], xreg=Fox_lag[4:n,1:2],
+  stationary=TRUE)
+fit7 <- auto.arima(f6_ts[4:n,2], xreg=Fox_lag[4:n,1:3],
+  stationary=TRUE)
+fit8 <- auto.arima(f6_ts[4:n,2], xreg=Fox_lag[4:n,1:4],
+  stationary=TRUE)
+
+summary(fit7)
 
 
 ```
+
+
+```{r}
+#split data for trainign and testing
+
+f6train <- f6[1:368,]
+f6test <- f6[369:462,]
+
+f6_ts_train <- ts(f6train, start = c(1975, 4), frequency = 12)
+
+f6_ts_test <- ts(f6test, start = c(2006, 4), frequency = 12)
+####do need to isuse the shortened lag tfor training?
+
+
+# Lagged predictors. Test 0, 1, 2 or 3 lags.
+Raccoon_lag_train <- cbind(
+    RaccoonLag0tr = f6_ts_train[,"Raccoon"],
+    RaccoonLag1tr = stats::lag(f6_ts_train[,"Raccoon"],-1),
+    RaccoonLag2tr = stats::lag(f6_ts_train[,"Raccoon"],-2),
+    RaccoonLag3tr = stats::lag(f6_ts_train[,"Raccoon"],-3)) %>%
+  head(NROW(f6_ts_train))
+
+Fox_lag_train <- cbind(
+    FoxLag0 = f6_ts_train[,"Gray_Fox"],
+    FoxLag1 = stats::lag(f6_ts_train[,"Gray_Fox"],-1),
+    FoxLag2 = stats::lag(f6_ts_train[,"Gray_Fox"],-2),
+    FoxLag3 = stats::lag(f6_ts_train[,"Gray_Fox"],-3)) %>%
+  head(NROW(f6_ts_train))
+
+
+# Restrict data so models use same fitting period
+tr <- dim(f6_ts_train)[1]
+fit1tr <- auto.arima(f6_ts_train[4:tr,1], xreg=Raccoon_lag_train[4:tr,1],
+  stationary=TRUE)
+fit2tr <- auto.arima(f6_ts_train[4:tr,1], xreg=Raccoon_lag_train[4:tr,1:2],
+  stationary=TRUE)
+fit3tr <- auto.arima(f6_ts_train[4:tr,1], xreg=Raccoon_lag_train[4:tr,1:3],
+  stationary=TRUE)
+fit4tr <- auto.arima(f6_ts_train[4:tr,1], xreg=Raccoon_lag_train[4:tr,1:4],
+  stationary=TRUE)
+
+summary(fit1tr)
+
+#repeat using gray fox to predict raccoon
+#repeat using gray lag to predict and raccoon lag to predict raccoon
+#can use model to predict numbers of one or other if one is easier to sample
+#can either use to predict future or what other species is this month
+
+ #using gray fox to predict raccoon
+fit5tr <- auto.arima(f6_ts_train[4:tr,2], xreg=Fox_lag_train[4:tr,1],
+  stationary=TRUE)
+fit6tr <- auto.arima(f6_ts_train[4:tr,2], xreg=Fox_lag_train[4:tr,1:2],
+  stationary=TRUE)
+fit7tr <- auto.arima(f6_ts_train[4:tr,2], xreg=Fox_lag_train[4:tr,1:3],
+  stationary=TRUE)
+fit8tr <- auto.arima(f6_ts_train[4:tr,2], xreg=Fox_lag_train[4:tr,1:4],
+  stationary=TRUE)
+
+summary(fit7tr)
+```
+
+```{r}
+###testing
+
+fit1_train <- auto.arima(f6_ts[4:368,1], xreg = Raccoon_lag[4:368,1], stationary = T)
+accuracy(fit1_train)
+
+fit1_test <- Arima(f6_ts[369:n,1], xreg = Raccoon_lag[369:n,1], model = fit1_train)
+accuracy(fit1_test)
+
+```
+
+
+```{r}
+fit7_train <- auto.arima(f6_ts[4:368,2], xreg = Fox_lag[4:368,1:3], stationary = T)
+accuracy(fit7_train)
+
+fit7_test <- Arima(f6_ts[369:n,2], xreg = Fox_lag[369:n,1:3], model = fit7_train)
+accuracy(fit7_test)
+
+#fit1 has lower rmse, rherefore its easier to predict foxes using foxes and raccoo s athan raccons using raccoons and foxes
+ 
+
+# y′t  =   c   +    ϕ1y′t−1     +    θ1εt−1    +    γ0xt    
+
+fit1_train %>%
+  forecast(h=34, xreg = Raccoon_lag[4:368,1], lower = 0) %>%
+  autoplot() 
+
+fit1_train %>% 
+  forecast(h= 34, xreg = Raccoon_lag[,1]) %>%
+  autoplot()
+```
+
+
+```{r}
+
+decomposedRes <- decompose(f6_ts, type="additive") 
+plot(decomposedRes)
+
+```
+

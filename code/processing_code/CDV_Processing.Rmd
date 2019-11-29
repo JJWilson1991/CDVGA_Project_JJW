@@ -17,7 +17,7 @@ library(forcats)
 library(here)
 library(visdat)
 library(readr)
-Raw_CDV_Mainsheet <- read_csv(here( "SCWDS_CDVdata.csv"))
+Raw_CDV_Mainsheet <- read_csv(here("data","raw_data","SCWDS_CDVdata.csv"))
 
 
 glimpse(Raw_CDV_Mainsheet)
@@ -35,6 +35,11 @@ TRawCDVCol <- as_tibble(DFRawCDVcol)
 #lets look where data is missing
 vis_miss(TRawCDVCol)
 #not bad, the only variable whihc looks like it may be somewhat problematic is Area
+```
+```{r}
+table(TRawCDVCol$Species)
+glimpse(TRawCDVCol)
+
 ```
 
 ```{r}
@@ -133,8 +138,9 @@ recodeage[grep("Opossum", recodeage$Species), ]
 
 
 ```{r}
-
-CDV_Clean <- recodeage
+vis_dat(recodeage)
+#lets just bin area, its a mess
+CDV_Clean <- recodeage[-4]  
 
 
 
@@ -152,9 +158,8 @@ glimpse(CDV_Clean)
 
 ```{r}
 
+CDV_Clean %>% saveRDS(here("data", "processed_data", "CDVprocesseddata.rds"))
 
-
-saveRDS(CDV_Clean, file = "../../data/processed_data/CDVprocesseddata.rds")
 
 
 

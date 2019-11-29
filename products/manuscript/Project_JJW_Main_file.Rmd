@@ -1,118 +1,154 @@
 ---
 title: "Temporal and Spatial Patterns in Distemper Virus Cases Reported to SCWDS 1975-2013"
-subtitle: ""
-author: Jonathan Wilson
-institute: "University of Georgia"
+author: "Jonathan Wilson"
 date: "`r Sys.Date()`"
-site: bookdown::bookdown_site
-documentclass: article
 output:
-  bookdown::word_document2: 
-    toc: false
-   
-bibliography: ../references.bib
+  html_document:
+    toc: yes
+documentclass: article
+institute: University of Georgia
 csl: ../apa.csl
- always_allow_html: true
- ---
+site: bookdown::bookdown_site
+subtitle: ''
+bibliography: ../CDV_ref.bib
+---
  
-```{r}
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
 library(ggplot2)
 library(plotly)
+library(here)
 ```
 
 # Summary/Abstract
 Canine distemper is an important infectious disease that affects many mammal species.  There is evidence of CDV infection in all terrestrial carnivores families and some marine carnivore families. CDV has been detected in wild animal species such as the African lion and Amur tigers and has been responsible for substantial population declines of the animals during outbreaks.
-First seen in domestic dogs in the late 1970’s, CDV spread through the population rapidly (Alison et al 2013). CDV is seen most commonly in domestic cats and dogs but frequent cross species transmission does occur in non-domestic carnivores. In domestic ferrets mortality rates can reach 100%. CDV has been responsible for population declines of endangered mustelids like the black-footed ferret. CDV is also endemic in the eastern U.S. raccoon population. Raccoons are thought to be a reservoir for other wild animals and domestic dogs as well as other species of carnivores. CDV has been found to be persisting in areas like Yellow Stone national park, which has a diverse carnivore population. Multiple outbreaks have occurred in the wolf, coyote and cougar populations 
+First seen in domestic dogs in the late 1970’s, CDV spread through the population rapidly [@Alison2013]. CDV is seen most commonly in domestic cats and dogs but frequent cross species transmission does occur in non-domestic carnivores. In domestic ferrets mortality rates can reach 100%. CDV has been responsible for population declines of endangered mustelids like the black-footed ferret. CDV is also endemic in the eastern U.S. raccoon population. Raccoons are thought to be a reservoir for other wild animals and domestic dogs as well as other species of carnivores. CDV has been found to be persisting in areas like Yellow Stone national park, which has a diverse carnivore population. Multiple outbreaks have occurred in the wolf, coyote and cougar populations 
 Although raccoons are thought to be a major reservoir for CDV, little research has been done to identify the disease dynamics within this population. 
 
 
-# Illustrating setup
-_This section is only there to show how to insert results from other places in the project and how to cite figures and other references. Delete this whole section at some point._
+# Introduction 
+Canine distemper is an important infectious disease that affects many mammal species.  The causative agent, canine distemper virus (CDV) is an enveloped, single stranded, negative sense RNA virus in the Morbillivirus family. Transmitted via the respiratory route, CDV is highly infectious [@Deem2000]. There is evidence of CDV infection in all terrestrial carnivores families and some marine carnivore families [@Deem2000]. Morbidity and mortality varies depending on the species but closely resembles rabies in wild carnivores [@Hoff1974]. The Mustelidae family is among the species with the highest fatality rate, while the domestic dog can be a asymptomatic carrier [@Deem2000].  CDV has been detected in wild animal species such as the African lion and Amur tigers and has been responsible for substantial population declines of the animals during outbreaks [@Roelke-Parker1996;  @Seimon2013].
 
+## Canine Distemper Virus In the U.S.
+First seen in domestic dogs in the late 1970’s, CDV spread through the population rapidly (Alison et al 2013). CDV is seen most commonly in domestic cats and dogs but frequent cross species transmission does occur in non-domestic carnivores (Allison et al 2013 and [@Greene1990].  Severity in domestic dogs depends on the animals’ immune status and age in addition to strain virulence [@Beineke2015].   In the U.S. raccoons (Procyon lotor), foxes (Vulpes vulpes and Urocyon cinereoargenteus), coyotes (Canis latrans), wolves (Canis lupus) , skunks (Mephitis mephitis), badgers (Taxidea taxus), mink (Mustela vison) and ferrets (mustelidae spp.) are among the species susceptible to CDV infection [@Williams1988; @Kapil2008]. In domestic ferrets mortality rates can reach 100%. CDV has been responsible for population declines of endangered mustelids like the black-footed ferret. CDV is also endemic in the eastern U.S. raccoon population. Raccoons are thought to be a reservoir for other wild animals and domestic dogs as well as other species of carnivores (Alison et al 2013, and [@Roscoe1993]. CDV has been found to be persisting in areas like Yellow Stone national park, which has a diverse carnivore population. Multiple outbreaks have occurred in the wolf, coyote and cougar populations [@Almberg2009; @Almberg2010]. 
+Although raccoons are thought to be a major reservoir for CDV, little research has been done to identify the disease dynamics within this population. Available data is sparse, dated and focuses on individual states and discrete sites. The use of past and current presence only cases allows for spatio-temporal analysis of the CDV in the southeastern United States. The objective of this study was to identify spatial and temporal patters in distemper virus cases reported to the Southeastern Cooperative Wildlife Disease Study from 1975 to 2013.
 
-This paper [@Leek2015a] discusses types of analyses. 
-
-
-Figure \@ref(fig:resultfigure) shows a result figure from the analysis.
-
-#`#``{r resultfigure,  fig.cap='Analysis figure.', echo=FALSE}
-knitr::include_graphics("../../results/resultfigure.png")
-#```
-
-Table \@ref(tab:resulttable) shows a result table from the analysis.
-
-#```{r resulttable,  echo=FALSE}
-resulttable=readRDS("../../results/resulttable.rds")
-knitr::kable(resulttable, caption = 'Result Table.')
-#```
-
-
-Note that this cited reference will show up at the end of the document, the reference formatting is determined by the CSL file specified in the YAML header. Many more style files for almost any journal [are available](https://www.zotero.org/styles). You also specify the location of your bibtex reference file in the YAML. You can call your reference file anything you like, I just used the generic word `references.bib` but giving it a more descriptive name is probably better.
-
-
-# Introduction (required for part 1)
-
-## General Background Information
-Canine distemper is an important infectious disease that affects many mammal species.  There is evidence of CDV infection in all terrestrial carnivores families and some marine carnivore families. CDV has been detected in wild animal species such as the African lion and Amur tigers and has been responsible for substantial population declines of the animals during outbreaks.
-First seen in domestic dogs in the late 1970’s, CDV spread through the population rapidly (Alison et al 2013). CDV is seen most commonly in domestic cats and dogs but frequent cross species transmission does occur in non-domestic carnivores. In domestic ferrets mortality rates can reach 100%. CDV has been responsible for population declines of endangered mustelids like the black-footed ferret. CDV is also endemic in the eastern U.S. raccoon population. Raccoons are thought to be a reservoir for other wild animals and domestic dogs as well as other species of carnivores. CDV has been found to be persisting in areas like Yellow Stone national park, which has a diverse carnivore population. Multiple outbreaks have occurred in the wolf, coyote and cougar populations 
-Although raccoons are thought to be a major reservoir for CDV, little research has been done to identify the disease dynamics within this population. 
 
 
 ## Description of data and data source
-Data was recorded from Canine distemper positive cases submitted to the Southeastern Cooperative Wildlife Disease Study between 1975 and 2013. Cases were identified as CDV by fluorescent antibody testing and/or histologic diagnosis of characteristic lesions.  Species, date of submission, county of origin, and sex were noted. A total number of 702 positive cases were submitted from 13 states over the 38-year period. Positive cases were comprised of raccoons (n=462), gray foxes (n=211), striped skunks (n=13), coyotes (n=7), red foxes (n=3), gray wolves (n=3) and a black bear.
+Data was recorded from Canine distemper positive cases submitted to the Southeastern Cooperative Wildlife Disease Study between 1975 and 2013. Cases were identified as CDV by fluorescent antibody testing and/or histologic diagnosis of characteristic lesions.  Species, date of submission, county of origin, and sex were noted. A total number of 701 positive cases were submitted from 13 states over the 38-year period. Positive cases were comprised of raccoons (n=462), gray foxes (n=211), striped skunks (n=13), coyotes (n=7), red foxes (n=3), gray wolves (n=3), one mink  and a black bear.
 
-## Questions/Hypotheses to be addressed
-1.Are there temporal trends in cases diagnosed related to the ecology of the hosts? eg breeding seasons
+Also census and county land area data from [census.gov](https://census.gov/)
+```{r, resulttable1, echo=FALSE, warning=FALSE, message=FALSE}
+Speciestable = readRDS(here("results", "Tables","Speciestable.rds"))
+knitr::kable(Speciestable, caption = 'Species frequency Table')
 
+```
 
-2.Are there patterns in the timing of species being diagnosed suggesting cross species infection? (raccoons are considered primary reservoirs, are peaks in raccon infection followed by other species peaks suggesting spillover)
-
-
-3.Are there spatial patterns of infection within the southeast relating to landuse or other ecological features
-
-
-# Methods and Results
 
 
 
-_In most research papers, results and methods are separate. You can combine them here if you find it easier. You are also welcome to structure things such that those are separate sections._
+## Questions/Hypotheses to be addressed
+1.Are there temporal trends in cases diagnosed related to the ecology of the hosts? 
 
+
+2.Are there patterns in the timing of species being diagnosed suggesting cross species infection? (raccoons are considered primary reservoirs, are peaks in raccoon infection followed by other species peaks suggesting spillover)
+
+
+3.Are there spatial patterns of infection within the southeast relating to landuse?
+
+
+# Methods
 
 ## Data aquisition
 Data of animals brought to SCWDS between 1975 and 2013, which were diagnosed as having CDV at post mortem. Cases were identified as CDV by fluorescent antibody testing and/or histologic diagnosis of characteristic lesions.  Species, date of submission, county of origin, and sex were noted. 
 ##Overview of Data
+Data contained the the follwing varibles....
 
-```{r}
-
-CDV_Clean <-   readRDS("../../data/processed_data/CDVprocesseddata.rds")
-
-
-str(CDV_Clean)
-
-```
 ## Data import and cleaning
 Detailed description of data analysis and cleaning in supplemtary folder
 
-## Univariate analysis
-Initial probing of the data set revealed the vast majority of cases to be submitted from the state of Georgia. This is understandable as SCWDS is located in Athens. The other feature is that almost all of the submitted cases are Raccoons or Gray Foxes. From this point the data analysis will focus on the state of Georgia and these tow species, Raccoon and Gray Fox.
-###Initial Data Probing
-```{r}
-knitr::include_graphics("../../results/State_freq.png")
+## Time Series analsys
+time series analysis and ARIMA model construction was conducted using the "fpp2" package from [Forecating: principles and practice, Hyndman & Athanasopoulos](https://otexts.com/fpp2/).[@Hyndman2018]
 
+# Results
+## Data Exploration
+
+```{r, resultfigure1,  fig.cap='Number of cases of CDV per state, submitted to SCWDS, 1075-2013', echo=FALSE, warning=FALSE, message=FALSE}
+knitr::include_graphics("../../results/State_freq.png")
+```
+```{r, mapfigure1, fig.cap='Map of CDV cases per state submitted to SCWDS, 1975-2013 .', echo=FALSE, warning=FALSE, message=FALSE}
+
+knitr::include_graphics("../../results/Cases_per_State.png")
+```
+```{r, resultfigure2,  fig.cap='Number of CDV cases per species submitted to SCWDS, 1975-2013', echo=FALSE, warning=FALSE, message=FALSE}
 knitr::include_graphics("../../results/Species_freq.png")
 ```
-_Use a combination of text/tables/figures to explore and describe your data. You should produce plots or tables or other summary quantities for most of your variables. You definitely need to do it for the important variables, i.e. if you have main exposure or outcome variables, those need to be explored. Depending on the total number of variables in your dataset, explore all or some of the others._
+```{r, resultfigure4, fig.cap= 'Cases per Year', echo=FALSE, warning=FALSE, message=FALSE}
+knitr::include_graphics(here("results", "Figures", "All_Cases_Year.png"))
 
-## Bivariate analysis
-_Create plots or tables and compute simple statistics (e.g. t-tests, simple regression model with 1 predictor, etc.) to look for associations between your outcome(s) and each individual predictor variable_
+```
+Initial probing of the data set revealed the vast majority of cases to be submitted from the state of Georgia. This is understandable as SCWDS is located in Athens, GA. The other feature is that almost all of the submitted cases are Raccoons or Gray Foxes.
+From this point, data exploration and analysis will focus only on Gray foxes and Raccoons in the state of Georgia as this compromises the majority of cases.
+```{r, resultfigure5, fig.cap= 'Bivariate analysis of Species and Age of CDV cases submitted to SCWDS, 1975-2013', echo=FALSE, warning=FALSE, message=FALSE}
+
+knitr::include_graphics(here("results", "Figures", "RGFAge_mosaic.png"))
+
+```
+
+```{r, resultfigure6, fig.cap= 'Bivariate analysis of Species and Sex of CDV cases submitted to SCWDS, 1975-2013', echo=FALSE, warning=FALSE, message=FALSE}
+
+knitr::include_graphics(here("results", "Figures", "SexSpecies_Mosaic.png"))
+
+```
+
+#```{r, resultfigure3, fig.cap= 'Species Time', echo=FALSE, warning=FALSE, message=FALSE}
+
+
+#```
+
+#```{r, resultfigure3, fig.cap= 'Species Time', echo=FALSe, warning=FALSE, message=FALSE}
+
+
+#```
+
+
+
+
+
+
+
+```{r, resultfigure3, fig.cap= 'Species Time', echo=FALSE, warning=FALSE, message=FALSE}
+knitr:: include_graphics( "../../results/RacFox_year.png")
+
+```
+
 
 ##Spatial Mapping of Georgia Data
-
-
-```{r}
+```{r, plotly1, fig.cap= "County Presence over Time of CDV, from cases submitted to SCWDS, 1975-2013",echo=FALSE, warning=FALSE, message=FALSE}
 library(ggmap)
 library(ggthemes)
-RACnum <- readRDS("../../data/processed_data/RaCFoxMappingData.rds")
+cotry_comp <- readRDS(here("data", "processed_data", "Presence_map_data.rds"))
+
+PA <- ggplot(data = cotry_comp, aes(frame = CollectionYear)) +  geom_polygon(data = cotry_comp, aes(x = long, y = lat, group=group), color = "gray50", fill = "white") + 
+  geom_polygon(aes(x = long, y = lat, fill = Present, group = group), color = "azure4") + 
+  coord_fixed(1.3)  + 
+  scale_fill_manual(values = c('white', 'turquoise4')) +
+  theme_map() + 
+  theme( 
+  axis.text = element_blank(),
+  axis.line = element_blank(),
+  axis.ticks = element_blank(),
+  panel.border = element_blank(),
+  panel.grid = element_blank(),
+  axis.title = element_blank(), legend.position = "none") +  labs(fill= "Presence")
+
+PA2 <- ggplotly(PA) %>% animation_opts( transition= 1,  redraw = FALSE)
+PA2
+
+```
+```{r, plotly2, fig.cap= "Cases of CDV in Gray Foxes and Raccoons in Georgia counties, from cases submitted to SCWDS, 1975-2013", echo=FALSE, warning=FALSE, message=FALSE}
+
+RACnum <- readRDS(here("data", "processed_data", "RaCFoxMappingData.rds"))
 
 g1 <- ggplot(data = RACnum, aes(frame = CollectionYear)) +  
   geom_polygon(aes(x = long, y = lat, group = group), fill= "white", color = "azure4") + 
@@ -128,7 +164,7 @@ g2 <- g1 +
   panel.border = element_blank(),
   panel.grid = element_blank(),
   axis.title = element_blank(), legend.position = "right")  + labs(fill= "Number of cases") 
-centrLL <- readRDS("../../data/processed_data/GACentroiddata.rds")
+centrLL <- readRDS(here("data", "processed_data", "GACentroiddata.rds"))
 
 g3 <- g2 + 
   geom_point(data = centrLL, aes(x = long, y = lat, color= Species), alpha = 0.5, position = position_jitter(width=0.05,height=0.05 ) ) 
@@ -138,27 +174,49 @@ g4
 
 
 ```
-## Full analysis
+```{r, ripK, fig.cap= "Ripley's K analysis of CDV cases in Raccoons and Gray Foxes in Georgia, from cases submitted to SCWDs, 1975-2013", echo=FALSE, warning=FALSE, message=FALSE}
+knitr::include_graphics(here("results", "Figures", "RipK.png"))
+```
 
-The aim is to produce a time series analysis of the Raccoon and Gray fox data as it is suggested that the virus spills over from raccoons to other species. If this is the case a time delay would be suspected. In Progress...
-Ripley's K analsis of Spatial data...
-_Use one or several suitable statistical/machine learning methods to analyze your data and to produce meaningful figures, tables, etc. This might again be code that is best placed in one or several separate R scripts that need to be well documented. You can then load the results produced by this code_
+### Time series analysis
+
+#### Predictive Model
+
+
+```{r, Model1gen,  fig.cap='Gray Fox Prediction General Model', echo=FALSE, warning=FALSE, message=FALSE}
+knitr::include_graphics(here("results", "Models", "Fit1_update.png"))
+```
+```{r, Model1,  fig.cap='Gray Fox Prediction Model', echo=FALSE, warning=FALSE, message=FALSE}
+knitr::include_graphics(here("results", "Models", "Fit1GF_numbers.png"))
+```
+```{r, Model2gen,  fig.cap='Raccoon Prediction General Model', echo=FALSE, warning=FALSE, message=FALSE}
+knitr::include_graphics(here("results", "Models", "Fit7Rac_general.png"))
+```
+```{r, Model2,  fig.cap='Raccoon Prediction Model', echo=FALSE, warning=FALSE, message=FALSE}
+knitr::include_graphics(here("results", "Models", "Fit7Rac_Numbers.png"))
+```
+The first model, which uses the number of Raccoon cases from the previous month along with the predictive error for Gray Fox cases from the previosu month to predict Gray Fox cases in the current month is the more accurate model.
+
+
+
 
 # Discussion
+Initial introduction of CDV into wild carnivores in the U.S. in 1960’s was through grey foxes and subsequent spread to raccoons. [@Hoff1974]. Outbreak in Raccoons in Berlin, Germany appears to have originated in foxes with transmission seeming to readily occur between the species. [@Renteria-Solis2014]
 
-## Summary and Interpretation
-_Summarize what you did, what you found and what it means._
+The analysis of the CDV case data in Raccoons and Gray Foxes suggests a relationship between cases in the two species, with the ARIMA model produced for Gray Fox cases suggesting that monthly case numbers in Gray Foxes can quite accurately be predicted using the previous months Gray Fox error data and the number of Raccoon cases from this month.
+A second model for the prediction of Raccoon cases using the previous months raccoon data in addition to Gray Fox cases from the previous three months was also quite accurate at predicting Raccoon cases, albeit it had a slightly higher error than the other model. 
 
-## Strengths and Limitations
-The major flaw in this data set is that it only contains postive cases. In an ideal world, all cases submitted in this time would be available so that prevalence and icidence could be evaluated. This is also not systematically sampled and is dependent on DNR officers submitted cases.
+The spatial analysis of the data showed significant clustering of cases, which is in line with the ecology of the virus which tends to have epizootics where it spreads quickly amongst nearby susceptible. The primary mode of CDV infection is aerosol inhalation, suggesting habitat overlap and contact [@Hoff1974]. There appeared to be a much greater number of cases in the northern part of the state. Again the possible reasons for this are diverse; reporting bias due to a range of possible reasons; as the northern part of the state is more densely populated by humans, closer proximity to SCWDS, more suitable habitat and a consequently greater population of susceptible raccoons and gray foxes. Interestingly, there may be a parabolic relationship between population density and number of cases, with very high densities and very low densities having lower number of cases
 
-_Discuss what you perceive as strengths and limitations of your analysis._
+The data suggests a correlation between breeding season and the number of cases reported, with positives more likely to occur during the breeding season. This could be due to a number of reasons; there may be more contact between individual animals as they search for mates promoting aerosol spread of virus . Contact structure of a raccoon population can significantly impact disease transmission with Raccoon contact networks being shown to change depending on the season (breeding vs. non breeding); Rabies has been shown to spread quickly in raccoons when introduced during the breeding season.) [@Reynolds2015]. Other potential influences of the breeding season and cases aside from contact may be the  phycological strain of reproduction may leave animals more susceptible to the virus or as these cases are from animals found dead it could be that the increased movement from the breeding season leads to more being killed in other ways, such as on roads, and they happen to also be CDV positive at necropsy.    
+
+There as significant limitations to using this data set to draw conclusions about CDV cases in wild animals in Georgia. This data set comes from passive surveillance only, with it being reliant on dead animals being found and sent to SCWDS by DNR officers for necropsy. This leaves the data open to significant influence by reporting bias, as the distribution of DNR officers is not uniform across the state. 
+Passive surveillance is also only showing part of the picture, with the results being heavily skewed towards symptomatic cases. Gray foxes and raccoons in Tennessee (Nov. 2013 – Aug. 2014) were infected frequently, but passive surveillance only captures animals showing clinical signs. Does not account for asymptomatic cases with 55% of asymptomatic animals tested being positive in this study [@Pope2016].
+
+
 
 ## Conclusions
-_What are the main take-home messages?_
 
-
-_Include citations in your Rmd file using bibtex, the list of references will automatically be placed at the end_
 
 # References
 
