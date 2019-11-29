@@ -37,7 +37,7 @@ Although raccoons are thought to be a major reservoir for CDV, little research h
 ## Description of data and data source
 Data was recorded from Canine distemper positive cases submitted to the Southeastern Cooperative Wildlife Disease Study between 1975 and 2013. Cases were identified as CDV by fluorescent antibody testing and/or histologic diagnosis of characteristic lesions.  Species, date of submission, county of origin, and sex were noted. A total number of 701 positive cases were submitted from 13 states over the 38-year period. Positive cases were comprised of raccoons (n=462), gray foxes (n=211), striped skunks (n=13), coyotes (n=7), red foxes (n=3), gray wolves (n=3), one mink  and a black bear.
 
-Also census and county land area data from [census.gov](https://census.gov/)
+Census and county land area data for Geogia was accessed and downloaded from [census.gov](https://census.gov/).
 ```{r, resulttable1, echo=FALSE, warning=FALSE, message=FALSE}
 Speciestable = readRDS(here("results", "Tables","Speciestable.rds"))
 knitr::kable(Speciestable, caption = 'Species frequency Table')
@@ -62,10 +62,10 @@ knitr::kable(Speciestable, caption = 'Species frequency Table')
 ## Data aquisition
 Data of animals brought to SCWDS between 1975 and 2013, which were diagnosed as having CDV at post mortem. Cases were identified as CDV by fluorescent antibody testing and/or histologic diagnosis of characteristic lesions.  Species, date of submission, county of origin, and sex were noted. 
 ##Overview of Data
-Data contained the the follwing varibles....
+Data contained the the follwing variables; Case number, State, county, area, Sex, Species, Age and collection year. Additional data incluing specific collection dates was also used from a serpearte spread sheet for the time series analysis.
 
 ## Data import and cleaning
-Detailed description of data analysis and cleaning in supplemtary folder
+Data was imported into R Studio and cleaned to correct data entry errors and missing data. Detailed description of data analysis and cleaning is contained in the processing scripts within the [project repository](https://github.com/epid8060fall2019/JonathanWilson_Project) in the processing_code subfolder.
 
 ## Time Series analsys
 time series analysis and ARIMA model construction was conducted using the "fpp2" package from [Forecating: principles and practice, Hyndman & Athanasopoulos](https://otexts.com/fpp2/).[@Hyndman2018]
@@ -74,21 +74,24 @@ time series analysis and ARIMA model construction was conducted using the "fpp2"
 ## Data Exploration
 
 ```{r, resultfigure1,  fig.cap='Number of cases of CDV per state, submitted to SCWDS, 1075-2013', echo=FALSE, warning=FALSE, message=FALSE}
-knitr::include_graphics("../../results/State_freq.png")
+knitr::include_graphics(here("results", "Figures", "State_freq.png"))
 ```
 ```{r, mapfigure1, fig.cap='Map of CDV cases per state submitted to SCWDS, 1975-2013 .', echo=FALSE, warning=FALSE, message=FALSE}
 
-knitr::include_graphics("../../results/Cases_per_State.png")
+knitr::include_graphics(here("results", "Figures", "Cases_per_State.png"))
 ```
 ```{r, resultfigure2,  fig.cap='Number of CDV cases per species submitted to SCWDS, 1975-2013', echo=FALSE, warning=FALSE, message=FALSE}
-knitr::include_graphics("../../results/Species_freq.png")
+knitr::include_graphics(here("results", "Figures", "Species_freq.png"))
 ```
-```{r, resultfigure4, fig.cap= 'Cases per Year', echo=FALSE, warning=FALSE, message=FALSE}
+```{r, resultfigure4, fig.cap= 'Total Cases per Year, 1975-2013', echo=FALSE, warning=FALSE, message=FALSE}
 knitr::include_graphics(here("results", "Figures", "All_Cases_Year.png"))
 
 ```
+
 Initial probing of the data set revealed the vast majority of cases to be submitted from the state of Georgia. This is understandable as SCWDS is located in Athens, GA. The other feature is that almost all of the submitted cases are Raccoons or Gray Foxes.
 From this point, data exploration and analysis will focus only on Gray foxes and Raccoons in the state of Georgia as this compromises the majority of cases.
+
+
 ```{r, resultfigure5, fig.cap= 'Bivariate analysis of Species and Age of CDV cases submitted to SCWDS, 1975-2013', echo=FALSE, warning=FALSE, message=FALSE}
 
 knitr::include_graphics(here("results", "Figures", "RGFAge_mosaic.png"))
@@ -101,29 +104,21 @@ knitr::include_graphics(here("results", "Figures", "SexSpecies_Mosaic.png"))
 
 ```
 
-#```{r, resultfigure3, fig.cap= 'Species Time', echo=FALSE, warning=FALSE, message=FALSE}
 
-
-#```
-
-#```{r, resultfigure3, fig.cap= 'Species Time', echo=FALSe, warning=FALSE, message=FALSE}
-
-
-#```
-
-
-
-
-
-
-
-```{r, resultfigure3, fig.cap= 'Species Time', echo=FALSE, warning=FALSE, message=FALSE}
-knitr:: include_graphics( "../../results/RacFox_year.png")
+```{r, resultfigure7, fig.cap= 'Raccoon and Gray Fox cases in Georgia presented to SCWDS, 1975-2013', echo=FALSE, warning=FALSE, message=FALSE}
+knitr:: include_graphics(here("results", "Figures", "RacFox_year.png"))
 
 ```
 
+```{r, resultfigure8, fig.cap= 'Raccoon and Gray Fox cases per breeeding season adjusted', echo=FALSE, warning=FALSE, message=FALSE}
+knitr:: include_graphics(here("results", "Figures", "breeding_plot.png"))
+
+```
 
 ##Spatial Mapping of Georgia Data
+
+Further qualitative analysis was conducted by mapping disease presence over time at county level.
+
 ```{r, plotly1, fig.cap= "County Presence over Time of CDV, from cases submitted to SCWDS, 1975-2013",echo=FALSE, warning=FALSE, message=FALSE}
 library(ggmap)
 library(ggthemes)
@@ -146,6 +141,9 @@ PA2 <- ggplotly(PA) %>% animation_opts( transition= 1,  redraw = FALSE)
 PA2
 
 ```
+
+This was further analysed by comparing this distribution of cases over time by splitting cases by species.
+
 ```{r, plotly2, fig.cap= "Cases of CDV in Gray Foxes and Raccoons in Georgia counties, from cases submitted to SCWDS, 1975-2013", echo=FALSE, warning=FALSE, message=FALSE}
 
 RACnum <- readRDS(here("data", "processed_data", "RaCFoxMappingData.rds"))
@@ -174,14 +172,32 @@ g4
 
 
 ```
+
+Quantative analysis of the level of clustering of cases was done using Ripley's K analysis.
+
 ```{r, ripK, fig.cap= "Ripley's K analysis of CDV cases in Raccoons and Gray Foxes in Georgia, from cases submitted to SCWDs, 1975-2013", echo=FALSE, warning=FALSE, message=FALSE}
 knitr::include_graphics(here("results", "Figures", "RipK.png"))
 ```
 
+```{r, resultfigure3, fig.cap= 'Raccoon and Gray Fox cases in Georgia presented to SCWDS, 1975-2013, and human population density', echo=FALSE, warning=FALSE, message=FALSE}
+knitr:: include_graphics(here("results", "figures", "Cases_Density_Map.png"))
+
+```
+
+
+```{r, resultfigure3, fig.cap= 'Raccoon and Gray Fox cases per spm against human population density', echo=FALSE, warning=FALSE, message=FALSE}
+knitr:: include_graphics(here("results", "figures", "log_casespersqm_log_popdens.png"))
+
+```
+
+
+
+
 ### Time series analysis
+Time series analysis was conducted on the number of cases in Gray foxes and Raccoons for the whole state of Georgia in the period 1975-2013 and ARIMA models using lagged predictors constructed using the "fpp2" package from [Forecating: principles and practice, Hyndman & Athanasopoulos](https://otexts.com/fpp2/).[@Hyndman2018]
 
 #### Predictive Model
-
+The general model for predicting number of Gray Fox cases using an auto-regression model found using the previous months predictive error along with this months Racoon cases as the most accurate model for prediction.
 
 ```{r, Model1gen,  fig.cap='Gray Fox Prediction General Model', echo=FALSE, warning=FALSE, message=FALSE}
 knitr::include_graphics(here("results", "Models", "Fit1_update.png"))
@@ -189,13 +205,18 @@ knitr::include_graphics(here("results", "Models", "Fit1_update.png"))
 ```{r, Model1,  fig.cap='Gray Fox Prediction Model', echo=FALSE, warning=FALSE, message=FALSE}
 knitr::include_graphics(here("results", "Models", "Fit1GF_numbers.png"))
 ```
+
+The process was repeated for predicting Raccoon cases with the strongest model using the previous months Raccoon cases and predictve error in additon to the previous three months Gray Fox numbers.
+
 ```{r, Model2gen,  fig.cap='Raccoon Prediction General Model', echo=FALSE, warning=FALSE, message=FALSE}
 knitr::include_graphics(here("results", "Models", "Fit7Rac_general.png"))
 ```
 ```{r, Model2,  fig.cap='Raccoon Prediction Model', echo=FALSE, warning=FALSE, message=FALSE}
 knitr::include_graphics(here("results", "Models", "Fit7Rac_Numbers.png"))
 ```
-The first model, which uses the number of Raccoon cases from the previous month along with the predictive error for Gray Fox cases from the previosu month to predict Gray Fox cases in the current month is the more accurate model.
+
+The first model, which uses the number of Raccoon cases from the previous month along with the predictive error for Gray Fox cases from the previous month to predict Gray Fox cases in the current month is the more accurate model  with an RMSe of 0.2942214.
+The second model predicts the current months Raccoon cases using the previous months Raccoon data and model errot in addiiton to Gray Fox cases from the previous three months. Whilst this model was still quite accurate at predicting the number of cases it had a slighlty higher RMSe at 0.5596792.
 
 
 
@@ -216,7 +237,7 @@ Passive surveillance is also only showing part of the picture, with the results 
 
 
 ## Conclusions
-
+The results from this analysis suggest that there are temporal and spatial patterns of CDV cases with the two most commonly infected wild carnivores in Georgia; Raccoons and Gray Foxes. Time series analysis and ARIMA model construction suggests that numbers of Raccoon cases can be predicted using data on the number of Gray Foxes casses frm the porevious 3 months. There appears to be temoral trends in cases in both species with cses more likely to occur during the breeding season. Spatially there tends to be clustering of cases of both species within the same areas, with cases appearing more likely to occur in area of medium human population density with fewer cases in very densely and sparsly populated areas.
 
 # References
 

@@ -738,12 +738,14 @@ logDT3 <- DT2 +
   axis.ticks = element_blank(),
   panel.border = element_blank(),
   panel.grid = element_blank(),
-  axis.title = element_blank(), legend.position = "right")  + labs(fill= "logPopulation Density per SqM land area") + scale_fill_gradient(low = "white", high = "red", trans="log10")
+  axis.title = element_blank(), legend.position = "right")  + labs(fill= "logPopulation Density per SqM land area") + scale_fill_gradient(low = "white", high = "purple", trans="log10")
 
 logDT4 <- logDT3 + 
   geom_point(data = centrLL, aes(x = long, y = lat, color= Species), alpha = 0.5, size=1, position = position_jitter(width=0.05,height=0.05 ) ) 
  
 logDT4
+
+ggsave(here("results", "figures", "Cases_Density_Map.png"), plot= logDT4)
 ```
 
 ```{r}

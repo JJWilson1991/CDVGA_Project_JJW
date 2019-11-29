@@ -489,7 +489,9 @@ breeding <- as.data.frame(with(censea, table(Season, Species.x)))
 breedingadj1 <- breeding %>% dplyr :: mutate(lengthSea= c(3,3,6,3,3,6))
  breedingadj2 <- breedingadj1 %>% dplyr:: mutate(SeaAdj = (Freq/lengthSea))
 
- ggplot(breedingadj2, aes(Season, SeaAdj, fill = Species.x, color = Species.x, group = Species.x)) + geom_point() +geom_line()
+breedingplot<- ggplot(breedingadj2, aes(Season, SeaAdj, fill = Species.x, color = Species.x, group = Species.x)) + geom_point() +geom_line() + labs(y="Cases per season/season length")
+
+ggsave(here("results", "Figures", "breeding_plot.png"), plot=breedingplot)
 ```
 ```{r}
 #as there was suggested to possibly be more female gray foxes, does the proportion change accroding to breeding season?

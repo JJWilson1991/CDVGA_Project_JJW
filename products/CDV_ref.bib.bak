@@ -28,22 +28,24 @@ keywords = {Canine distemper virus,Carnivores,H protein,Human health risk,Spillo
 title = {{Cross-species transmission of canine distemper virus-an update}},
 year = {2015}
 }
-@article{DeemSharonL.;SpelmanL.H.;YatesR.A.;Montali2000,
-abstract = {Canine distemper virus is a member of the genus Morbillivirus in the family Paramyxoviridae. Canine distemper has been recorded in domestic dogs for centuries. It is now recognized as a worldwide problem of carnivores and has the second highest fatality rate of any infectious disease, after rabies, in domestic dogs. The importance of this disease in nondomestic animals has become evident with vaccine-induced infections in a variety of species and large-scale epidemics in captive and free-ranging felids. To date, canine distemper has been reported in all families of terrestrial carnivores: Canidae, Felidae, Hyaenidae, Mustelidae, Procyonidae, Ursidae, and Viverridae. Veterinarians, including those working with nondomestic carnivores, should be familiar with the clinical signs, diagnosis, and clinical management of this disease.},
-author = {{Deem, Sharon L.; Spelman, L. H.; Yates, R. A.; Montali}, R. J.},
-doi = {10.1638/1042-7260(2000)031[0441:cditca]2.0.co;2},
-issn = {1042-7260},
-journal = {Journal of Zoo and Wildlife Medicine},
-pmid = {11428391},
-title = {{CANINE DISTEMPER IN TERRESTRIAL CARNIVORES: A REVIEW}},
-year = {2000}
+
+@Article{Deem2000,
+  author   = {Deem, Sharon L. and Spelman, L. H. and Yates, R. A. and Montali, R. J.},
+  title    = {CANINE DISTEMPER IN TERRESTRIAL CARNIVORES: A REVIEW},
+  journal  = {Journal of Zoo and Wildlife Medicine},
+  year     = {2000},
+  issn     = {1042-7260},
+  abstract = {Canine distemper virus is a member of the genus Morbillivirus in the family Paramyxoviridae. Canine distemper has been recorded in domestic dogs for centuries. It is now recognized as a worldwide problem of carnivores and has the second highest fatality rate of any infectious disease, after rabies, in domestic dogs. The importance of this disease in nondomestic animals has become evident with vaccine-induced infections in a variety of species and large-scale epidemics in captive and free-ranging felids. To date, canine distemper has been reported in all families of terrestrial carnivores: Canidae, Felidae, Hyaenidae, Mustelidae, Procyonidae, Ursidae, and Viverridae. Veterinarians, including those working with nondomestic carnivores, should be familiar with the clinical signs, diagnosis, and clinical management of this disease.},
+  doi      = {10.1638/1042-7260(2000)031[0441:cditca]2.0.co;2},
+  pmid     = {11428391},
 }
-@book{GreeneC.E.&Appel1990,
-author = {{Greene, C. E. {\&} Appel}, M. J. G.},
-booktitle = {Infectious Diseases of the Dog and Cat},
-pages = {226--241},
-title = {{Canine Distemper}},
-year = {1990}
+
+@Book{Greene1990,
+  title     = {Canine Distemper},
+  year      = {1990},
+  author    = {Greene, C. E. and Appel, M. J. G.},
+  booktitle = {Infectious Diseases of the Dog and Cat},
+  pages     = {226--241},
 }
 @article{Hoff1974,
 abstract = {An epizootic of canine distemper (CD) virus infection is described among raccoons and gray foxes in urban Sarasota County, Florida. The epizootic persisted for 2 years with a total of 114 raccoons and 8 gray foxes being handled by Sarasota County Animal Control. Virus was isolated from clinically ill raccoons on two separate occasions, 7 months apart. CD antibodies were detected in 54.5{\%} of a sample comprising both clinically ill and apparently normal raccoons. The incidence of CD in dogs in the county did not increase during the 2 year period.},
@@ -54,11 +56,12 @@ journal = {Journal of wildlife diseases},
 title = {{Epizootic of canine distemper virus infection among urban raccoons and gray foxes.}},
 year = {1974}
 }
-@book{HyndmanR.J.&Athanasopoulos2018,
-author = {{Hyndman, R.J., {\&} Athanasopoulos}, G.},
-publisher = {OTexts: Melbourne, Australia.},
-title = {{Forecasting: principles and practice}},
-year = {2018}
+
+@Book{Hyndman2018,
+  title     = {Forecasting: principles and practice},
+  publisher = {OTexts: Melbourne, Australia.},
+  year      = {2018},
+  author    = {Hyndman, R.J. and Athanasopoulos, G.},
 }
 @article{Kapil2008,
 abstract = {Canine distemper virus (CDV) is a highly contagious virus that causes multisystemic disease in dogs. We received seven samples from dogs with CD from the United States during 2007. CDV isolates from these samples formed large, multinucleated syncytia in a Vero cell line expressing canine signaling lymphocyte activation molecule (SLAM). Based on the hemagglutinin gene sequences, the CDV isolates from three states (California, Missouri, and Oklahoma) formed two CDV genetic groups: group I (major; six of seven isolates) consisted of CDV isolates closely related to the European wildlife lineage of CDV, and group II (minor; one of seven isolates) was genetically related to the Arctic-like lineage of CDV. However, both CDV groups were genetically different from the current vaccine strains that belong to the American-1 lineage of the old (1930 to 1950) CDV isolates. Copyright {\textcopyright} 2008, American Society for Microbiology. All Rights Reserved.},
