@@ -38,6 +38,8 @@ library(maptools)
 library(sf)
 
 library(ggmosaic)
+
+library(here)
 ```
 
 
@@ -264,6 +266,21 @@ na.omit(RGFSex) %>% crosstab(Species, Sex, Age, percentages  = TRUE)
 ```{r}
 na.omit(RGFSex) %>% crosstab(Species, Sex, chi_square =  TRUE)
 
+sexchi<- na.omit(with(RGFSex, table(Sex, Species)))
+
+chisex <- chisq.test(sexchi)
+chisex$observed
+
+round(chisex$expected,2)
+
+chisex$residuals
+
+corrplot(chisex$residuals, is.corr = F)
+
+contribsex <- 100*chisex$residuals^2/chisex$statistic
+round(contribsex, 3)
+
+corrplot(contribsex, is.cor = FALSE)
 ```
 ```{r}
 na.omit(RGFSex) %>% crosstab(Species, Age, chi_square =  TRUE)

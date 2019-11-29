@@ -98,12 +98,18 @@ knitr::include_graphics(here("results", "Figures", "RGFAge_mosaic.png"))
 
 ```
 
+
+The age data is difficult to use as it is a particularly subjective measure in this case and there would need to be very marked changes for anything to be suggested.
+
+
 ```{r, resultfigure6, fig.cap= 'Bivariate analysis of Species and Sex of CDV cases submitted to SCWDS, 1975-2013', echo=FALSE, warning=FALSE, message=FALSE}
 
 knitr::include_graphics(here("results", "Figures", "SexSpecies_Mosaic.png"))
 
 ```
 
+
+There did not appear to be any clear diff
 
 ```{r, resultfigure7, fig.cap= 'Raccoon and Gray Fox cases in Georgia presented to SCWDS, 1975-2013', echo=FALSE, warning=FALSE, message=FALSE}
 knitr:: include_graphics(here("results", "Figures", "RacFox_year.png"))
