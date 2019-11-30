@@ -132,4 +132,15 @@ title = {{A canine distemper virus epidemic in Serengeti lions (Panthera leo)}},
 year = {1996}
 }
 
+@Article{Williams1988,
+  author        = {Williams, E. S. and Thorne, E. T. and Appel, M. J. and Belitsky, D. W.},
+  title         = {{Canine distemper in black-footed ferrets (Mustela nigripes) from Wyoming.}},
+  journal       = {Journal of wildlife diseases},
+  year          = {1988},
+  issn          = {00903558},
+  __markedentry = {[jjw_t:6]},
+  abstract      = {In September and October 1985, six black-footed ferrets (Mustela nigripes) were captured from the only known population, located near Meeteetse, Wyoming for captive propagation. Two days following capture an adult male showed signs of canine distemper and an adult female displayed similar signs 7 days postcapture; these infections were undoubtedly acquired prior to capture. Subsequently the four remaining captive black-footed ferrets also developed canine distemper and all eventually died. Clinical signs included severe pruritus, hyperkeratosis and progressive loss of body condition. A few animals had intermittent diarrhea and respiratory disease. Intranuclear and intracytoplasmic inclusion bodies were numerous in epithelial tissues and two black-footed ferrets had a mild to moderate meningoencephalitis. Canine distemper virus was isolated from four animals and paramyxovirus nucleocapsids were observed by electron microscopy of feces from all affected black-footed ferrets. Antibodies to canine distemper virus were not detected in sera of sick black-footed ferrets. Antibodies to canine distemper virus were found in sera of badgers (Taxidea taxus) and coyotes (Canis latrans) collected in the Meeteetse area in 1986. Most free-ranging black-footed ferrets in the colony apparently died of canine distemper during the summer and fall of 1985. An attempt was made to capture all surviving animals in the affected area in order to abort the epizootic and provide black-footed ferrets for captive propagation.},
+  doi           = {10.7589/0090-3558-24.3.385},
+}
+
 @Comment{jabref-meta: databaseType:bibtex;}

@@ -11,14 +11,14 @@ library(tidyr)
 library(here)
 ```
 ```{r}
-CDV_Clean <-   readRDS("../../data/processed_data/CDVprocesseddata.rds")
+CDV_Clean <-   readRDS(here("data", "processed_data", "CDVprocesseddata.rds"))
 
 TSCDV<- with(CDV_Clean,table(CollectionYear))
 tTSCDV<-ts(TSCDV)
 #plot.ts(tTSCDV)
 ```
 ```{r}
-RACnum <- readRDS("../../data/processed_data/RaCFoxMappingData.rds")
+RACnum <- readRDS(here("data", "processed_data", "RaCFoxMappingData.rds"))
 RGFAges <- subset(RGFAge, State %in% c("Georgia"))
 
 RGFTS<-  as.data.frame(with(RGFAges, table(Species, CollectionYear)))

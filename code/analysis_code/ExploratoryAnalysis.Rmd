@@ -525,8 +525,7 @@ breeding2 <- as.data.frame(with(censea, table(Season, Species.x, Sex.x))) %>% dp
 breeding2adj1 <- breeding2 %>% dplyr :: mutate(lengthSea= c(3,3,6,3,3,6,3,3,6,3,3,6))
  breeding2adj2 <- breeding2adj1 %>% dplyr:: mutate(SeaAdj = (Freq/lengthSea))
 
-ggplot(breeding2adj2, aes(Season, SeaAdj, fill = Sex.x, color = Sex.x, group = Sex.x)) + geom_point() +geom_line() + facet_wrap(Species.x)
+ggplot(breeding2adj2, aes(Season, SeaAdj, fill = Sex.x, color = Sex.x, group = Sex.x)) + geom_point() +geom_line() 
 
-season_Spec <-breeding2adj2[,c(1,2,6)] %>% spread(key = Season, value = SeaAdj)
 
 ```

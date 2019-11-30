@@ -38,6 +38,7 @@ Although raccoons are thought to be a major reservoir for CDV, little research h
 Data was recorded from Canine distemper positive cases submitted to the Southeastern Cooperative Wildlife Disease Study between 1975 and 2013. Cases were identified as CDV by fluorescent antibody testing and/or histologic diagnosis of characteristic lesions.  Species, date of submission, county of origin, and sex were noted. A total number of 701 positive cases were submitted from 13 states over the 38-year period. Positive cases were comprised of raccoons (n=462), gray foxes (n=211), striped skunks (n=13), coyotes (n=7), red foxes (n=3), gray wolves (n=3), one mink  and a black bear.
 
 Census and county land area data for Geogia was accessed and downloaded from [census.gov](https://census.gov/).
+
 ```{r, resulttable1, echo=FALSE, warning=FALSE, message=FALSE}
 Speciestable = readRDS(here("results", "Tables","Speciestable.rds"))
 knitr::kable(Speciestable, caption = 'Species frequency Table')
@@ -47,7 +48,7 @@ knitr::kable(Speciestable, caption = 'Species frequency Table')
 
 
 
-## Questions/Hypotheses to be addressed
+## Questions to be addressed
 1.Are there temporal trends in cases diagnosed related to the ecology of the hosts? 
 
 
@@ -61,14 +62,15 @@ knitr::kable(Speciestable, caption = 'Species frequency Table')
 
 ## Data aquisition
 Data of animals brought to SCWDS between 1975 and 2013, which were diagnosed as having CDV at post mortem. Cases were identified as CDV by fluorescent antibody testing and/or histologic diagnosis of characteristic lesions.  Species, date of submission, county of origin, and sex were noted. 
-##Overview of Data
-Data contained the the follwing variables; Case number, State, county, area, Sex, Species, Age and collection year. Additional data incluing specific collection dates was also used from a serpearte spread sheet for the time series analysis.
+
+## Overview of Data
+CDV case data contained the follwing variables; Case number, State, county, area, Sex, Species, Age and collection year. Additional data incluing specific collection dates was also used from a seperate spread sheet for the time series analysis. 
 
 ## Data import and cleaning
 Data was imported into R Studio and cleaned to correct data entry errors and missing data. Detailed description of data analysis and cleaning is contained in the processing scripts within the [project repository](https://github.com/epid8060fall2019/JonathanWilson_Project) in the processing_code subfolder.
 
 ## Time Series analsys
-time series analysis and ARIMA model construction was conducted using the "fpp2" package from [Forecating: principles and practice, Hyndman & Athanasopoulos](https://otexts.com/fpp2/).[@Hyndman2018]
+time series analysis and ARIMA model construction was conducted using the "fpp2" package from [Forecasting: principles and practice, Hyndman & Athanasopoulos](https://otexts.com/fpp2/).[@Hyndman2018]
 
 # Results
 ## Data Exploration
@@ -185,18 +187,18 @@ Quantative analysis of the level of clustering of cases was done using Ripley's 
 knitr::include_graphics(here("results", "Figures", "RipK.png"))
 ```
 
-```{r, resultfigure3, fig.cap= 'Raccoon and Gray Fox cases in Georgia presented to SCWDS, 1975-2013, and human population density', echo=FALSE, warning=FALSE, message=FALSE}
+```{r, resultfigure9, fig.cap= 'Raccoon and Gray Fox cases in Georgia presented to SCWDS, 1975-2013, and human population density', echo=FALSE, warning=FALSE, message=FALSE}
 knitr:: include_graphics(here("results", "figures", "Cases_Density_Map.png"))
 
 ```
 
 
-```{r, resultfigure3, fig.cap= 'Raccoon and Gray Fox cases per spm against human population density', echo=FALSE, warning=FALSE, message=FALSE}
+```{r, resultfigure10, fig.cap= 'Raccoon and Gray Fox cases per spm against human population density', echo=FALSE, warning=FALSE, message=FALSE}
 knitr:: include_graphics(here("results", "figures", "log_casespersqm_log_popdens.png"))
 
 ```
 
-
+Cases of Raccoons and Gray Foxes were plotted both on a map showing population density per county and a regression of ocervall cases per area for each county against population density per sqm, which suggests a hump shaped relationship.
 
 
 ### Time series analysis
@@ -233,17 +235,18 @@ Initial introduction of CDV into wild carnivores in the U.S. in 1960’s was thr
 The analysis of the CDV case data in Raccoons and Gray Foxes suggests a relationship between cases in the two species, with the ARIMA model produced for Gray Fox cases suggesting that monthly case numbers in Gray Foxes can quite accurately be predicted using the previous months Gray Fox error data and the number of Raccoon cases from this month.
 A second model for the prediction of Raccoon cases using the previous months raccoon data in addition to Gray Fox cases from the previous three months was also quite accurate at predicting Raccoon cases, albeit it had a slightly higher error than the other model. 
 
-The spatial analysis of the data showed significant clustering of cases, which is in line with the ecology of the virus which tends to have epizootics where it spreads quickly amongst nearby susceptible. The primary mode of CDV infection is aerosol inhalation, suggesting habitat overlap and contact [@Hoff1974]. There appeared to be a much greater number of cases in the northern part of the state. Again the possible reasons for this are diverse; reporting bias due to a range of possible reasons; as the northern part of the state is more densely populated by humans, closer proximity to SCWDS, more suitable habitat and a consequently greater population of susceptible raccoons and gray foxes. Interestingly, there may be a parabolic relationship between population density and number of cases, with very high densities and very low densities having lower number of cases
+The spatial analysis of the data showed significant clustering of cases, which is in line with the ecology of the virus which tends to have epizootics where it spreads quickly amongst nearby susceptible. The primary mode of CDV infection is aerosol inhalation, suggesting habitat overlap and contact [@Hoff1974]. There appeared to be a much greater number of cases in the northern part of the state. Again the possible reasons for this are diverse; reporting bias due to a range of possible reasons; as the northern part of the state is more densely populated by humans, closer proximity to SCWDS, more suitable habitat and a consequently greater population of susceptible raccoons and gray foxes. Interestingly, there may be a parabolic relationship between population density and number of cases, with very high densities and very low densities having lower number of cases. This suggests that suburban areas may be a hotspot for disease circulation with these areas being attractive to Raccoons particlualry due to the balance of available habitat and easy scavenging opportunites. This is of particualr relevance as the disease is suggested to spillback from raccoons into dogs [@Kapil2011].
 
 The data suggests a correlation between breeding season and the number of cases reported, with positives more likely to occur during the breeding season. This could be due to a number of reasons; there may be more contact between individual animals as they search for mates promoting aerosol spread of virus . Contact structure of a raccoon population can significantly impact disease transmission with Raccoon contact networks being shown to change depending on the season (breeding vs. non breeding); Rabies has been shown to spread quickly in raccoons when introduced during the breeding season.) [@Reynolds2015]. Other potential influences of the breeding season and cases aside from contact may be the  phycological strain of reproduction may leave animals more susceptible to the virus or as these cases are from animals found dead it could be that the increased movement from the breeding season leads to more being killed in other ways, such as on roads, and they happen to also be CDV positive at necropsy.    
 
 There as significant limitations to using this data set to draw conclusions about CDV cases in wild animals in Georgia. This data set comes from passive surveillance only, with it being reliant on dead animals being found and sent to SCWDS by DNR officers for necropsy. This leaves the data open to significant influence by reporting bias, as the distribution of DNR officers is not uniform across the state. 
-Passive surveillance is also only showing part of the picture, with the results being heavily skewed towards symptomatic cases. Gray foxes and raccoons in Tennessee (Nov. 2013 – Aug. 2014) were infected frequently, but passive surveillance only captures animals showing clinical signs. Does not account for asymptomatic cases with 55% of asymptomatic animals tested being positive in this study [@Pope2016].
+Passive surveillance is also only showing part of the picture, with the results being heavily skewed towards symptomatic cases. Gray foxes and raccoons in Tennessee (Nov. 2013 – Aug. 2014) were infected frequently, but passive surveillance only captures animals showing clinical signs. Does not account for asymptomatic cases with 55% of asymptomatic animals tested being positive in this study [@Pope2016]. 
+There is also the difficulties associated with the size of the data set when it comes to trying to look at spatial and temporal trends together. Currently it is only possible to have meaningful numbers for analysis by looking at spatial trends using all the data, but obviously these cases are occuring over a very long period of time, the opposite is true for looking at temporal trends whereby only meanigful numbers can be gained by using cases over a huge area the size of Georgia.
 
 
 
 ## Conclusions
-The results from this analysis suggest that there are temporal and spatial patterns of CDV cases with the two most commonly infected wild carnivores in Georgia; Raccoons and Gray Foxes. Time series analysis and ARIMA model construction suggests that numbers of Raccoon cases can be predicted using data on the number of Gray Foxes casses frm the porevious 3 months. There appears to be temoral trends in cases in both species with cses more likely to occur during the breeding season. Spatially there tends to be clustering of cases of both species within the same areas, with cases appearing more likely to occur in area of medium human population density with fewer cases in very densely and sparsly populated areas.
+The results from this analysis suggest that there are temporal and spatial patterns of CDV cases with the two most commonly infected wild carnivores in Georgia; Raccoons and Gray Foxes. Time series analysis and ARIMA model construction suggests that numbers of Raccoon cases can be predicted using data on the number of Gray Foxes casses frm the previous three months. There appears to be temporal trends in cases in both species, with cases more likely to occur during the breeding season. Spatially there tends to be clustering of cases of both species within the same areas, with cases appearing more likely to occur in area of medium human population density with fewer cases in very densely and sparsely populated areas. Ultimately, there is enough trends suggested from this passively coolected data which would support a worthwhile study, with comprehsive sampling of wild carnivores over time and space to try to elucidate spillover trendsbetween species, paricularly in suburban areas.
 
 # References
 
