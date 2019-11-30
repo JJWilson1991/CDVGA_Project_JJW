@@ -211,12 +211,13 @@ table(sort(unique(FJC$County)))
 
 ```{r}
 #like we did earlier for our national map, lets get some data for the larger cities in georgia as reference points
-GAcitiesspread <- uscitiesdf %>% subset(country.etc %in% "GA") %>% filter(pop>100000)
+colnames(uscitiesdf)[3] <- "Population"
+GAcitiesspread <- uscitiesdf %>% subset(country.etc %in% "GA") %>% filter(Population>100000)
 #now plot all the positive data by county
 g1 <- ggplot(data = cotr) +  
   geom_polygon(aes(x = long, y = lat, fill = Freq, group = group), color = "azure4") + 
   coord_fixed(1.3)  + 
-  scale_fill_gradient(high = "magenta4", low = "white", na.value="azure", trans = "log10") + 
+  scale_fill_gradient(high = "magenta4", low = "white", na.value="white", trans = "log10") + 
   theme_map() 
 
 g2 <- g1 + 
@@ -229,7 +230,7 @@ g2 <- g1 +
   axis.title = element_blank(), legend.position = "right")  + labs(fill= "Number of cases") 
 
 g3 <- g2 + 
-  geom_point(data = GAcitiesspread, aes(x = long, y = lat, size = pop), alpha = 0.5) + 
+  geom_point(data = GAcitiesspread, aes(x = long, y = lat, size = Population), alpha = 0.5) + 
   geom_text(data = GAcitiesspread, aes(x = long, y = lat, label = name, group = NULL), position = position_jitter(width=0.3,height=0.3)) 
 g3
 

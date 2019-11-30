@@ -123,9 +123,15 @@ knitr:: include_graphics(here("results", "Figures", "breeding_plot.png"))
 
 ```
 
-##Spatial Mapping of Georgia Data
+## Spatial Mapping of Georgia Data
 
 Further qualitative analysis was conducted by mapping disease presence over time at county level.
+
+```{r, map0, fig.cap= 'Total Raccoon and Gray Fox cases in Georgia presented to SCWDS, 1975-2013, per county', echo=FALSE, warning=FALSE, message=FALSE}
+knitr:: include_graphics(here("results", "Figures", "County_map.png"))
+
+```
+
 
 ```{r, plotly1, fig.cap= "County Presence over Time of CDV, from cases submitted to SCWDS, 1975-2013",echo=FALSE, warning=FALSE, message=FALSE}
 library(ggmap)
