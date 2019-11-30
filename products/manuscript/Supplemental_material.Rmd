@@ -4,3 +4,38 @@ author: "Jonathan Wilson"
 date: "27/11/2019"
 output: html_document
 ---
+
+```{r, figure1, fig.cap= 'CDV cases per state per year', echo=FALSE, warning=FALSE, message=FALSE}
+knitr:: include_graphics(here("results", "figures", "Cases_per_State_WrapYear.png"))
+
+```
+
+```{r, figure2, fig.cap= 'CDV cases per county per year, GA', echo=FALSE, warning=FALSE, message=FALSE}
+knitr:: include_graphics(here("results", "figures", "County_per_Year.png"))
+
+```
+```{r, figure3, fig.cap= 'CDV cases per county per year map, GA', echo=FALSE, warning=FALSE, message=FALSE}
+knitr:: include_graphics(here("results", "figures", "County_WrapYear.png"))
+
+```
+```{r, figure4, fig.cap= 'Gray fox CDV cases per county per year, GA', echo=FALSE, warning=FALSE, message=FALSE}
+knitr:: include_graphics(here("results", "figures", "Gray_County_WrapYear.png"))
+
+```
+```{r, figure5, fig.cap= 'Raccoon CDV cases per county per year, GA', echo=FALSE, warning=FALSE, message=FALSE}
+knitr:: include_graphics(here("results", "figures", "Rac_County_WrapYear.png"))
+
+```
+
+```{r, figure6, fig.cap= 'CDV presence per county per year, GA', echo=FALSE, warning=FALSE, message=FALSE}
+knitr:: include_graphics(here("results", "figures", "Presence_WrapYear.png"))
+
+```
+```{r, figure7, fig.cap= 'CDV cases per gender per species per year, GA', echo=FALSE, warning=FALSE, message=FALSE}
+knitr:: include_graphics(here("results", "figures", "Gender_Species_year.png"))
+
+```
+```{r, figure8, fig.cap= 'CDV cases per species per state per year, GA', echo=FALSE, warning=FALSE, message=FALSE}
+knitr:: include_graphics(here("results", "figures", "SP_Fr_Yr_WrapState.png"))
+
+```
