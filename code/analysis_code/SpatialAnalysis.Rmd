@@ -5,7 +5,10 @@ output: html_notebook
 ```{r}
 
 library(spatstat)
+
 library(here)
+
+
 GAcentre <- readRDS(here("data", "processed_data", "GACentroiddata.rds"))
 GAcentre
 ```
@@ -164,5 +167,5 @@ plot(Kest(ripSouth))
 
 plot(envelope(ripSouth)) 
 
-
+#theyre both still pretty clustered, which makes a lot of sense
 ```

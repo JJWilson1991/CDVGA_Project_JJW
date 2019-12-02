@@ -96,6 +96,7 @@ RacFox_year
 ggsave(here("results", "Figures", "RacFox_year.png"), plot = RacFox_year)
 
 RacFox_yearp <- ggplotly(RacFox_year, tooltip = c("Species", "Freq", "CollectionYear"))
+
 RacFox_yearp 
 
 #ggsave(filename = "../../results/RacFox_year.png",plot = RacFox_year)
@@ -109,9 +110,11 @@ RacFoxTest<- ggplot(as.data.frame(SPperYr), aes(CollectionYear, Freq, fill = Spe
   geom_point() +geom_line() + 
   theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 6))
 tr <- ggplotly(RacFoxTest)
+tr
 ```
 
 ```{r}
+#plot no of cases per state
 State_freq <- ggplot(CDV_Clean, aes(State, fill=State, color=State)) +geom_bar() + theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 8), legend.position = "none") +labs(y="Number of Cases")
 
 State_freq
@@ -121,6 +124,7 @@ ggsave(here("results", "Figures", "State_freq.png"), plot = State_freq)
 
 ```
 ```{r}
+#plot number of cases per state for each species
 State_wrap_species <- ggplot(CDV_Clean, aes(State, fill=State, color=State)) +geom_bar() + theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 8), legend.position = "none") + 
   facet_wrap(~Species)
 
@@ -129,10 +133,14 @@ ggsave(here("results", "Figures", "State_wrap_species.png"), plot=State_wrap_spe
 ```
 ```{r}
 #i forgot to plot age by species wrap.. its pretty uninteresting
+CDV_Cleans <- subset(CDV_Clean, Sex %in% c("Male", "Female"))
+SexSpecies<- ggplot(CDV_Cleans, aes(Sex)) + geom_bar() +facet_wrap(~Species)
 
-ggplot(CDV_Clean, aes(Sex)) + geom_bar() +facet_wrap(~Species)
+ggsave(here("results", "Figures", "Sex_Species_freq.png"), plot = SexSpecies)
+
 ```
 ```{r}
+#plot cases per species over time
 StperYr <- with(CDV_Clean, table(State, CollectionYear))
 point_casesyear_state <- ggplot(as.data.frame(StperYr), aes(CollectionYear, Freq, fill = State, color = State, group = State))  + 
   geom_point() +
@@ -202,6 +210,7 @@ TibageSPd <- TibageSP%>% dplyr::mutate(Total = (Adult + Subadult +Juvenile))
 tb<- TibageSPd %>% mutate_at(vars(Adult, Juvenile, Subadult), funs(./Total))
 tb
 
+#realisitically age classification is far too subjective to do amything with
 ```
 
 
@@ -219,7 +228,7 @@ Sextableperc <- Sextable%>% dplyr::mutate(Total = (Male + Female)) %>% mutate_at
 
 Sextableperc %>% saveRDS(here("results","Tables","Sexpercentage.rds"))
 
-RacFox_Sex <- ggplot(RGFSex, aes(Sex)) + 
+RacFox_Sex <- ggplot(RGFSex, aes(Sex, fill=Sex)) + 
   geom_bar() +
   facet_wrap(~Species)
 RacFox_Sex
@@ -244,7 +253,7 @@ ggsave(here("results", "Figures", "Gender_Species_year.png"), plot = Gender_year
 
 ```{r}
 #bivariate mosaic plot of Sex and species
-SexSpecies_Mosaic <- ggplot(RGFSex) +geom_mosaic(aes(x=product(Sex, Species), fill=Sex))
+SexSpecies_Mosaic <- ggplot(RGFSex) +geom_mosaic(aes(x=product(Sex, Species), fill=Sex)) +labs(x= "Species", y="Sex")
 
 SexSpecies_Mosaic
 
@@ -264,6 +273,7 @@ na.omit(RGFSex) %>% crosstab(Species, Sex, Age, percentages  = TRUE)
 
 ```
 ```{r}
+#chi squared test for sex and species
 na.omit(RGFSex) %>% crosstab(Species, Sex, chi_square =  TRUE)
 
 sexchi<- na.omit(with(RGFSex, table(Sex, Species)))

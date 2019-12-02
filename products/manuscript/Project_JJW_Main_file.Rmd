@@ -37,14 +37,6 @@ Data was recorded from Canine distemper positive cases submitted to the Southeas
 
 Census and county land area data for Geogia was accessed and downloaded from [census.gov](https://census.gov/).
 
-```{r, resulttable1, echo=FALSE, warning=FALSE, message=FALSE}
-Speciestable = readRDS(here("results", "Tables","Speciestable.rds"))
-knitr::kable(Speciestable, caption = 'Species frequency Table')
-
-```
-
-
-
 
 ## Questions to be addressed
 1.Are there temporal trends in cases diagnosed related to the ecology of the hosts? 
@@ -73,17 +65,28 @@ time series analysis and ARIMA model construction was conducted using the "fpp2"
 # Results
 ## Data Exploration
 
-```{r, resultfigure1,  fig.cap='Number of cases of CDV per state, submitted to SCWDS, 1075-2013', echo=FALSE, warning=FALSE, message=FALSE}
+```{r, resultfigure1,  fig.cap='**Figure 1:**Number of cases of CDV per state, submitted to SCWDS, 1075-2013', echo=FALSE, warning=FALSE, message=FALSE}
 knitr::include_graphics(here("results", "Figures", "State_freq.png"))
 ```
-```{r, mapfigure1, fig.cap='Map of CDV cases per state submitted to SCWDS, 1975-2013 .', echo=FALSE, warning=FALSE, message=FALSE}
+
+```{r, mapfigure1, fig.cap='**Figure 2:**CDV cases per state submitted to SCWDS, 1975-2013 .', echo=FALSE, warning=FALSE, message=FALSE}
 
 knitr::include_graphics(here("results", "Figures", "Cases_per_State.png"))
 ```
-```{r, resultfigure2,  fig.cap='Number of CDV cases per species submitted to SCWDS, 1975-2013', echo=FALSE, warning=FALSE, message=FALSE}
+_A total of 16 states clustered in the south east were represented in the data set with Georgia containing the majority of cases (n=422)._
+
+
+```{r, resultfigure2,  fig.cap='**Figure 3:**Number of CDV cases per species submitted to SCWDS, 1975-2013', echo=FALSE, warning=FALSE, message=FALSE}
 knitr::include_graphics(here("results", "Figures", "Species_freq.png"))
 ```
-```{r, resultfigure4, fig.cap= 'Total Cases per Year, 1975-2013', echo=FALSE, warning=FALSE, message=FALSE}
+```{r, resulttable1, fig.cap="**Figure 4:** Number of cases of CDV per species presented to SCWDS, 1975-2013.", echo=FALSE, warning=FALSE, message=FALSE}
+Speciestable = readRDS(here("results", "Tables","Speciestable.rds"))
+knitr::kable(Speciestable)
+
+```
+
+_There are eight species represented, with Gray Foxes and Raccoons making up the majority of cases_
+```{r, resultfigure4, fig.cap= '**Figure 5:**Total number of cases of CDV diagnosed at SCWDS per Year, 1975-2013.', echo=FALSE, warning=FALSE, message=FALSE}
 knitr::include_graphics(here("results", "Figures", "All_Cases_Year.png"))
 
 ```
@@ -97,9 +100,7 @@ From this point, data exploration and analysis will focus only on Gray foxes and
 knitr::include_graphics(here("results", "Figures", "RGFAge_mosaic.png"))
 
 ```
-
-
-The age data is difficult to use as it is a particularly subjective measure in this case and there would need to be very marked changes for anything to be suggested.
+_The age data is difficult to use as it is a particularly subjective measure in this case and there would need to be very marked changes for any relationships to be suggested._
 
 
 ```{r, resultfigure6, fig.cap= 'Bivariate analysis of Species and Sex of CDV cases submitted to SCWDS, 1975-2013', echo=FALSE, warning=FALSE, message=FALSE}
@@ -107,9 +108,6 @@ The age data is difficult to use as it is a particularly subjective measure in t
 knitr::include_graphics(here("results", "Figures", "SexSpecies_Mosaic.png"))
 
 ```
-
-
-There did not appear to be any clear diff
 
 ```{r, resultfigure7, fig.cap= 'Raccoon and Gray Fox cases in Georgia presented to SCWDS, 1975-2013', echo=FALSE, warning=FALSE, message=FALSE}
 knitr:: include_graphics(here("results", "Figures", "RacFox_year.png"))
@@ -120,7 +118,7 @@ knitr:: include_graphics(here("results", "Figures", "RacFox_year.png"))
 knitr:: include_graphics(here("results", "Figures", "breeding_plot.png"))
 
 ```
-
+_In this case the different parts of the reprodcution cycle were defined as the Breeding season being February to April, Lactation as May to July and the rest of the year non-Breeding. _
 ## Spatial Mapping of Georgia Data
 
 Further qualitative analysis was conducted by mapping disease presence over time at county level.
@@ -153,6 +151,7 @@ PA2 <- ggplotly(PA) %>% animation_opts( transition= 1,  redraw = FALSE)
 PA2
 
 ```
+_The presence or absence of CDV postive necropsy cases in Raccoons or Gray Foxes in each county is shown fro the years 1975-2013. The majority of counties with postive cases appear to occur in the northern part of the state with another small cluster in the south-east._
 
 This was further analysed by comparing this distribution of cases over time by splitting cases by species.
 
@@ -185,7 +184,7 @@ g4
 
 ```
 
-Quantative analysis of the level of clustering of cases was done using Ripley's K analysis.
+Analysis of the level of clustering of cases was done using Ripley's K analysis.
 
 ```{r, ripK, fig.cap= "Ripley's K analysis of CDV cases in Raccoons and Gray Foxes in Georgia, from cases submitted to SCWDs, 1975-2013", echo=FALSE, warning=FALSE, message=FALSE}
 knitr::include_graphics(here("results", "Figures", "RipK.png"))
@@ -202,7 +201,7 @@ knitr:: include_graphics(here("results", "figures", "log_casespersqm_log_popdens
 
 ```
 
-Cases of Raccoons and Gray Foxes were plotted both on a map showing population density per county and a regression of ocervall cases per area for each county against population density per sqm, which suggests a hump shaped relationship.
+Cases of Raccoons and Gray Foxes were plotted both on a map showing population density per county and a regression of overall cases per area for each county against population density per sqm, which suggests a hump shaped relationship.
 
 
 ### Time series analysis

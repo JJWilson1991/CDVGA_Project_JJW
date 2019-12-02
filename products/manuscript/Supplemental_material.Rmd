@@ -39,3 +39,33 @@ knitr:: include_graphics(here("results", "figures", "Gender_Species_year.png"))
 knitr:: include_graphics(here("results", "figures", "SP_Fr_Yr_WrapState.png"))
 
 ```
+```{r, figure9, fig.cap= 'CDV per county population vs county population density, GA', echo=FALSE, warning=FALSE, message=FALSE}
+knitr:: include_graphics(here("results", "Figures", "Cases_per_pop_vs_pop_dens.png"))
+
+```
+```{r, figure10, fig.cap= 'CDV cases of each sex per species", echo=FALSE, warning=FALSE, message=FALSE}
+knitr:: include_graphics(here("results", "Figures", "Sex_Species_freq.png"))
+
+```
+```{r, figure11, fig.cap= 'CDV cases per state over time", echo=FALSE, warning=FALSE, message=FALSE}
+knitr:: include_graphics(here("results", "Figures",  "point_casesyear_state.png"))
+
+```
+```{r, figure12, fig.cap= 'CDV cases per state per species, over time", echo=FALSE, warning=FALSE, message=FALSE}
+knitr:: include_graphics(here("results", "Figures", "point_casesyear_state_wrap_species.png"))
+
+```
+```{r, figure13, fig.cap= 'All CDV cases over time", echo=FALSE, warning=FALSE, message=FALSE}
+knitr:: include_graphics(here("results", "Figures", "All_Cases_Year.png"))
+
+```
+```{r, figure14, fig.cap= 'Ages of Raccoon and Fox CDV cases", echo=FALSE, warning=FALSE, message=FALSE}
+knitr:: include_graphics(here("results", "Figures", "RacFox_Age.png"))
+
+```
+```{r, figure15, fig.cap= 'CDV cases for Raccooon and Gray Fox of each sex", echo=FALSE, warning=FALSE, message=FALSE}
+knitr:: include_graphics(here("results", "Figures", "RacFox_Sex2.png"))
+
+```
+
+
