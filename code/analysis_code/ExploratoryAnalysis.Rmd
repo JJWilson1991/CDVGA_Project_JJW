@@ -193,6 +193,9 @@ ggsave(here("results", "Figures", "All_Cases_Year.png"), plot = All_Cases_Year)
 CDV_Clean2 <-  subset(CDV_Clean, Species %in% c("Raccoon", "Gray Fox") & State=="Georgia")
 #lets take a look if there is any obvious variation in ages affected between raccoon and  gray fox
 RGFAge <- subset(CDV_Clean2, Age %in% c("Adult", "Subadult", "Juvenile"))
+
+RGFAge %>% saveRDS(here("data", "processed_data", "RGFAge.rds"))
+
 RacFox_Age <- ggplot(RGFAge, aes(Species)) +geom_bar(aes(fill = Age)) +labs(y="No. of Cases")
 
 RacFox_Age

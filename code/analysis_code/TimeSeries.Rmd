@@ -19,6 +19,9 @@ tTSCDV<-ts(TSCDV)
 ```
 ```{r}
 RACnum <- readRDS(here("data", "processed_data", "RaCFoxMappingData.rds"))
+
+
+RGFAge <- readRDS(here("data", "processed_data", "RGFAge.rds"))
 RGFAges <- subset(RGFAge, State %in% c("Georgia"))
 
 RGFTS<-  as.data.frame(with(RGFAges, table(Species, CollectionYear)))
