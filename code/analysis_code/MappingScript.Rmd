@@ -291,7 +291,7 @@ p2
 #the data isn't right here, no 1988 in glynn co.
 ```
 ```{r}
-#now we'll subset for raccoon and gray fow and compare the couty distribution
+#now we'll subset for raccoon and gray fow and compare the county distribution
 Cospe <- subset(CDVGA2, Species %in% c("Raccoon", "Gray Fox"))
 CoSPE <- with(Cospe, table(County, Species))
 COSPE <- as.data.frame(CoSPE)
@@ -481,9 +481,9 @@ RGA <- ggplot(data = RACFOX) +  geom_polygon(data = GAC, aes(x = long, y = lat, 
 RGA
 ```
 
-#can i get the case data for different counties in different years ploted on same map usiong diff colours per year?
+Can I get the case data for different counties in different years plotted on same map using diff colours per year?
 
-#can i get these 2 overtime?, add population centres to map
+can i get these 2 overtime?, add population centres to map
 
 ```{r}
 

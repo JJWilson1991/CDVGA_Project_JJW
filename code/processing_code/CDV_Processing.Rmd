@@ -34,7 +34,7 @@ glimpse(DFRawCDVcol)
 TRawCDVCol <- as_tibble(DFRawCDVcol)
 #lets look where data is missing
 vis_miss(TRawCDVCol)
-#not bad, the only variable whihc looks like it may be somewhat problematic is Area
+#not bad, the only variable which looks like it may be somewhat problematic is Area
 ```
 ```{r}
 table(TRawCDVCol$Species)
@@ -65,14 +65,14 @@ unique(TRawCDVCol$Age)
 ```
 ```{r}
 unique(TRawCDVCol$Sex)
-#the sex column is a little bit messy but should be easuly fixed, observations like "M,F" or "Both, may be linked to the two species observation earlier
+#the sex column is a little bit messy but should be easily fixed, observations like "M,F" or "Both, may be linked to the two species observation earlier
 ```
 ```{r}
 #the county and area data is likely to be messiest and need most cleaning
 
 sort(unique(TRawCDVCol$County))
 
-#there looks to be what may be spelling mistakes here or they may be counties in different staes with different spelling, shall have to look deeper
+#there looks to be what may be spelling mistakes here or they may be counties in different states with different spelling, shall have to look deeper
 
 ```
 ```{r}
@@ -104,7 +104,7 @@ unique(recodesex$Age)
 ```{r}
 numberperagegroup <- table(recodesex$Age)
 numberperagegroup
-#so a lot of these a re single obsv so we can probably group them inot the larger groups
+#so a lot of these are single obsv so we can probably group them into the larger groups
 #some of these are straight forward, like caps of the same word but it gets muddy with some like age 1yr, which could be an adult for some species and a sub adult for others
 ```
 ```{r}
@@ -152,7 +152,7 @@ glimpse(CDV_Clean)
 
 
 
-#Save the data as an RDS.
+Save the data as an RDS.
 
 
 

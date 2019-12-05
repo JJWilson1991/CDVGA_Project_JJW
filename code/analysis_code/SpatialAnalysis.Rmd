@@ -6,6 +6,7 @@ output: html_notebook
 
 library(spatstat)
 library(here)
+library(tidyverse)
 GAcentre <- readRDS(here("data", "processed_data", "GACentroiddata.rds"))
 GAcentre
 ```

@@ -44,7 +44,7 @@ f3
 
 
 ```{r}
-CDVGA2 <-    readRDS(here("data","processed_data","CDVGA2.rds"))
+CDVGA2 <- readRDS(here("data","processed_data","CDVGA2.rds"))
 CDVGA2 <- CDVGA2%>% mutate(CaseNumber = as.numeric(as.character(CaseNumber)))
 CDVGA_months <- left_join(CDVGA2, f3, by = "CaseNumber" )
 CDVGA_months<- CDVGA_months [-c(8:14)]
