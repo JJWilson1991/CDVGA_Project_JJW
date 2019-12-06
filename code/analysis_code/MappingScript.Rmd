@@ -427,7 +427,9 @@ PA <- ggplot(data = cotry_comp, aes(frame = CollectionYear)) +  geom_polygon(dat
   axis.title = element_blank(), legend.position = "none") +  labs(fill= "Presence")
 
 PA2 <- ggplotly(PA) %>% animation_opts( transition= 1,  redraw = FALSE)
-PA2
+PA2 
+#%>% add_markers(colour= Present, showlegend= F, alpha= 0.2, alpha_stroke=0.2) %>% add_markers(color= Present, frame= ~CollectionYear) %>% animation_opts(1000, redraw = F)
+
 ```
 
 ```{r}
@@ -592,10 +594,12 @@ g3 <- g2 +
 g3s <- ggplotly(g3) %>% animation_opts( transition= 1,  redraw = FALSE) 
 g4 <- style(g3s, tooltip= "text")
 
-g4
+g4  
+#%>% add_markers(colour= "Species", showlegend= F, alpha= 0.2, alpha_stroke=0.2) %>% add_markers(color= "Species", frame= "CollectionYear") %>% animation_opts(1000, redraw = F)
 
-g5 <- as_widget(g4)
-g5 %>% htmlwidgets::saveWidget(here("results", "Species_time.html"))
+
+#g5 <- as_widget(g4)
+#g5 %>% htmlwidgets::saveWidget(here("results", "Species_time.html"))
 #api_create(g4, filename = "Rac_Fox_Time_GA") too big
 ```
 ```{r}
