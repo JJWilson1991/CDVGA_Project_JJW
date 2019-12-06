@@ -12,6 +12,8 @@ How well is the context of the project described? Is a comprehensive background,
 
 One of your references "Alison et al 2013" wasn't in the correct format.
 
+The project is described very well. Maybe 1 more sentence stating why this is impactful to humans. I know that you mentioned that it can destroy populations but relating it back to humans will make people care. 
+
 ### Summary assessment
 * strong contextualization and motivation
 
@@ -22,7 +24,7 @@ How well and clear are the question(s)/hypotheses the project aims to address de
 
 ### Feedback and Comments
 
-WRITE YOUR FEEDBACK HERE
+The questions are very clear. The hypotheses were described however. 
 
 ### Summary assessment
 * question/hypotheses fully clear
@@ -46,10 +48,9 @@ How well is the data cleaned/processed and explored? Are all steps reasonable an
 
 ### Feedback and Comments
 
-WRITE YOUR FEEDBACK HERE
+Most of the process was explained alright in the code. Could have used a little more clarification/details to make it easier to understand. 
 
 ### Summary assessment
-* major weaknesses in wrangling and exploratory component
 * some weaknesses in wrangling and exploratory component
 
 
@@ -59,7 +60,9 @@ Were the analysis methods appropriate for the data? Was the analysis done proper
 
 ### Feedback and Comments
 
+I think the methods were appropriate.
 
+Would have been interesting to see the estimated raccoon and fox populations of georgia and an overlay.
 
 ### Summary assessment
 * strong and reasonable analysis
@@ -69,11 +72,9 @@ How well are results presented? Are tables and figures easy to read and understa
 
 ### Feedback and Comments
 
-WRITE YOUR FEEDBACK HERE
+All of your figures in the final document are well put together. Maybe just put humna population in the spatial mapping of GA figure. 
 
 ### Summary assessment
-* results are poorly presented, hard to understand, poor quality
-* results are presented ok, with room for improvement
 * results are very well presented
 
 
@@ -82,11 +83,9 @@ Are the study findings properly discussed? Are strengths and limitations acknowl
 
 ### Feedback and Comments
 
-WRITE YOUR FEEDBACK HERE
+NA
 
 ### Summary assessment
-* major parts of discussion missing or wrong 
-* minor parts wrong, missing or unclear
 * strong, complete and clear discussion
 
 
@@ -103,7 +102,7 @@ Is the project well structured? Are files in well labeled folders? Do files have
 
 ### Feedback and Comments
 
-All of readme's should be updated or removed. The original template scripts are still there. I didn't see anything that was in a wrong folder. 
+All of readme's should be updated or removed. The original template scripts are still there. I didn't see anything that was in a wrong folder. I thought the final document was supposed to be a word document but it was a webpage instead
 
 ### Summary assessment
 * mostly clear, but some confusing parts (e.g. useless files, things in the wrong folders)
@@ -168,7 +167,7 @@ How thorough was the overall study? Were alternatives (e.g. different ways of pr
 
 ### Feedback and Comments
 
-WRITE YOUR FEEDBACK HERE
+Alternatives weren't discussed much in the report. 
 
 ### Summary assessment
 * weak level of thoroughness
