@@ -79,7 +79,7 @@ The stationarity of the time series were confirmed using both the augmented Dick
 knitr::include_graphics(here("results", "Figures", "State_freq.png"))
 ```
 
-```{r, mapfigure1, fig.cap='**Figure 2:CDV cases per state submitted to SCWDS, 1975-2013 .'**, echo=FALSE, warning=FALSE, message=FALSE}
+```{r, mapfigure1, fig.cap='**Figure 2:CDV cases per state submitted to SCWDS, 1975-2013 .**', echo=FALSE, warning=FALSE, message=FALSE}
 
 knitr::include_graphics(here("results", "Figures", "Cases_per_State.png"))
 ```
