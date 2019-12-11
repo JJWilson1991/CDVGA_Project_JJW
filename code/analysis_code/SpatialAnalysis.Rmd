@@ -7,7 +7,7 @@ output: html_notebook
 library(spatstat)
 
 library(here)
-
+library(dplyr)
 
 GAcentre <- readRDS(here("data", "processed_data", "GACentroiddata.rds"))
 GAcentre
@@ -63,17 +63,6 @@ plot(Kest(GFripPointmap))
 #Both have significant clustering
 ```
 
-```{r}
-
-makePlot <- Kest(ppp(x=GAcentre$long,y=GAcentre$lat, window= riprange))
-#plot(ripPointmap)
-
- 
-
-#plot(Kest(ripPointmap)) 
-lapply(unique(GAcentre$CollectionYear), makePlot)
-
-```
 
 ```{r}
 #repeat ripleys k for 1988, can run loop for each year? probably

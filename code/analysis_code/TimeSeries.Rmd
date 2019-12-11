@@ -9,6 +9,7 @@ output: html_document
 library(fpp2)
 library(tidyr)
 library(here)
+library(ggplot2)
 ```
 ```{r}
 CDV_Clean <-   readRDS(here("data", "processed_data", "CDVprocesseddata.rds"))
@@ -53,15 +54,15 @@ dfRF<- dplyr :: rename(dfRF, GrayFox = "Gray Fox")
 ```{r}
 
 CDVGA_months<- readRDS(here("data", "processed_data", "CDVGA_months.rds"))
-f4 <- CDVGA_months %>% 
-  filter(State.x=="Georgia", Species.x %in% c("Raccoon", "Gray Fox")) %>% 
-  dplyr::select(Species.x, MY, CollectionYear, Month, Date) #%>% 
-  # dplyr::group_by(Species.x, MY) %>% 
-  # dplyr::summarise(n=n()) %>% 
-  # dplyr::ungroup()
+colnames(CDVGA_months)[2] <- c("State")
+colnames(CDVGA_months)[3] <- c("County")
+colnames(CDVGA_months)[4] <- c("Species")
 
-f4 <- f4 %>% mutate(Date_new = lubridate::floor_date(Date, unit ="month")) %>% 
-  group_by(Species.x, Date_new) %>%
+
+f4 <- CDVGA_months %>% dplyr :: filter(State=="Georgia", Species %in% c("Raccoon", "Gray Fox")) %>%  dplyr::select(Species, MY, CollectionYear, Month, Date)
+
+f4 <- f4 %>% dplyr :: mutate(Date_new = lubridate::floor_date(Date, unit ="month")) %>% 
+ dplyr :: group_by(Species, Date_new) %>%
   dplyr::summarise(n = n()) %>%
   dplyr::ungroup()
 
@@ -69,11 +70,11 @@ f5 <- data.frame(Date_seq = rep(seq.Date(from = min(f4$Date_new, na.rm = T), to 
 
 f5$Species <- rep(c("Gray Fox", "Raccoon"), each = dim(f5)[1]/2)
 
-f5 <- left_join(f5, f4, by = c("Species" = "Species.x", "Date_seq" = "Date_new")) 
+f5a <- dplyr :: left_join(f5, f4, by = c("Species", "Date_seq" = "Date_new")) 
 
-f5 <- f5 %>% mutate(n = ifelse(is.na(n), 0, n))
+f5a <- f5a %>% dplyr ::mutate(n = ifelse(is.na(n), 0, n))
 
-f6 <- f5 %>% spread(key = Species, value = n) %>% select(-Date_seq)
+f6 <- f5a %>% spread(key = Species, value = n) %>% dplyr :: select(-Date_seq)
 colnames(f6)[1] <- "Gray_Fox"
 
 f6_ts <- ts(f6, start = c(1975, 4), frequency = 12)
@@ -102,8 +103,11 @@ plot(f6R_ts)
 ```
 ```{r}
 
-autoplot(f6_ts[,c("Raccoon", "Gray_Fox")]) +
-  ylab("Cases") + xlab("Year")
+Monthseries<-ggplot :: autoplot(f6_ts[,c("Raccoon", "Gray_Fox")]) +
+  ylab("Cases") + xlab("Year") 
+
+Monthseries
+ggsave(here("results", "Figures","Month_TimeSeries.png"), plot = Monthseries )
 
 ```
 
@@ -159,6 +163,20 @@ fit4 <- auto.arima(f6_ts[4:n,1], xreg=Raccoon_lag[4:n,1:4],
   stationary=TRUE)
 
 summary(fit1)
+summary(fit2)
+summary(fit3)
+summary(fit4)
+
+Null_GF <- Arima(f6_ts[4:n,1],  model = NULL)
+
+GF_Model_summaries <- rbind(
+    Summary_fit1 = summary(fit1)[,c("RMSE")],
+    Summary_fit2 = summary(fit2)[,"RMSE"],
+    Summary_fit3 = summary(fit3)[,"RMSE"],
+    Summary_fit4 = summary(fit4)[,"RMSE"],
+    Summary_Null_GF = summary(Null_GF)[,"RMSE"])
+colnames(GF_Model_summaries)[1] <- "RMSE"
+
 
 #repeat using gray fox to predict raccoon
 #repeat using gray lag to predict and raccoon lag to predict raccoon
@@ -175,8 +193,22 @@ fit7 <- auto.arima(f6_ts[4:n,2], xreg=Fox_lag[4:n,1:3],
 fit8 <- auto.arima(f6_ts[4:n,2], xreg=Fox_lag[4:n,1:4],
   stationary=TRUE)
 
+summary(fit5)
+summary(fit6)
 summary(fit7)
+summary(fit8)
 
+#null model#
+
+Null_R <- Arima(f6_ts[4:n,2],  model = NULL)
+
+R_Model_summaries <- rbind(
+    Summary_fit5 = summary(fit5)[,c("RMSE")],
+    Summary_fit6 = summary(fit6)[,"RMSE"],
+    Summary_fit7 = summary(fit7)[,"RMSE"],
+    Summary_fit8 = summary(fit8)[,"RMSE"],
+    Summary_Null_R = summary(Null_R)[,"RMSE"])
+colnames(R_Model_summaries)[1] <- "RMSE"
 
 ```
 
@@ -201,6 +233,8 @@ Raccoon_lag_train <- cbind(
     RaccoonLag3tr = stats::lag(f6_ts_train[,"Raccoon"],-3)) %>%
   head(NROW(f6_ts_train))
 
+
+
 Fox_lag_train <- cbind(
     FoxLag0 = f6_ts_train[,"Gray_Fox"],
     FoxLag1 = stats::lag(f6_ts_train[,"Gray_Fox"],-1),
@@ -208,19 +242,42 @@ Fox_lag_train <- cbind(
     FoxLag3 = stats::lag(f6_ts_train[,"Gray_Fox"],-3)) %>%
   head(NROW(f6_ts_train))
 
-
+summary(FoxLag1)
 # Restrict data so models use same fitting period
 tr <- dim(f6_ts_train)[1]
-fit1tr <- auto.arima(f6_ts_train[4:tr,1], xreg=Raccoon_lag_train[4:tr,1],
+
+fit1tr <- auto.arima(f6_ts_train[4:tr,1],  stationary=TRUE)
+fit2tr <- auto.arima(f6_ts_train[4:tr,1], xreg=Raccoon_lag_train[4:tr,1],
   stationary=TRUE)
-fit2tr <- auto.arima(f6_ts_train[4:tr,1], xreg=Raccoon_lag_train[4:tr,1:2],
+fit3tr <- auto.arima(f6_ts_train[4:tr,1], xreg=Raccoon_lag_train[4:tr,1:2],
   stationary=TRUE)
-fit3tr <- auto.arima(f6_ts_train[4:tr,1], xreg=Raccoon_lag_train[4:tr,1:3],
+fit4tr <- auto.arima(f6_ts_train[4:tr,1], xreg=Raccoon_lag_train[4:tr,1:3],
   stationary=TRUE)
-fit4tr <- auto.arima(f6_ts_train[4:tr,1], xreg=Raccoon_lag_train[4:tr,1:4],
+fit5tr <- auto.arima(f6_ts_train[4:tr,1], xreg=Raccoon_lag_train[4:tr,1:4],
   stationary=TRUE)
 
+
 summary(fit1tr)
+summary(fit2tr)
+summary(fit3tr)
+summary(fit4tr)
+summary(fit5tr)
+#fit5tr just uses foxes to preduct foxes without using raccoon as apredictor
+
+#null model#
+
+Null_GF_train <- Arima(f6_ts[4:tr,1],  model = NULL)
+summary(Null_GF_train)
+
+GFtr_Model_summaries <- rbind(
+    Summary_fit1tr = summary(fit1tr)[,("RMSE")],
+    Summary_fit2tr = summary(fit2tr)[,"RMSE"],
+    Summary_fit3tr = summary(fit3tr)[,"RMSE"],
+    Summary_fit4tr = summary(fit4tr)[,"RMSE"],
+    Summary_fit5tr = summary(fit5tr)[,"RMSE"],
+    Summary_Null_GFtr = summary(Null_GF_train)[,"RMSE"])
+colnames(GFtr_Model_summaries)[1] <- "RMSE"
+GFtr_Model_summaries 
 
 #repeat using gray fox to predict raccoon
 #repeat using gray lag to predict and raccoon lag to predict raccoon
@@ -228,39 +285,114 @@ summary(fit1tr)
 #can either use to predict future or what other species is this month
 
  #using gray fox to predict raccoon
-fit5tr <- auto.arima(f6_ts_train[4:tr,2], xreg=Fox_lag_train[4:tr,1],
+
+fit6tr <- auto.arima(f6_ts_train[4:tr,2], stationary=TRUE)
+fit7tr <- auto.arima(f6_ts_train[4:tr,2], xreg=Fox_lag_train[4:tr,1],
   stationary=TRUE)
-fit6tr <- auto.arima(f6_ts_train[4:tr,2], xreg=Fox_lag_train[4:tr,1:2],
+fit8tr <- auto.arima(f6_ts_train[4:tr,2], xreg=Fox_lag_train[4:tr,1:2],
   stationary=TRUE)
-fit7tr <- auto.arima(f6_ts_train[4:tr,2], xreg=Fox_lag_train[4:tr,1:3],
+fit9tr <- auto.arima(f6_ts_train[4:tr,2], xreg=Fox_lag_train[4:tr,1:3],
   stationary=TRUE)
-fit8tr <- auto.arima(f6_ts_train[4:tr,2], xreg=Fox_lag_train[4:tr,1:4],
+fit10tr <- auto.arima(f6_ts_train[4:tr,2], xreg=Fox_lag_train[4:tr,1:4],
   stationary=TRUE)
 
+
+#fit6tr is just ussing raccon to rpedict raccoon without fox as a predctior
+
+
+Null_R_train <- Arima(f6_ts[4:tr,2],  model = NULL)
+
+
+summary(fit6tr)
 summary(fit7tr)
+summary(fit8tr)
+summary(fit9tr)
+summary(fit10tr)
+summary(Null_R_train)
+
+
+Rtr_Model_summaries <- rbind(
+    Summary_fit6tr = summary(fit6tr)[,("RMSE")],
+    Summary_fit7tr = summary(fit7tr)[,"RMSE"],
+    Summary_fit8tr = summary(fit8tr)[,"RMSE"],
+    Summary_fit9tr = summary(fit9tr)[,"RMSE"],
+    Summary_fit10tr = summary(fit10tr)[,"RMSE"],
+    Summary_Null_GFtr = summary(Null_R_train)[,"RMSE"])
+colnames(Rtr_Model_summaries)[1] <- "RMSE"
+Rtr_Model_summaries
+
+```
+```{r}
+#results table of training model diagnostics, using AIC to decide 9of adding more variables makes model better
+Model_GF<- c("Fit_1", "Fit_2", "Fit_3", "Fit_4", "Fit_5", "Null")
+
+AIC_GF<- c(832.43, 824.1,825.71,826.2,827.88,857.26)
+
+
+
+
+Predictors_GF <- c("Gray_Fox_Cases_lag1 + Gray_Fox_Error_lag1", "Gray_Fox_Error_lag1 + Raccoon_Cases_lag0", "Gray_Fox_Error_lag1 + Raccoon_Cases_lag0 + Raccoon_Case_lag1","Gray_Fox_Error_lag1 + Raccoon_Cases_lag0 + Raccoon_Case_lag1 + Raccoon_Case_lag2", "Gray_Fox_Error_lag1 + Raccoon_Cases_lag0 + Raccoon_Case_lag1 + Raccoon_Case_lag2 + Raccoon_Case_lag3", "Null Model")
+
+Fox_Prediction_Models<-cbind(Model_GF, Predictors_GF, AIC_GF)
+colnames(Fox_Prediction_Models)[1] <- "Model"
+colnames(Fox_Prediction_Models)[2] <- "Predictors"
+colnames(Fox_Prediction_Models)[3] <- "AIC"
+
+Fox_Prediction_Models %>% saveRDS(here("results", "Models","Gray_Fox_Models.rds"))
+
+#repeat with raccoon models
+Model_R<- c("Fit_6", "Fit_7", "Fit_8", "Fit_9", "Fit_10", "Null")
+
+AIC_R<- c(1190.63, 1184.48,1185.28,1178.13,1180.03,1291.88)
+
+Predictors_R <- c("Raccoon_Cases_lag1 + Raccoon_Error_lag1", "Raccoon_Cases_lag1 + Raccoon_Error_lag1 + Gray_Fox_Cases_lag0", "Raccoon_Cases_lag1 + Raccoon_Error_lag1 + Gray_Fox_Cases_lag0 + Gray_Fox_Cases_lag1","Raccoon_Cases_lag1 + Raccoon_Error_lag1 + Gray_Fox_Cases_lag0 + Gray_Fox_Cases_lag1 + Gray_Fox_Cases_lag2", "Raccoon_Cases_lag1 + Raccoon_Error_lag1 + Gray_Fox_Cases_lag0 + Gray_Fox_Cases_lag1 + Gray_Fox_Cases_lag2 + Gray_Fox_Cases_lag3", "Null Model")
+
+Raccoon_Prediction_Models<-cbind(Model_R, Predictors_R, AIC_R)
+colnames(Raccoon_Prediction_Models)[1] <- "Model"
+colnames(Raccoon_Prediction_Models)[2] <- "Predictors"
+colnames(Raccoon_Prediction_Models)[3] <- "AIC"
+
+
+Raccoon_Prediction_Models %>% saveRDS(here("results", "Models","Raccoon_Models.rds"))
+
 ```
 
 ```{r}
 ###testing
 
-fit1_train <- auto.arima(f6_ts[4:368,1], xreg = Raccoon_lag[4:368,1], stationary = T)
-accuracy(fit1_train)
+fit2_train <- auto.arima(f6_ts[4:368,1], xreg = Raccoon_lag[4:368,1], stationary = T)
+accuracy(fit2_train)
 
-fit1_test <- Arima(f6_ts[369:n,1], xreg = Raccoon_lag[369:n,1], model = fit1_train)
-accuracy(fit1_test)
+fit2_test <- Arima(f6_ts[369:n,1], xreg = Raccoon_lag[369:n,1], model = fit2_train)
+accuracy(fit2_test)
+
 
 ```
 
 
 ```{r}
-fit7_train <- auto.arima(f6_ts[4:368,2], xreg = Fox_lag[4:368,1:3], stationary = T)
-accuracy(fit7_train)
+fit9_train <- auto.arima(f6_ts[4:368,2], xreg = Fox_lag[4:368,1:3], stationary = T)
+accuracy(fit9_train)
 
-fit7_test <- Arima(f6_ts[369:n,2], xreg = Fox_lag[369:n,1:3], model = fit7_train)
-accuracy(fit7_test)
+fit9_test <- Arima(f6_ts[369:n,2], xreg = Fox_lag[369:n,1:3], model = fit9_train)
+accuracy(fit9_test)
 
 #fit1 has lower rmse, rherefore its easier to predict foxes using foxes and raccoo s athan raccons using raccoons and foxes
- 
+
+
+Test_Model_Accuracy <- rbind(
+    Fit2_train = accuracy(fit2_train)[,("RMSE")],
+    Fit2_test = summary(fit2_test)[,"RMSE"],
+    Fit9_train = summary(fit9_train)[,"RMSE"],
+    Fit9_test = summary(fit9_test)[,"RMSE"])
+  
+colnames(Test_Model_Accuracy)[1] <- "RMSE"
+Test_Model_Accuracy
+
+Test_Model_Accuracy %>% saveRDS(here("results", "Models","Test_Models.rds"))
+
+```
+```{r}
 
 # y′t  =   c   +    ϕ1y′t−1     +    θ1εt−1    +    γ0xt    
 

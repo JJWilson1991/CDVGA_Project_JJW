@@ -132,7 +132,17 @@ State_wrap_species
 ggsave(here("results", "Figures", "State_wrap_species.png"), plot=State_wrap_species)
 ```
 ```{r}
-#i forgot to plot age by species wrap.. its pretty uninteresting
+#plot number of cases per age group for each species
+
+CDV_Clean_age <- CDV_Clean%>% dplyr :: filter(Age %in% c("Adult", "Subadult", "Juvenile"))
+Age_wrap_species <- ggplot(CDV_Clean_age, aes(Age, fill=Age, color=Age)) +geom_bar() + theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 8), legend.position = "none") + 
+  facet_wrap(~Species)
+
+Age_wrap_species
+ggsave(here("results", "Figures", "Age_wrap_species.png"), plot=Age_wrap_species)
+```
+```{r}
+#plot of sex distribution per species
 CDV_Cleans <- subset(CDV_Clean, Sex %in% c("Male", "Female"))
 SexSpecies<- ggplot(CDV_Cleans, aes(Sex)) + geom_bar() +facet_wrap(~Species)
 
@@ -194,7 +204,7 @@ CDV_Clean2 <-  subset(CDV_Clean, Species %in% c("Raccoon", "Gray Fox") & State==
 #lets take a look if there is any obvious variation in ages affected between raccoon and  gray fox
 RGFAge <- subset(CDV_Clean2, Age %in% c("Adult", "Subadult", "Juvenile"))
 
-RGFAge %>% saveRDS(here("data", "processed_data", "RGFAge.rds"))
+RGFAge %>% saveRDS(here("data", "processed_data", "RGFAge"))
 
 RacFox_Age <- ggplot(RGFAge, aes(Species)) +geom_bar(aes(fill = Age)) +labs(y="No. of Cases")
 
@@ -490,6 +500,10 @@ RFNSfreq3<- RFNSfreq2 %>% dplyr::mutate(Total = (Gray_Fox + Raccoon)) %>% mutate
 tt<- with(cennew, table(NS, Species.x))
 
 chisp <- chisq.test(tt)
+chisp
+
+#this value of chisq is above the critical value so we can reject the null hypothesis that species and northern and southern latitudes are independent. ie. Gray fox cases are more likely in the northern part of the state
+
 chisp$observed
 
 round(chisp$expected,2)
@@ -520,6 +534,8 @@ breedingadj1 <- breeding %>% dplyr :: mutate(lengthSea= c(3,3,6,3,3,6))
  breedingadj2 <- breedingadj1 %>% dplyr:: mutate(SeaAdj = (Freq/lengthSea))
 
 breedingplot<- ggplot(breedingadj2, aes(Season, SeaAdj, fill = Species.x, color = Species.x, group = Species.x)) + geom_point() +geom_line() + labs(y="Cases per season/season length")
+
+breedingplot
 
 ggsave(here("results", "Figures", "breeding_plot.png"), plot=breedingplot)
 ```

@@ -282,11 +282,6 @@ p <- ggplot(data = cotry_comp, aes(frame = CollectionYear)) +  geom_polygon(data
 
 p2 <- ggplotly(p)
 
-p2
-
-```
-```{r}
-
 p2 <- p2 %>% animation_opts( mode= "immediate", transition= 0, easing = "linear-out" , redraw = FALSE)
 p2
 #the data isn't right here, no 1988 in glynn co.
@@ -850,16 +845,17 @@ CD3<- na.omit(CDFGSpe2)  %>%mutate(Pop_per_land_area = as.numeric(as.character(P
 ggplot(CD3, aes(log10(Pop_per_land_area), Cases_per_area, fill = Species, color = Species, group = Species)) + geom_point()
 ```
 
-
 ```{r}
+ #plot ,map of cases per area with popualtion centres
+ds<- CD1caseperdens[,c(1,10)]
+dens<- left_join(cotr, ds, by= "County") 
 
-ds<- CD1caseperdens[,c(1,7)]
-dens<- left_join(cotr, ds, by= "County") %>% dplyr::mutate(cases_per_dens=Freq/Pop_per_land_area)
 DES1 <- ggplot(data = dens) +  
-  geom_polygon(aes(x = long, y = lat, fill = cases_per_dens, group = group), color = "azure4") + 
+  geom_polygon(aes(x = long, y = lat, fill = Cases_per_area, group = group), color = "azure4") + 
   coord_fixed(1.3)  + 
   scale_fill_gradient(high = "magenta4", low = "white", na.value="azure", trans = "log10") + 
   theme_map() 
+
 
 DES2 <- DES1 + 
   theme( 
@@ -868,10 +864,10 @@ DES2 <- DES1 +
   axis.ticks = element_blank(),
   panel.border = element_blank(),
   panel.grid = element_blank(),
-  axis.title = element_blank(), legend.position = "right")  + labs(fill= "Cases/Popdensity") 
+  axis.title = element_blank(), legend.position = "right")  + labs(fill= "Cases/Area") 
 
 DES3 <- DES2 + 
-  geom_point(data = GAcitiesspread, aes(x = long, y = lat, size = pop), alpha = 0.5) + 
+  geom_point(data = GAcitiesspread, aes(x = long, y = lat, size = Population), alpha = 0.5) + 
   geom_text(data = GAcitiesspread, aes(x = long, y = lat, label = name, group = NULL), position = position_jitter(width=0.3,height=0.3)) 
 DES3
 
