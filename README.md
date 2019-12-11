@@ -1,5 +1,6 @@
 # Temporal and Spatial Patterns in Distemper Virus Cases Reported to SCWDS, 1975-2013
 Class Project repository for Jonathan Wilson
+Published [here](https://epid8060fall2019.github.io/JonathanWilson_Project/)
 
 # Data, Processing and Analysis Scripts
 All code, figures, and text are reproducible from the project directory.
