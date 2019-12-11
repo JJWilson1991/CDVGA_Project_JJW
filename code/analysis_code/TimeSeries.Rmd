@@ -12,6 +12,7 @@ library(here)
 library(ggplot2)
 ```
 ```{r}
+#pull the whole data set and plot a time series of cases per year
 CDV_Clean <-   readRDS(here("data", "processed_data", "CDVprocesseddata.rds"))
 
 TSCDV<- with(CDV_Clean,table(CollectionYear))
@@ -19,6 +20,7 @@ tTSCDV<-ts(TSCDV)
 #plot.ts(tTSCDV)
 ```
 ```{r}
+#time series of just raccoons anfd gray foxes in gerogia
 RACnum <- readRDS(here("data", "processed_data", "RaCFoxMappingData.rds"))
 
 
@@ -27,21 +29,15 @@ RGFAges <- subset(RGFAge, State %in% c("Georgia"))
 
 RGFTS<-  as.data.frame(with(RGFAges, table(Species, CollectionYear)))
 RGFTSS <- RGFTS %>% spread(key = Species, value = Freq)
-#testp <- RGFTS %>% spread(key = Species, value = Freq)
-```
-```{r}
 tsrt<- ts(RGFTSS)
 
-```
-
-```{r}
 autoplot(tsrt[,c(2,3)]) +
   ylab("Cases") + xlab("Year")
 
 
 ```
 ```{r}
-
+#numbers of raccoon cases and gray fox cases appear to be related
 dfRF <- as.data.frame(tsrt)
 dfRF<- dplyr :: rename(dfRF, GrayFox = "Gray Fox")
  ggplot(dfRF, aes(x=Raccoon, y=GrayFox)) +
@@ -52,6 +48,7 @@ dfRF<- dplyr :: rename(dfRF, GrayFox = "Gray Fox")
 ```
 
 ```{r}
+#use the accurtate date data and round to the month to get cases per month time series over the entire time period
 
 CDVGA_months<- readRDS(here("data", "processed_data", "CDVGA_months.rds"))
 colnames(CDVGA_months)[2] <- c("State")
@@ -102,7 +99,7 @@ plot(f6R_ts)
 
 ```
 ```{r}
-
+#plot time series of each species per month over the whole time period
 Monthseries<-ggplot2 :: autoplot(f6_ts[,c("Raccoon", "Gray_Fox")]) +
   ylab("Cases") + xlab("Year") 
 
@@ -113,7 +110,7 @@ ggsave(here("results", "Figures","Month_TimeSeries.png"), plot = Monthseries )
 
 
 ```{r}
-
+#test that the time series is stationary ie. no seasonality or overall trend
 
 library(tseries)
 adf.test(f6GF_ts) # p-value < 0.05 indicates the TS is stationary
@@ -126,6 +123,7 @@ kpss.test(f6R_ts)
 ```
 
 ```{r}
+#use forecast package to construct linear regression model
 library(forecast)
 raccoon_mod1 <- tslm(Raccoon ~ Gray_Fox + season, data= f6_ts)
 summary(raccoon_mod1)
@@ -135,7 +133,7 @@ summary(fox_mod1)
  #months not useful for model, coefficient less than 2 std away from zero and p value greater than 0.05
 
 
-# Lagged predictors. Test 0, 1, 2 or 3 lags.
+# Creat Lagged predictors for raccoon numbers for constructin ARIMA model for predicting Gray foxes. Test 0, 1, 2 or 3 lags.
 Raccoon_lag <- cbind(
     RaccoonLag0 = f6_ts[,"Raccoon"],
     RaccoonLag1 = stats::lag(f6_ts[,"Raccoon"],-1),
@@ -358,7 +356,7 @@ Raccoon_Prediction_Models %>% saveRDS(here("results", "Models","Raccoon_Models.r
 ```
 
 ```{r}
-###testing
+#test the two models with the later data
 
 fit2_train <- auto.arima(f6_ts[4:368,1], xreg = Raccoon_lag[4:368,1], stationary = T)
 accuracy(fit2_train)

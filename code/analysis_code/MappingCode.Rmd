@@ -293,6 +293,7 @@ COSPEC <- left_join(GAC, COSPE)
 ```
 
 ```{r}
+#plot the cases per countiy for each species
 SP1 <- ggplot(data = COSPEC) +  
   geom_polygon(data = GAC, aes(x = long, y = lat, group = group), color ="gray50", fill = "white") + 
   geom_polygon(aes(x = long, y = lat, fill = Freq, group = group), color = "azure4") + 
@@ -328,6 +329,7 @@ racmap <- left_join(GAC, RRACMAP)
 RMP <- subset(racmap, Species %in% "Raccoon")
 ```
 ```{r}
+#plot the raccon cases in each coutny for ewach year
 Raccoonplot<- ggplot(data = RMP) +  
   geom_polygon(data = GAC, aes(x = long, y = lat, group = group), color ="gray50", fill = "white") + 
   geom_polygon(aes(x = long, y = lat, fill = Freq, group = group), color = "azure4") +
@@ -349,6 +351,7 @@ ggsave(here("results", "Figures", "Rac_County_WrapYear.png"),plot = Raccoonplot)
 GFMP <- subset(racmap, Species %in% "Gray Fox")
 ```
 ```{r}
+#repoeat the above process for grayfoxes
 GrayFoxPlot <- ggplot(data = GFMP) +  
   geom_polygon(data = GAC, aes(x = long, y = lat, group = group), color ="gray50", fill = "white") + 
   geom_polygon(aes(x = long, y = lat, fill = Freq, group = group), color = "azure4") + 
@@ -402,6 +405,7 @@ ggsave(here("results", "Figures", "Presence_WrapYear.png"),plot = Presence)
 ```
 
 ```{r}
+#plot animation of county presence over time
 
 PA <- ggplot(data = cotry_comp, aes(frame = CollectionYear)) +  geom_polygon(data = cotry_comp, aes(x = long, y = lat, group=group), color = "gray50", fill = "white") + 
   geom_polygon(aes(x = long, y = lat, fill = Present, group = group), color = "azure4") + 
@@ -455,6 +459,7 @@ sepGAC3_sf <- left_join(sepGAC2_sf,GACOFRdf)
 plot(sepGAC3_sf["Freq"])
 ```
 ```{r}
+#replot using simplefeatures for each county
 SF_County <- ggplot() + 
   geom_sf(data = sepGAC3_sf, aes(fill = Freq))  +scale_fill_gradient(high = "purple4", low = "thistle1", na.value="white", trans = "log10") +
   labs(fill= "Number of cases") + 
@@ -469,13 +474,14 @@ ggsave(here("results", "Figures", "County_SF.png"),plot = SF_County)
 
 ```
 ```{r}
-
+#save centroid data
 GA_centroid <- st_centroid(sepGAC2_sf)
 
 GA_centroid %>% saveRDS(here("data", "processed_data", "GA_centroid.rds"))
 ```
 
 ```{r}
+#split the centroid data into lattitude and longtiude as well as the point data
 test3 <- left_join(CDVGA2, GA_centroid)
 glimpse(test3)
 test4 <- test3 %>% mutate(tosplit= as.character(geometry))
@@ -490,6 +496,7 @@ centrLL<- test5 %>% mutate(lat = as.numeric(as.character(lat))) %>% mutate(long 
 centrLL %>% saveRDS(here("data", "processed_data", "GACentroiddata.rds"))
 ```
 ```{r}
+#species plotted as different colored points for each year
 k1 <- ggplot(data = RACnum) +  
   geom_polygon(data= GAC, aes(x = long, y = lat, group = group),fill= "white", color = "azure4") + 
   coord_fixed(1.3)  + 
@@ -570,6 +577,7 @@ NorthGA <- centrLL %>% filter(lat>=32.67328)
 SouthGA <- centrLL %>% filter(lat<32.67328)
 ```
 ```{r}
+#pull census data to use population density for mapping
 Raw_Census_GA <- read_csv(here("data", "raw_data", "2013_GAcensus_data.csv"))
 
 glimpse(Raw_Census_GA)
@@ -631,6 +639,8 @@ log3
 #a log scale looks better, should replot with county population density instead
 ```
 ```{r}
+
+#pull the population density data
 Raw_Area_GA <- read_csv(here("data", "raw_data", "GA_County_Area.csv"))
 
 glimpse(Raw_Area_GA)
@@ -704,6 +714,7 @@ HT4
 
 ```
 ```{r}
+#plot species cases on a background of populati9n density per state
 logDT3 <- DT2 + 
   theme( 
   axis.text = element_blank(),

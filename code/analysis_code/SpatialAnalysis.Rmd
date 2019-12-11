@@ -17,17 +17,20 @@ GAcentre
 
 
 ```{r}
+#create window for ripleys K ananlyis, using the lat and long ramnge of the stae of gerogia aas the boundaries
+
 riprange<-   owin(xrange=c(-86,-81), yrange=c(30,35), poly=NULL, mask=NULL,
 unitname=NULL, xy=NULL)
 ripPointmap<-ppp(x=GAcentre$long,y=GAcentre$lat, window= riprange)
 plot(ripPointmap)
 
- 
+#plot the ripleysk 
 
 plot(Kest(ripPointmap)) 
 
 #There is significant clustering of points as the K hat is above the K poi
 
+#Add envelope as the error margins
 
 Ripleys_K<- envelope(ripPointmap)
 
@@ -39,11 +42,7 @@ dev.off()
 
 
 ```
-```{r}
-pcfplot <-pcf(ripPointmap)
-plot(pcfplot)
 
-```
 ```{r}
 #Check for Raccoon and Gray Fox serpeately
 RCen <- GAcentre %>% dplyr::filter(Species=="Raccoon")
@@ -84,6 +83,7 @@ plot(Kest(ripPointmap88))
 plot(envelope(ripPointmap88))
 ```
 ```{r}
+#try for 1975
 GA75 <- GAcentre %>% dplyr::filter(CollectionYear==1975)
 ripPointmap75<-ppp(x=GA75$long,y=GA75$lat, window= riprange)
 plot(ripPointmap75)
@@ -95,6 +95,7 @@ plot(Kest(ripPointmap75))
 
 plot(envelope(ripPointmap75))
 
+#as you see, when the numbers get small, the outcome isn't so reliable looking
 ```
 ```{r}
 #How about for 5 yearly intervals?
@@ -123,6 +124,7 @@ plot(Kest(ripPointmap80_84))
 
 plot(envelope(ripPointmap80_84)) 
 
+#this might have potnetial, but doesn't really solve the problem of trying to isolate the spatial component, as you still end up pooling over time
 ```
 
 ```{r}
