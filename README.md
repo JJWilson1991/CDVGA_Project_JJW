@@ -9,7 +9,7 @@ All code, figures, and text are reproducible from the project repository.
 Raw Data is located in the raw_data subfolder, within the data folder. This contains the files "SCWDS_CDVdata", "Canine_Distemper_Virus_Reports", "2013_GAcensus_data" and "GA_County_Area". The contents of these raw data are detailed in "CDV_codebook".
 
 ## Processed Data
-Processed Data is located in the processed_data subfolder. The code to process the data is with processing_code inside of the code folder.
+Processed Data is located in the "processed_data" subfolder. The code to process the data is with "processing_code"" inside of the "code" folder.
 
 ## Data Exploration and Analysis
 The files to run the various explorations and analyses on the cleaned data are within "processing_code", inside of the "code" folder. Figures of interest are saved as png files with the "results" subfolder.
