@@ -231,7 +231,7 @@ g2 <- g1 +
   axis.title = element_blank(), legend.position = "right")  + labs(fill= "Number of cases") 
 
 g3 <- g2 + 
-  geom_point(data = GAcitiesspread, aes(x = long, y = lat, size = Population), alpha = 0.5) + 
+  geom_point(data = GAcitiesspread, aes(x = long, y = lat), alpha = 0.5) + 
   geom_text(data = GAcitiesspread, aes(x = long, y = lat, label = name, group = NULL), position = position_jitter(width=0.3,height=0.3)) 
 g3
 
@@ -867,7 +867,7 @@ DES2 <- DES1 +
   axis.title = element_blank(), legend.position = "right")  + labs(fill= "Cases/Area") 
 
 DES3 <- DES2 + 
-  geom_point(data = GAcitiesspread, aes(x = long, y = lat, size = Population), alpha = 0.5) + 
+  geom_point(data = GAcitiesspread, aes(x = long, y = lat, size = 2), alpha = 0.5) + 
   geom_text(data = GAcitiesspread, aes(x = long, y = lat, label = name, group = NULL), position = position_jitter(width=0.3,height=0.3)) 
 DES3
 

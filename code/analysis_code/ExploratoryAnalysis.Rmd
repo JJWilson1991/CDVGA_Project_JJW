@@ -271,6 +271,16 @@ SexSpecies_Mosaic <- ggplot(RGFSex) +geom_mosaic(aes(x=product(Sex, Species), fi
 SexSpecies_Mosaic
 
 ggsave(here("results", "Figures","SexSpecies_Mosaic.png"),plot = SexSpecies_Mosaic)
+
+
+sexspec<- with(RGFSex, table(Sex, Species))
+
+
+chisex<- chisq.test(sexspec)
+chisex
+
+#in this case the null hypothesis that species and sex are independent can be accepted.
+
 ```
 
 ```{r}
@@ -279,6 +289,15 @@ agemos <- ggplot(RGFSex) +geom_mosaic(aes(x=product(Age, Species), fill=Age), na
 #The age measurement is too subjective to read much into really, also depends on reproductive strategy and life history of species... are there more offspring? are they hidden?
 
 ggsave(here("results", "Figures", "RGFAge_mosaic.png"), plot = agemos)
+
+
+agespec<- with(RGFSex, table(Age, Species))
+
+
+chiage<- chisq.test(agespec)
+chiage
+
+#in this case the chisquared is greater than the critical value (5.99), but age is so subjective in this case it would need to be much higher 
 ```
 ```{r}
 library(tidycomm)
@@ -287,6 +306,7 @@ na.omit(RGFSex) %>% crosstab(Species, Sex, Age, percentages  = TRUE)
 ```
 ```{r}
 #chi squared test for sex and species
+library(corrplot)
 na.omit(RGFSex) %>% crosstab(Species, Sex, chi_square =  TRUE)
 
 sexchi<- na.omit(with(RGFSex, table(Sex, Species)))
@@ -346,6 +366,9 @@ sexMGF<- CDVGA_months %>% subset( Sex.x %in% c("Male", "Female")) %>% subset (Sp
 Sexmonth_MosaicGF <- ggplot(sexMGF) +geom_mosaic(aes(x=product(Sex.x, Month), fill=Sex.x)) 
 
 Sexmonth_MosaicGF
+
+
+
 ```
 ```{r}
 ffrt <- CDVGA_months[c(4,6,8)] %>% dplyr :: filter(Sex.x %in% c("Male", "Female")) %>% 
@@ -489,7 +512,7 @@ NSPSP
 
 ```
 ```{r}
-library(corrplot)
+
 RFNSfreq <- as.data.frame(with(cennew, table(NS, Species.x))) %>% spread(key = NS, value = Freq) %>% dplyr::mutate(Total = (North + South)) %>% mutate_at(vars(North, South), funs(./Total))
 
 
@@ -498,6 +521,12 @@ colnames(RFNSfreq2)[2] <- "Gray_Fox"
 RFNSfreq3<- RFNSfreq2 %>% dplyr::mutate(Total = (Gray_Fox + Raccoon)) %>% mutate_at(vars(Gray_Fox, Raccoon), funs(./Total))
 
 tt<- with(cennew, table(NS, Species.x))
+
+NS_Mosaic <- ggplot(cennew) +geom_mosaic(aes(x=product(NS, Species.x), fill=NS),  na.rm = TRUE) +labs(x= "Species", y="North/South")
+
+NS_Mosaic
+
+ggsave(here("results", "Figures", "NS_Mosaic.png"), plot=NS_Mosaic)
 
 chisp <- chisq.test(tt)
 chisp
