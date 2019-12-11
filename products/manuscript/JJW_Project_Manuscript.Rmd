@@ -1,5 +1,5 @@
 ---
-title: "Temporal and Spatial Patterns in Distemper Virus Cases Reported to SCWDS 1975-2013"
+title: "Temporal and Spatial Patterns in Distemper Virus Cases Reported to SCWDS, 1975-2013"
 author: "Jonathan Wilson"
 date: "`r Sys.Date()`"
 output:
