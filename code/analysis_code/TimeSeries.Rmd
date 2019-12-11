@@ -103,7 +103,7 @@ plot(f6R_ts)
 ```
 ```{r}
 
-Monthseries<-ggplot :: autoplot(f6_ts[,c("Raccoon", "Gray_Fox")]) +
+Monthseries<-ggplot2 :: autoplot(f6_ts[,c("Raccoon", "Gray_Fox")]) +
   ylab("Cases") + xlab("Year") 
 
 Monthseries
@@ -242,7 +242,7 @@ Fox_lag_train <- cbind(
     FoxLag3 = stats::lag(f6_ts_train[,"Gray_Fox"],-3)) %>%
   head(NROW(f6_ts_train))
 
-summary(FoxLag1)
+
 # Restrict data so models use same fitting period
 tr <- dim(f6_ts_train)[1]
 
@@ -396,20 +396,14 @@ Test_Model_Accuracy %>% saveRDS(here("results", "Models","Test_Models.rds"))
 
 # y′t  =   c   +    ϕ1y′t−1     +    θ1εt−1    +    γ0xt    
 
-fit1_train %>%
+fit2_train %>%
   forecast(h=34, xreg = Raccoon_lag[4:368,1], lower = 0) %>%
   autoplot() 
 
-fit1_train %>% 
+fit2_train %>% 
   forecast(h= 34, xreg = Raccoon_lag[,1]) %>%
   autoplot()
 ```
 
 
-```{r}
-
-decomposedRes <- decompose(f6_ts, type="additive") 
-plot(decomposedRes)
-
-```
 

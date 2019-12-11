@@ -4,19 +4,19 @@ author: "JJWilson"
 date: "11/10/2019"
 output: html_document
 ---
-
+#load required packages
 ```{r}
 library(tidyverse)
 library(plyr)
 library(readr)
 library(dplyr)
 library(forcats)
+library(here)
+library(visdat)
 
 ```
 ```{r}
-library(here)
-library(visdat)
-library(readr)
+
 Raw_CDV_Mainsheet <- read_csv(here("data","raw_data","SCWDS_CDVdata.csv"))
 
 
