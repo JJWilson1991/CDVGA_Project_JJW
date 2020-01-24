@@ -22,7 +22,7 @@ library(visdat)
 ```{r}
 #load data file containing specific date observations
 
-CDVMONTHS <- read_csv(here("data","raw_data", "Canine_Distemper_Virus_Reports.csv"))
+CDVMONTHS <- read_csv(here("data", "raw_data", "Canine_Distemper_Virus_Reports.csv"))
 
 glimpse(CDVMONTHS)
 ```

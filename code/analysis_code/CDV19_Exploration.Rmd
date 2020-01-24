@@ -1,0 +1,600 @@
+---
+title: "CDV19_Explo"
+author: "Jonathan Wilson"
+date: "21/01/2020"
+output: html_document
+---
+#Load the required libraries 
+
+
+
+```{r}
+
+library(readxl)
+
+library(dplyr)
+
+library(tidyverse)
+
+library(forcats)
+
+library(ggthemes)
+
+library(plotly)
+
+library(knitr)
+
+library(naniar)
+
+library(ggplot2)
+
+library(maps)
+
+library(ggmap)
+
+library(maptools)
+
+library(sf)
+
+library(ggmosaic)
+
+library(here)
+
+library(gridExtra)
+```
+
+
+
+#Load the processed data from the RDS
+
+
+
+```{r}
+
+CDV19_clean <-   readRDS(here("data", "processed_data", "CDV19_clean.rds"))
+
+
+
+glimpse(CDV19_clean)
+
+vis_miss(CDV19_clean)
+```
+```{r}
+
+
+
+#The data we are most interested in is the Species data over time and the area data over time so we'll begin by exploring these
+
+Species_freq19 <- ggplot(CDV19_clean, aes(Species, fill=Species, color=Species)) +geom_bar()  +
+theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 8), legend.position = "none") +labs(y="Number of Cases")
+
+Species_freq19
+ggsave(here("results", "Figures_new", "Species_freq19.png"), plot = Species_freq19)
+
+Speciestable19<- as.data.frame(with(CDV19_clean, table(Species))) 
+colnames(Speciestable19)[2] <- "n"
+
+Speciestable19 %>% saveRDS(here("results", "Tables","Speciestable19.rds"))
+#we can see that Raccoon and Gray fox are hugely over represented compared to the others so we should focus our analysis on these two species
+```
+```{r}
+library(RColorBrewer)
+#are there any obvious differneces in species by state?
+Species_by_state19 <- ggplot(CDV19_clean, aes(Species, fill=Species, color=Species)) +
+geom_bar()   + 
+theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 8), legend.position = "none") +facet_wrap( ~ State)
+
+Species_by_state19 
+ggsave(here("results", "Figures_new","Species_by_state19.png"), plot = Species_by_state19 )
+```
+```{r}
+raccoongrayfox19 <- subset(CDV19_clean, Species %in% c("Raccoon", "Gray Fox"))
+RGF19 <- with(raccoongrayfox19, table(Species, CollectionYear))
+RacFox19<- ggplot(as.data.frame(RGF19), aes(CollectionYear, Freq, fill = Species, color = Species, group = Species))  + 
+  geom_point() +geom_line() + 
+  theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 6)) +labs(x="Collection Year, 1975-2019", y= "No. of Cases")
+
+RacFox19
+ggsave(here("results", "Figures_new", "RacFox_year19.png"), plot = RacFox19)
+
+
+#looking overtime there appears to be some patterns in the number of postive cases, with definite peaks possibly relating to epizootics of CDV
+#It also looks like there may be a delay in the Gray Fox peak following the peak in Raccoons, this is worth looking into
+#Would be good to run a time series analysis on this data to see if peaks in raccoon cases are predicitive of grayfox peaks
+```
+
+
+```{r}
+#plot no of cases per state
+State_freq19 <- ggplot(CDV19_clean, aes(State, fill=State, color=State)) +geom_bar() + theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 8), legend.position = "none") +labs(y="Number of Cases")
+
+State_freq19
+ggsave(here("results", "Figures", "State_freq19.png"), plot = State_freq19)
+#GA is the majority of cases which is understandable as SCWDS is in Athens, but there are enough cases in other south eastern states to possibly gain some insight
+#but i think the bulk of the mapping should focus on the county data within GA
+
+```
+```{r}
+#plot number of cases per state for each species
+State_wrap_species19 <- ggplot(CDV19_clean, aes(State, fill=State, color=State)) +geom_bar() + theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 8), legend.position = "none") + 
+  facet_wrap(~Species)
+
+State_wrap_species19
+ggsave(here("results", "Figures_new", "State_wrap_species19.png"), plot=State_wrap_species19)
+```
+```{r}
+#plot number of cases per age group for each species
+
+CDV_Clean_age19 <- CDV19_clean%>% dplyr :: filter(Age %in% c("Adult", "Subadult", "Juvenile"))
+Age_wrap_species19 <- ggplot(CDV_Clean_age19, aes(Age, fill=Age, color=Age)) +geom_bar() + theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 8), legend.position = "none") + 
+  facet_wrap(~Species)
+
+Age_wrap_species19
+ggsave(here("results", "Figures_new", "Age_wrap_species19.png"), plot=Age_wrap_species19)
+```
+```{r}
+#plot of sex distribution per species
+CDV_Clean_sex19 <- subset(CDV19_clean, Sex %in% c("Male", "Female"))
+SexSpecies19<- ggplot(CDV_Clean_sex19, aes(Sex, color=Sex, fill=Sex)) + geom_bar() +facet_wrap(~Species)
+SexSpecies19
+ggsave(here("results", "Figures_new", "Sex_Species_freq19.png"), plot = SexSpecies19)
+
+```
+```{r}
+#plot cases per species over time
+StperYr19 <- with(CDV19_clean, table(State, CollectionYear))
+point_casesyear_state19 <- ggplot(as.data.frame(StperYr19), aes(CollectionYear, Freq, fill = State, color = State, group = State))  + 
+  geom_point() +
+  geom_line() + 
+  theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 6))
+
+point_casesyear_state19
+ggsave(here("results", "Figures_new",  "point_casesyear_state19.png"), plot=point_casesyear_state19)
+#the cases per state over time seem to follow a similar pattern but it may be worth plotting species cases per state and mapping location, maybe certain species are more affected in different states at different times?
+
+
+```
+```{r}
+#do cases per state per year
+cases_state_wrapyear19 <- ggplot(CDV19_clean, aes(State, fill = State, color = State))  + 
+  geom_bar()+
+  facet_wrap(~CollectionYear)
+cases_state_wrapyear19
+ggsave(here("results", "Figures_new",  "cases_state_wrapyear19.png"), plot=cases_state_wrapyear19)
+#ok so other states come much more into the picture in later years but this is likely reporting bias in that more have referred to scwds, so for ease of analysis lets just use GA which has consistently reported over the whole time frame
+```
+```{r}
+
+#do cases per species per year
+cases_species_wrapyear19 <- ggplot(CDV19_clean, aes(Species, fill = Species, color = Species))  + 
+  geom_bar()+
+  facet_wrap(~CollectionYear)
+cases_species_wrapyear19
+ggsave(here("results", "Figures_new",  "cases_species_wrapyear19.png"), plot=cases_species_wrapyear19)
+
+```
+
+```{r}
+#we're basically repaeting the above but including species to see if this varies by state
+SPYRST19 <- with(CDV19_clean, table(State, CollectionYear, Species))
+point_casesyear_state_wrap_species19 <-    ggplot(as.data.frame(SPYRST19), aes(CollectionYear, Freq, fill = State, color = State, group = State))  +
+  geom_point() +geom_line() + 
+  theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 6)) + 
+  facet_wrap( ~ Species)
+
+point_casesyear_state_wrap_species19 
+
+ggsave(here("results", "Figures_new", "point_casesyear_state_wrap_species19.png"), plot=point_casesyear_state_wrap_species19)
+
+#the number of cases in species other than gray fox and raccon is so low its probably better to just focus on those 2 species gping forward
+```
+```{r}
+SP_Fr_Yr_WrapState19 <- ggplot(as.data.frame(SPYRST19), aes(CollectionYear, Freq, fill = Species, color = Species, group = Species))  + 
+  geom_point() +
+  geom_line() + 
+  theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 6)) + 
+  facet_wrap( ~ State)
+
+SP_Fr_Yr_WrapState19
+ggsave(here("results", "Figures_new",  "SP_Fr_Yr_WrapState19.png"), plot = SP_Fr_Yr_WrapState19)
+
+
+#there does seem to be a little bit of variation here between state over time, maybe theyre epidemics spreading from a nidus? worth investigating in maps
+#with the more recent data the cases being reported in kentucky and louisana markeldy increase, as these states do  not border georgai this is probably due to a change in reporting protocol or that they arent reporting in the connecting states if it is indeed related, in either case there is nothing to be done so we;ll still focuis on GA
+```
+```{r}
+#make plot of all cases over time for uni analysis
+All_Cases_Year19<- ggplot(CDV19_clean, aes(CollectionYear)) + geom_bar() +labs(x= "Collection Year, 1975-2019", y= "No. of Cases")
+19
+ggsave(here("results", "Figures_new", "All_Cases_Year19.png"), plot = All_Cases_Year19)
+```
+```{r}
+#From here lets just focus on Georgia, Foxes, Raccoons, 
+
+CDV19_filter1 <-  subset(CDV19_clean, Species %in% c("Raccoon", "Gray Fox") & State=="Georgia")
+
+vis_miss(CDV19_filter1)
+#lets take a look if there is any obvious variation in ages affected between raccoon and  gray fox
+RGFAge19 <- subset(CDV19_filter1, Age %in% c("Adult", "Subadult", "Juvenile"))
+
+RGFAge19 %>% saveRDS(here("data", "processed_data", "RGFAge19"))
+
+RacFox_Age19 <- ggplot(RGFAge19, aes(Species)) +geom_bar(aes(fill = Age)) +labs(y="No. of Cases")
+
+RacFox_Age19
+ggsave(here("results", "Figures_new", "RacFox_Age19.png"),plot = RacFox_Age19)
+#there may be something here, worth looking at statistically going forward
+
+
+```
+```{r}
+tib19 <-  as.data.frame(with(RGFAge19, table(Age, Species)))
+          
+TibageSP19 <- tib19 %>% spread(key = Age, value = Freq)
+TibageSPd19 <- TibageSP19%>% dplyr::mutate(Total = (Adult + Subadult +Juvenile))
+
+tb19<- TibageSPd19 %>% mutate_at(vars(Adult, Juvenile, Subadult), funs(./Total))
+tb19
+
+#realisitically age classification is far too subjective to do amything with
+```
+
+
+```{r}
+RGFSex19 <- subset(CDV19_filter1, Sex %in% c("Male", "Female") )
+
+Sextable19<- as.data.frame(with(RGFSex19, table(Species, Sex))) %>% spread(key = Sex, value = Freq)
+
+Sextable19 %>% saveRDS(here("results","Tables","Sextable19.rds"))
+
+
+Sextableperc19 <- Sextable19%>% dplyr::mutate(Total = (Male + Female)) %>% mutate_at(vars(Male, Female), funs(./Total))
+ colnames(Sextableperc19)[2] <- "Percentage Female"
+ colnames(Sextableperc19)[3] <- "Percentage Male"
+
+Sextableperc19 %>% saveRDS(here("results","Tables","Sexpercentage19.rds"))
+
+RacFox_Sex19 <- ggplot(RGFSex19, aes(Sex, fill=Sex)) + 
+  geom_bar() +
+  facet_wrap(~Species)
+RacFox_Sex19
+
+ggsave(here("results", "Figures_new", "RacFox_Sex219.png"),plot = RacFox_Sex19)
+# There may be a significant difference in the M/F distribution for gray foxes, worth analsing
+```
+```{r}
+#as there seemed to potnetially be some difference in gender distribution, lets look at gender difference over time between raccoon and gray fox
+#ceratinly in the earlier time frame there seems to be more female gray foxes affected, has this got a role in why there were many fewer cases after this as population has fallen?
+RGFSEXYEAR19<- with(RGFSex19, table(Species, CollectionYear, Sex))
+Gender_year19 <- ggplot(as.data.frame(RGFSEXYEAR19), aes(CollectionYear, Freq, fill = Sex, color = Sex, group = Sex))  + 
+  geom_point() +geom_line() + 
+  theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 6)) + facet_wrap(~Species)
+
+Gender_year19
+
+ggsave(here("results", "Figures_new", "Gender_Species_year19.png"), plot = Gender_year19)
+```
+
+
+
+```{r}
+#bivariate mosaic plot of Sex and species
+SexSpecies_Mosaic19 <- ggplot(RGFSex19) +geom_mosaic(aes(x=product(Sex, Species), fill=Sex)) +labs(x= "Species", y="Sex")
+
+SexSpecies_Mosaic19
+
+ggsave(here("results", "Figures_new","SexSpecies_Mosaic19.png"),plot = SexSpecies_Mosaic19)
+
+
+sexspec19<- with(RGFSex19, table(Sex, Species))
+
+
+chisex19<- chisq.test(sexspec19)
+chisex19
+
+#in this case the null hypothesis that species and sex are independent can be accepted.
+
+```
+
+```{r}
+#Bivariate of Age and Species
+agemos19 <- ggplot(RGFAge19) +geom_mosaic(aes(x=product(Age, Species), fill=Age)) + labs(x= "Species", y="Age")
+#The age measurement is too subjective to read much into really, also depends on reproductive strategy and life history of species... are there more offspring? are they hidden?
+agemos19
+ggsave(here("results", "Figures_new", "RGFAge_mosaic.png"), plot = agemos19)
+
+
+agespec19<- with(RGFAge19, table(Age, Species))
+
+
+chiage19<- chisq.test(agespec19)
+chiage19
+
+#in this case the chisquared is greater than the critical value (5.99), but age is so subjective in this case it would need to be much higher 
+```
+```{r}
+library(tidycomm)
+na.omit(RGFSex) %>% crosstab(Species, Sex, Age, percentages  = TRUE)
+
+```
+```{r}
+#chi squared test for sex and species
+library(corrplot)
+na.omit(RGFSex) %>% crosstab(Species, Sex, chi_square =  TRUE)
+
+sexchi<- na.omit(with(RGFSex, table(Sex, Species)))
+
+chisex <- chisq.test(sexchi)
+chisex$observed
+
+round(chisex$expected,2)
+
+chisex$residuals
+
+corrplot(chisex$residuals, is.corr = F)
+
+contribsex <- 100*chisex$residuals^2/chisex$statistic
+round(contribsex, 3)
+
+corrplot(contribsex, is.cor = FALSE)
+```
+```{r}
+na.omit(RGFSex) %>% crosstab(Species, Age, chi_square =  TRUE)
+
+```
+
+```{r}
+#continued exploration, using month data
+
+
+#Join the data by cases number
+CDVGA <- subset(CDV_Clean, State %in% "Georgia" & Species %in% c("Raccoon", "Gray Fox"))
+CDVGA2 <- CDVGA %>% mutate(County = recode(County, "Chattoogna" = "Chattooga", "Dekalb" = "DeKalb")) %>% mutate(CaseNumber = as.numeric(as.character(CaseNumber)))
+
+
+CDVmonths <-    readRDS(here("data","processed_data","CDVmonths.rds"))
+
+
+CDVGA_months <- left_join(CDVGA2, CDVmonths, by = "CaseNumber" )
+CDVGA_months<- CDVGA_months [-c(8:14)]
+
+colnames(CDVGA_months)[2]<- "State"
+colnames(CDVGA_months)[3]<- "County"
+colnames(CDVGA_months)[4]<- "Species"
+colnames(CDVGA_months)[6]<- "Sex"
+colnames(CDVGA_months)[7]<- "Age"
+
+
+
+CDVGA_months <- CDVGA_months %>% mutate(Month = as.integer(as.character(Month)))
+RFD<- ggplot(CDVGA_months, aes(Month, fill=Species)) + geom_bar()
+
+RFD
+ggsave(here("results", "Figures", "RGF_per_month.png"), plot = RFD)
+
+Speciesmonth_Mosaic <- ggplot(CDVGA_months) +geom_mosaic(aes(x=product(Species, Month), fill=Species))
+
+Speciesmonth_Mosaic
+ggsave(here("results", "Figures", "RGFmonth_mosaic.png"), plot =Speciesmonth_Mosaic)
+```
+
+
+```{r}
+RFS<- ggplot(CDVGA_months, aes(Month, fill=Sex)) + geom_bar()
+
+RFS
+
+```
+```{r}
+
+sexMR<- CDVGA_months %>% subset( Sex %in% c("Male", "Female")) %>% subset( Species %in% c("Raccoon"))
+Sexmonth_MosaicR <- ggplot(sexMR) +geom_mosaic(aes(x=product(Sex, Month), fill=Sex)) 
+
+Sexmonth_MosaicR
+
+sexMGF<- CDVGA_months %>% subset( Sex %in% c("Male", "Female")) %>% subset (Species %in% c("Gray Fox"))
+Sexmonth_MosaicGF <- ggplot(sexMGF) +geom_mosaic(aes(x=product(Sex, Month), fill=Sex)) 
+
+Sexmonth_MosaicGF
+
+
+RGF_Sex_mont_mos <- grid.arrange(Sexmonth_MosaicR, Sexmonth_MosaicGF, nrow = 1)
+
+ggsave(here("results", "Figures", "RGFsex_per_month.png"), plot = RGF_Sex_mont_mos)
+
+```
+```{r}
+ffrt <- CDVGA_months[c(4,6,8)] %>% dplyr :: filter(Sex %in% c("Male", "Female")) %>% 
+  group_by(Species, Sex, Month) %>%
+  dplyr::summarise(n = n()) %>%
+  dplyr::ungroup() %>% spread(Sex,n) %>%
+  mutate(Male = ifelse(is.na(Male), 0, Male)) %>%  
+  mutate(Female = ifelse(is.na(Female), 0, Female)) %>% 
+  dplyr::mutate(Proportion_Female= (Female/(Female+Male)))
+
+prop_female<- ggplot(ffrt, aes(Month, Proportion_Female, fill = Species, color = Species, group = Species))  + 
+  geom_point() +geom_line() + geom_point() 
+
+prop_female
+
+ggsave(here("results", "Figures", "Prop_female_per_month.png"), plot = prop_female)
+```
+```{r}
+ggplot(CDVGA_months, aes(x=Date)) +geom_histogram(bins = 360)
+```
+```{r}
+#as exact dates is now available look for any trends in case number
+RFMonth <- as.data.frame(with(CDVGA_months, table(Species, Month)))
+
+RFM<- ggplot(RFMonth, aes(Month, Freq, fill = Species, color = Species, group = Species))  + 
+  geom_point() +geom_line() + 
+  theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 6)) 
+
+RFM
+
+ggsave(here("results", "Figures", "RGFtotal_per_month.png"), plot = RFM)
+#There does appear to be monthly variations, is this related to breeding season?
+```
+```{r}
+#look at fox vs raccon data on a monthly scale over the whole time frame
+RFPoint <- as.data.frame(with(CDVGA_months, table(Species, CollectionYear, Month)))
+
+RFP<- ggplot(RFPoint, aes(Month, Freq, fill = Species, color = Species, group = Species))  + 
+  geom_point() +geom_line() + 
+  theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 6)) +facet_wrap(~CollectionYear)
+
+RFP
+
+ggsave(here("results", "Figures", "RGF_per_month_wrap_year.png"), plot = RFP)
+#1988 seems to have a very large number of cases compared to other years, this could be skewing the mointhly trend, lets quickly plot the monthly cases with 1988 removed to see if the trend remains
+```
+```{r}
+RF_no8 <- CDVGA_months %>% dplyr:: filter(CollectionYear != 1988)
+RF_no88 <- as.data.frame(with(RF_no8, table(Species, Month)))
+
+RF88<- ggplot(RF_no88, aes(Month, Freq, fill = Species, color = Species, group = Species))  + 
+  geom_point() +geom_line() + 
+  theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 6)) 
+
+RF88
+#the trend appears largley unchanged which is nice
+```
+
+
+
+```{r}
+RACnum <- readRDS(here("data", "processed_data", "RaCFoxMappingData.rds"))
+t1<- left_join(CDVGA_months,RACnum)
+
+```
+```{r}
+#CDVGA_months %>% crosstab(Species, Month, chi_square =  TRUE)
+tyu<- CDVGA_months %>% dplyr::select(Species,  Month) %>% group_by(Species, Month) %>%
+  dplyr::summarise(n = n()) %>%
+  dplyr::ungroup() %>% spread(key = Species, value = n) 
+
+```
+```{r}
+tyu1<- tyu%>% dplyr :: filter(Month %in% c(1,2,3,4,5,6,7,8,9,10,11,12))
+chisq <- chisq.test(tyu1 )
+chisq
+```
+```{r}
+library(tidycomm)
+CDVGA_months %>% crosstab(Species, Month, chi_square =  TRUE)
+
+```
+
+```{r}
+#If we quickly plot a histogram using latitude it suggest there are some geographic differences in distribution 
+CDVGA2 <- readRDS(here("data", "processed_data", "CDVGA2.rds"))
+GAC<- readRDS(here("data", "processed_data", "Georgia_County_Map_Data.rds"))   
+LAT <- left_join(GAC, CDVGA2, by= "County") %>% subset( Species %in% c("Raccoon", "Gray Fox"))
+
+lat_hist<-ggplot(LAT, aes(lat)) + geom_histogram()  +
+ facet_wrap(~Species)
+
+ggsave(here("results", "Figures", "Latitude_RGF_hist.png"), plot = lat_hist)
+
+#This is interesting, there are two disticnt latitudinal peaks for raccoons but only 1 for gray foxes
+```
+
+```{r}
+Centro<- readRDS(here("data", "processed_data", "GACentroiddata.rds"))
+Centro <- Centro %>% mutate(CaseNumber = as.numeric(as.character(CaseNumber)))
+
+CentroMonth<-left_join(CDVGA_months,Centro)
+glimpse(CentroMonth)
+
+cennew<- CentroMonth %>% dplyr:: mutate(NS= lat)  %>% dplyr::mutate(NS= 
+
+                      ifelse(NS < "32.67328", "South",
+
+                      ifelse(NS >= "32.67328", "North", "no")))
+
+```
+```{r}
+RFNS <- as.data.frame(with(cennew, table(NS, Month)))
+NSP<- ggplot(RFNS, aes(Month, Freq, fill = NS, color = NS, group = NS))  + 
+  geom_point() +geom_line() + 
+  theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 6)) 
+NSP
+
+
+```
+```{r}
+RFNSSP <- as.data.frame(with(cennew, table(NS, Month, Species)))
+NSPSP<- ggplot(RFNSSP, aes(Month, Freq, fill = NS, color = NS, group = NS))  + 
+  geom_point() +geom_line() + 
+  theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 6)) + facet_wrap(~Species) 
+NSPSP
+
+ggsave(here("results", "Figures", "NS_per_month_RGF.png"), plot = NSPSP)
+#there doesn't appear to be any difference in peak cases in this rough look at north vs south... 
+
+```
+```{r}
+
+RFNSfreq <- as.data.frame(with(cennew, table(NS, Species))) %>% spread(key = NS, value = Freq) %>% dplyr::mutate(Total = (North + South)) %>% mutate_at(vars(North, South), funs(./Total))
+
+
+RFNSfreq2 <- as.data.frame(with(cennew, table(NS, Species))) %>% spread(key = Species, value = Freq) 
+colnames(RFNSfreq2)[2] <- "Gray_Fox"
+RFNSfreq3<- RFNSfreq2 %>% dplyr::mutate(Total = (Gray_Fox + Raccoon)) %>% mutate_at(vars(Gray_Fox, Raccoon), funs(./Total))
+
+tt<- with(cennew, table(NS, Species))
+
+NS_Mosaic <- ggplot(cennew) +geom_mosaic(aes(x=product(NS, Species), fill=NS),  na.rm = TRUE) +labs(x= "Species", y="North/South")
+
+NS_Mosaic
+
+ggsave(here("results", "Figures", "NS_Mosaic.png"), plot=NS_Mosaic)
+
+chisp <- chisq.test(tt)
+chisp
+
+#this value of chisq is above the critical value so we can reject the null hypothesis that species and northern and southern latitudes are independent. ie. Gray fox cases are more likely in the northern part of the state
+
+chisp$observed
+
+round(chisp$expected,2)
+
+chisp$residuals
+
+corrplot(chisp$residuals, is.corr = F)
+
+contrib <- 100*chisp$residuals^2/chisp$statistic
+round(contrib, 3)
+
+corrplot(contrib, is.cor = FALSE)
+```
+
+```{r}
+#split into breeding season
+#split months into breeding and non-breding- feb-july, or split further into mating, lactating and non-breeding? m,j,j -> lactating in GF, feb, march, april -> mating and prenancy, rest of year as non-breeding
+
+
+glimpse(CentroMonth)
+
+censea<- as.data.frame(CentroMonth) %>% dplyr:: mutate(Season= Month)  %>% mutate(Season = as.character(as.integer(Season))) %>% dplyr::mutate(Season= recode(Season, "2"="Breeding", "3"= "Breeding", "4"="Breeding", "5"= "Lactation", "6"="Lactation", "7"="Lactation", "8"= "Non-Breeding", "9"= "Non-Breeding","10" ="Non-Breeding", "11"= "Non-Breeding", "12" = "Non-Breeding", "1"= "Non-Breeding" ))
+
+
+breeding <- as.data.frame(with(censea, table(Season, Species)))
+#adjust for length of seasons
+breedingadj1 <- breeding %>% dplyr :: mutate(lengthSea= c(3,3,6,3,3,6))
+ breedingadj2 <- breedingadj1 %>% dplyr:: mutate(SeaAdj = (Freq/lengthSea))
+
+breedingplot<- ggplot(breedingadj2, aes(Season, SeaAdj, fill = Species, color = Species, group = Species)) + geom_point() +geom_line() + labs(y="Cases per season/season length")
+
+breedingplot
+
+ggsave(here("results", "Figures", "breeding_plot.png"), plot=breedingplot)
+```
+```{r}
+#as there was suggested to possibly be more female gray foxes, does the proportion change accroding to breeding season?
+censea2 <- censea%>% dplyr::filter(Species=="Gray Fox")
+Sexseas_Mosaic <- ggplot(censea2) +geom_mosaic(aes(x=product(Sex, Season), fill=Sex))
+
+Sexseas_Mosaic
+# not really
+```

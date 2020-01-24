@@ -1,0 +1,221 @@
+---
+title: "2014-19"
+author: "Jonathan Wilson"
+date: "17/01/2020"
+output: html_document
+---
+
+
+```{r}
+library(tidyverse)
+
+library(readr)
+library(naniar)
+library(forcats)
+library(here)
+library(visdat)
+
+```
+
+```{r}
+#importold data
+
+Raw_CDV_old <- read_csv(here("data", "raw_data", "Canine_Distemper_Virus_Reports.csv"))
+
+Raw_CDV_old<- Raw_CDV_old[-c(2,5,11)]
+
+O1 <-Raw_CDV_old %>%  filter(`No. Rec.` >1)
+#pull everything with more than 1
+
+singlesOld <- Raw_CDV_old %>% filter(`No. Rec.`== 1)
+#split the singles off too
+
+O2<- O1[rep(row.names(O1), O1$`No. Rec.`),]
+O3<- O2[-c(11, 12, 22),]
+#multiply for number of cases in the multiples
+
+Om1<-O3[c(14, 16,18,33),]
+Om1$Sex<-Om1$Sex<-"Male"
+
+Of1<-O3[c(15, 17, 19,34),]
+
+Of1$Sex<-Of1$Sex<-"Female"
+#pull things which diudnt need altered
+
+OO<-O3[-c(14,16,18,33, 15,17,19,34),] 
+JA<-bind_rows(Of1, Om1)
+#pull which now need age changed
+JAM<- JA[-c(2,4,6,8),]
+JAA<- JA[c(2,8),]
+
+JAA$Age<-JAA$Age <-"Adult"
+
+JAJ<- JA[c(4,6),]
+
+JAJ$Age<-JAJ$Age <-"Juvenile"
+
+j<- bind_rows(JAA, JAJ, JAM, OO)
+
+GoodEArly<- bind_rows(singlesOld, j)
+
+
+#remove cosl plus change names
+Early1<- GoodEArly[-c(6,9,10)]
+Early2<- Early1[-c(628, 630),]
+
+
+
+colnames(Early2)[5]<-"CollectionYear" 
+
+```
+```{r}
+#import 14-19 data
+Raw_CDV_2019 <- read_csv(here("data","raw_data","2014_to_2019_scwds_data.csv"))
+
+
+
+#selcet columns wanted
+Raw_CDV_2019_col <- Raw_CDV_2019[c(1,3,4,7,8,9,10,11,13,14,15)]
+#filter for distemper postive cases
+dist<- Raw_CDV_2019_col[grep("distemper", Raw_CDV_2019_col$Diagnosis),]
+
+
+
+rab<- dist[grep("Rabies", dist$Diagnosis),]
+rab3<-rab[8:10,]
+
+rab2<- dist[grep("rabies", dist$Diagnosis),]
+
+rab4<- rab2[grep("Duval", rab2$County),]
+
+dist1<-dist[-grep("Rabies", dist$Diagnosis),]
+dist2<-dist1[-grep("rabies", dist1$Diagnosis),]
+
+dist3<-dist2[-grep("not", dist2$Diagnosis),]
+
+distemper_cases<-bind_rows(dist3, rab3, rab4)
+
+#check for multiple animals in same observation
+
+unique(distemper_cases$Species)
+
+distemper_cases <- distemper_cases %>% mutate(Species = recode(Species, "Stripped Skunk" = "Striped Skunk", "Raccon"="Raccoon"))
+
+d1 <-distemper_cases %>%  filter(`No. Rec.` >1)
+#pull everything with more than 1
+
+singles <- distemper_cases %>% filter(`No. Rec.`== 1)
+```
+
+```{r}
+#exclude those that aren't distemper
+d2<- d1[rep(row.names(d1), d1$`No. Rec.`),]
+d3<- d2[-c(2:7, 12:14, 43, 60, 61),]
+
+vis_miss(d3)
+#exclude area missing
+d4<-d3[-c(4,5),]
+#recode where possible
+#exclude where not easy to split eg. 3 where it says both
+m1<-d4[c(1, 12:14, 16, 18, 20, 22, 24, 26, 36, 37, 42, 43),]
+m1$Sex<-m1$Sex<-"Male"
+m2<-m1 %>%  mutate(Age = recode(Age, "A-D: Adult." = "Adult", "A: Adult. B: Juvenile"="Adult", "A&B: Adult"="Adult", "A-G: Juvenile"= "Juvenile")) %>%  replace_with_na(replace = list(Age = "Unknown")) 
+
+f1<-d4[-c(1, 12:14, 16, 18, 20, 22, 24, 26, 36, 37, 42, 43),]
+fu1<-f1[c(19:21,3:8),]
+f2 <-f1[-c(19:21,3:8),]
+f2$Sex<-f2$Sex<-"Female"
+f3<-f2 %>%  mutate(Age = recode(Age, "A-D: Adult." = "Adult", "A: Adult. B: Juvenile"="Juvenile", "A: 4 mths. B: 24 wks. C: 14 wks." = "Juvenile")) %>%  replace_with_na(replace = list(Age = "Unknown")) 
+
+multifix<-bind_rows(f3, m2, fu1)
+
+
+
+```
+
+```{r}
+End_13 <- read.csv(here("data", "raw_data", "end_of_2013_cdv_scwds.csv"))
+
+End_13_col <- End_13[c(1,3,4,7,8,9,10,11,13,14,15)]
+
+dist13<- End_13_col[grep("distemper", End_13_col$Diagnosis),]
+
+c1 <-dist13 %>%  filter(No..Rec. >1)
+
+c2<- c1[rep(row.names(c1), c1$No..Rec.),]
+cm1<-c2[1,]
+cm1$Sex<-cm1$Sex<-"Male"
+cf1<-c2[2,]
+cf1$Sex<-cf1$Sex<-"Female"
+
+singles13 <- dist13 %>% filter(No..Rec.== 1) 
+
+split13<- bind_rows(singles13,cf1, cm1)  %>%  replace_with_na(replace = list(Age = "Unknown")) 
+```
+
+```{r}
+
+splitcases <-bind_rows(multifix, singles)
+#add 2013  
+CDV19clean1<- splitcases[-c(6,9,10)]
+CDV19clean1<- CDV19clean1[-c(185, 165, 152),]
+
+clean131<- split13[-c(6,9,10)]
+colnames(clean131)[1]<-"Case Number" 
+colnames(clean131)[8]<- "Date Rec."
+#now we have just distemper and indivudual cases so we can tidy bour columns up more
+all<- bind_rows(clean131, CDV19clean1)
+
+all<-all[-c(1,4,5,6),]
+
+colnames(all)[5]<-"CollectionYear" 
+
+
+all2<-bind_rows(Early2, all)
+```
+
+```{r}
+#Recode state names
+
+unique(all2$State)
+
+CDVState <- all2 %>%   mutate(State = recode(State, "NC" = "North Carolina", "SC" = "South Carolina", "KY" = "Kentucky", "GA" = "Georgia", "VA" = "Virginia", "LA" = "Louisiana", "MS" = "Mississippi", "PA" = "Pennsylvania", "KS" = "Kansas", "NE" = "Nebraska",  "FL" = "Florida",  "WV" = "West Virginia",  "MO" = "Missouri",  "AR" = "Arkansas",  "TN" = "Tennessee",  "AL" = "Alabama", "MD" = "Maryland"))
+
+CDV19_clean1<- CDVState
+
+```
+
+```{r}
+CDV19_clean2<-CDV19_clean1 %>% mutate(Age = recode(Age, "Juvenille" = "Juvenile", "Cub"="Juvenile", "0.5 yr"= "Juvenile", "Immature"="Juvenile", "JUV" = "Juvenile", "JUVENILE" = "Juvenile", "<2 months" = "Juvenile", "6-12 MO" = "Juvenile", "IM"= "Juvenile", "4-5 WK"="Juvenile", "612 MO" = "Juvenile", "3 YR" = "Adult", "2.5 YR" = "Adult", "ADULT" = "Adult", "1.5 YR" = "Adult",  ">1 yr" = "Adult", "Adul"= "Adult", "AD"= "Adult", "SUBADULT" = "Subadult", "SUB-ADULT"="Subadult",  "SUB AD"= "Subadult", "Sub-adult"= "Subadult", "Young Adult" = "Subadult", "SUB ADULT" = "Subadult", "SUB-AD"="Subadult", "SUBAD" = "Subadult", "1 YR" = "Subadult", "1YR" = "Subadult", "1 yr" = "Subadult", "45 WK" = "Subadult")) %>% mutate(Sex=recode(Sex, "F"= "Female", "M"= "Male")) %>% mutate(Species=recode(Species, "Raccoon, Opossum" ="Raccoon", "RACCOON"= "Raccoon", "RED FOX"="Red Fox", "GRAY FOX"= "Gray Fox", "Grey Fox"= "Gray Fox", "GRAY WOLF"= "Gray Wolf", "COYOTE"="Coyote", "STRIPED SKUNK"= "Striped Skunk"))
+
+
+library(naniar)
+
+CDV19_clean3<- CDV19_clean2 %>%  replace_with_na(replace =  list(Age = c("Unknown", "UK", "N/A", "Subadult; Adult", "Varying Ages", "Adult, Juvenile", "Juv, Adult", "Juvenile, Adult"), Sex= c("N/A", "Unknown", "Both", "UK")))
+
+colnames(CDV19_clean3)[8]<-"Date_Recorded"
+
+CDV19_clean3$Date_Recorded <- sub(CDV19_clean3$Date_Recorded, pattern = "/", replacement = "-")
+
+CDV19_clean3$Date_Recorded <- sub(CDV19_clean3$Date_Recorded, pattern= "/", replacement = "-")
+
+#fix date recorded so all the same and recroed as dateusing lubrdate
+library(lubridate)
+CDV19_clean4<- CDV19_clean3%>% dplyr::mutate(Date = (mdy(CDV19_clean3$Date_Recorded)))  
+
+#Recode county as lower case plus caps at start
+CDV19_clean5<-CDV19_clean4 %>% mutate(County= lapply(CDV19_clean4$County, tolower))
+
+capFirst <- function(s) {paste(toupper(substring(s, 1, 1)), substring(s, 2), sep = "")}
+
+CDV19_clean5$County <- capFirst(CDV19_clean5$County)
+#last thing, lets check the counties out
+unique(CDV19_clean5$County)
+CDV19_clean5 <- CDV19_clean5 %>% replace_with_na(replace = list(County = c("Unknown", "NANA", "Troup/meriwether/harris", "Buncombe, henderson", "Trigg/lyon", "Hancock/brooke" ))) %>% mutate(County=recode(County, "Gloucester, city of hampton"= "Gloucester"))
+
+CDV19_clean<-CDV19_clean5[-c(1,8)]
+```
+
+```{r}
+CDV19_clean %>% saveRDS(here::here("data","processed_data","CDV19_clean.rds"))
+```
