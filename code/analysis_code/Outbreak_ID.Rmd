@@ -1,0 +1,16 @@
+---
+title: "All data explo for future work"
+author: "Jonathan Wilson"
+date: "02/03/2020"
+output: html_document
+---
+
+```{r}
+#do time series of all cases and wrap by state to try to find outbreaks to look at for fututre virus analyis
+
+fCDV_Clean19 <-   readRDS(here::here("data", "processed_data", "CDV19_clean.rds"))
+
+floor<- fCDV_Clean19%>% dplyr :: mutate(Date_new = lubridate::floor_date(Date, unit ="month"))
+
+ggplot(floor, aes(Date_new)) +geom_histogram(bins=540) +facet_wrap(~State)
+```

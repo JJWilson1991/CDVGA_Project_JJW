@@ -1,0 +1,72 @@
+---
+title: "Spatial analysis 19"
+author: "Jonathan Wilson"
+date: "08/05/2020"
+output: html_document
+---
+
+```{r}
+
+library(spatstat)
+
+library(here)
+library(dplyr)
+library(gridExtra)
+
+GA_Case_Centroids <- readRDS(here("data", "processed_data", "Case_GA_Centroids.rds"))
+GA_Case_Centroids
+```
+
+
+```{r}
+#create window for ripleys K ananlyis, using the lat and long ramnge of the stae of gerogia aas the boundaries
+
+riprange<-   owin(xrange=c(-86,-81), yrange=c(30,35), poly=NULL, mask=NULL,
+unitname=NULL, xy=NULL)
+ripPointmap<-ppp(x=GA_Case_Centroids$long,y=GA_Case_Centroids$lat, window= riprange)
+plot(ripPointmap)
+
+#plot the ripleysk 
+
+plot(Kest(ripPointmap)) 
+
+#There is significant clustering of points as the K hat is above the K poi
+
+#Add envelope as the error margins
+
+Ripleys_K<- envelope(ripPointmap)
+
+Ripleys_Cases <- plot(Ripleys_K)
+
+png(here::here("results", "Figures_new", "RipK19.png"))
+plot(Ripleys_K)
+dev.off()
+
+
+```
+
+```{r}
+#Check for Raccoon and Gray Fox serpeately
+Rac_Rip <- GA_Case_Centroids %>% dplyr::filter(Species=="Raccoon")
+Rac_Rip_map<-ppp(x=Rac_Rip$long,y=Rac_Rip$lat, window= riprange)
+plot(Rac_Rip_map)
+
+ 
+
+plot(Kest(Rac_Rip_map)) 
+```
+```{r}
+GF_Rip <- GA_Case_Centroids %>% dplyr::filter(Species=="Gray Fox")
+GF_Rip_map<-ppp(x=GF_Rip$long,y=GF_Rip$lat, window= riprange)
+plot(GF_Rip_map)
+
+ 
+
+plot(Kest(GF_Rip_map)) 
+#Both have significant clustering
+
+
+
+```
+
+

@@ -52,7 +52,7 @@ ggplot(data = SE19) +  geom_polygon(aes(x = long, y = lat, fill = region, group 
 ```
 ```{r}
 
-CDV_Clean19 <-   readRDS(here("data","processed_data","CDV19_clean.rds"))
+CDV_Clean19 <-   readRDS(here::here("data","processed_data","CDV19_clean.rds"))
 
 
 
@@ -80,7 +80,7 @@ library(rgeos)
 
 #we also want some state abbreviations we can put in the centre of our states on the map so we shall pull that data together
 statescent <- data.frame(state.center, state.abb)
-SECEnt <- subset(statescent, state.abb %in% c("PA","GA", "KS", "SC", "AR", "FL", "KY", "LA", "MD", "MS", "NC", "TN", "VA", "WV", "AL", "MO"))
+SECEnt <- subset(statescent, state.abb %in% c("PA","GA", "KS", "SC", "AR", "FL", "KY", "LA", "MD", "MS", "NC", "TN", "VA", "WV", "AL", "MO", "NE"))
 ```
 ```{r}
 #we also want some major cites that we can plot on our final map
@@ -114,7 +114,7 @@ SEC4 <- SEC3
 
 SEC4
 
-ggsave(here("results", "Figures_new", "Cases_per_State19.png"),plot = SEC4)
+ggsave(here::here("results", "Figures_new", "Cases_per_State19.png"),plot = SEC4)
 
 statetable<- table(CDV_Clean19$State)
 statetable<-as.data.frame(statetable)
@@ -122,7 +122,7 @@ statetable
   colnames(statetable)[1] <- "State"
   colnames(statetable)[2] <- "No. of cases"
   
-statetable %>% saveRDS(here("results", "Tables", "statetable19.rds"))
+statetable %>% saveRDS(here::here("results", "Tables", "statetable19.rds"))
 #we also needed to recode the carolinas to capiatlise both words so we could properly join 
 #i used a log scale here as GA is massively overrrepresented and it made it difficult to percive what other states are involved
 ```
@@ -148,7 +148,7 @@ SECT419 <- SECt319 + facet_wrap(~ CollectionYear)
 
 SECT419
 
-ggsave(here("results", "Figures_new", "Cases_per_State_WrapYear19.png"),plot = SECT4)
+ggsave(here::here("results", "Figures_new", "Cases_per_State_WrapYear19.png"),plot = SECT419)
 
 ```
 
@@ -156,7 +156,6 @@ ggsave(here("results", "Figures_new", "Cases_per_State_WrapYear19.png"),plot = S
 
 
 
-######
 
 ```{r}
 library(sf)
@@ -174,24 +173,32 @@ sepSE_sf<- tt %>% separate(ID, c("State", "County"), ",")
 sepSE_sf$County<- capFirst(sepSE_sf$County)
 
 sepSE_sf$State<- capFirst(sepSE_sf$State)
-sepSE_sf<-sepSE_sf%>% mutate(State = recode(State, "North carolina" = "North Carolina", "South carolina" = "South Carolina", "West virginia"= "West Virginia"))
+sepSE_sf<-sepSE_sf%>% mutate(State = recode(State, "North carolina" = "North Carolina", "South carolina" = "South Carolina", "West virginia"= "West Virginia"))%>% mutate(County=recode(County, "De kalb"="DeKalb", "Jeff davis"="Jeff Davis","Ben hill"= "Ben Hill", "Mcintosh"="McIntosh", "Mcduffie"="McDuffie"))
  
 #calculate the centroids for each county
 
 SE_centroid <- st_centroid(sepSE_sf)
-colnames(SE_centroid)[4]<- "Centroid"
 
 
 
-SEtest4 <-  SE_centroid%>% mutate(tosplit= as.character(Centroid))
+
+SEtest4 <-  SE_centroid%>% mutate(tosplit= as.character(geometry))
+
 SEtest4$tosplit <- sub(SEtest4$tosplit, pattern = "c", replacement = "")
+
 SEtest4$tosplit <- sub(SEtest4$tosplit, pattern = "[(]", replacement = "")
+
 SEtest4$tosplit <- sub(SEtest4$tosplit, pattern = "[)]", replacement = "")
+
 SEtest4$tosplit<- sub(SEtest4$tosplit, pattern = "[,]", replacement = "")
+
 SEtest5 <- SEtest4 %>% separate(tosplit, c("long", "lat"), " ")
+
 SE_centroid_split<- SEtest5 %>% mutate(lat = as.numeric(as.character(lat))) %>% mutate(long = as.numeric(as.character(long)))
 
-SE_centroid_split %>% saveRDS(here("data", "processed_data", "SE_centroid.rds"))
+colnames(SE_centroid_split)[6]<- "Centroid"
+
+SE_centroid_split %>% saveRDS(here::here("data", "processed_data", "SE_centroid.rds"))
 
 plot(sepSE_sf["State"])
 ```
@@ -202,7 +209,10 @@ testing123<-left_join(CDV_Clean19, sepSE_sf, by=c("County", "State"))
 ttt<- as.data.frame(with(testing123,table(ID2)))
 
 SE_freq_19<-left_join(sepSE_sf, ttt, by="ID2")
+
+
 SE_centroid_split<-as_data_frame(SE_centroid_split)
+
 cent_SE_19<-left_join(sepSE_sf, SE_centroid_split)
 
 cent_spec_19<- left_join(cent_SE_19,CDV_Clean19 )
@@ -210,22 +220,67 @@ cent_spec_19<- left_join(cent_SE_19,CDV_Clean19 )
 SESpec<- ggplot(cent_spec_19) + geom_sf(aes(geometry=geometry)) +  geom_point(data = cent_spec_19, aes(x = long, y = lat, color= Species), alpha = 0.5, position = position_jitter(width=0.05,height=0.05 ), na.rm = T) + scale_colour_discrete( na.translate=F )
 SESpec
 
+
+ggsave(here::here("results", "Figures_new", "SE_AllSpec.png"),plot = SESpec)
 ```
+```{r}
+cent_spec_19_na_rm<- left_join(CDV_Clean19, cent_SE_19 )
+
+SEYear<- ggplot(cent_spec_19) + geom_sf(aes(geometry=geometry), fill="grey90") +  geom_point(data = cent_spec_19_na_rm, aes(x = long, y = lat, color= CollectionYear),  alpha = 0.5, position = position_jitter(width=0.05,height=0.05 ), na.rm = T) +scale_color_continuous()
+SEYear
+
+ggsave(here::here("results", "Figures_new", "SE_Allyear.png"),plot = SESpec)
+
+```
+
+
+
 ```{r}
 #now filter for GA and racs and GF
 
-fil_spec_19<-subset(cent_spec_19, State%in% "Georgia")
-RGFfil_spec_19<-as_data_frame(subset(fil_spec_19, Species%in% c("Raccoon", "Gray Fox")))
+fil_spec_19<-subset(cent_spec_19, State%in% "Georgia" &Species%in% c("Raccoon", "Gray Fox"))
+RGFfil_spec_19a<-as_data_frame(subset(fil_spec_19, Species%in% c("Raccoon", "Gray Fox")))
+
+CDV19_fi<-  subset(CDV_Clean19, Species %in% c("Raccoon", "Gray Fox") & State%in%"Georgia")
+
+#remove NA county
+
+CDV19_fi<-CDV19_fi[-292,]
 
 #redo everything for plotting points
 
 GApoint<-subset(cent_SE_19, State%in% "Georgia")
-RGFfil_spec_19<- RGFfil_spec_19[-c(10,11)]
+RGFfil_spec_19<- RGFfil_spec_19a[-c(14,15)]
 pointRGF19<-left_join(GApoint,RGFfil_spec_19)
+
+pointRGF19 %>% saveRDS(here::here("data","processed_data","RGF_lat_long.rds"))
 
 GAspec<- ggplot(pointRGF19) + geom_sf(aes(geometry=geometry)) +  geom_point(data = pointRGF19, aes(x = long, y = lat, color= Species), alpha = 0.5, position = position_jitter(width=0.05,height=0.05 ), na.rm = T) + scale_colour_discrete( na.translate=F )
 GAspec
 
+ggsave(here::here("results", "Figures_new", "RGFGA19.png"),plot = GAspec)
+```
+```{r}
+4444
+#wrap species pounts by year
+Georgia_coorod<-subset(cent_SE_19, State%in% "Georgia")
+
+pointRGF19_wrap<-right_join(GApoint,RGFfil_spec_19) 
+
+pointRGF19_wrap %>% saveRDS(here::here("data", "processed_data", "Case_GA_Centroids.rds"))
+
+GAspecyear19<- ggplot() + geom_sf(data=Georgia_coorod, aes(geometry=geometry)) +  geom_point(data = pointRGF19_wrap, aes(x = long, y = lat, color= Species), alpha = 0.5, position = position_jitter(width=0.05,height=0.05 ), na.rm = T) + scale_colour_discrete( na.translate=F ) +facet_wrap(~CollectionYear) + theme_map() + theme(legend.position="right")
+GAspecyear19
+
+ggsave(here::here("results", "Figures_new", "GAspecyear19.png"),plot = GAspecyear19)
+
+```
+```{r}
+RGFGA_CY<- ggplot(pointRGF19) + geom_sf(aes(geometry=geometry)) +  geom_point(data = pointRGF19, aes(x = long, y = lat, color= CollectionYear), alpha = 0.5, position = position_jitter(width=0.05,height=0.05 ), na.rm = T) +scale_color_continuous(na.value="grey90")
+
+RGFGA_CY
+
+ggsave(here::here("results", "Figures_new", "RGF_Years_19.png"),plot = RGFGA_CY)
 ```
 ```{r}
 #replot using simplefeatures for each county
@@ -238,14 +293,20 @@ SF_County19 <- ggplot() +
 
 SF_County19
 
-ggsave(here("results", "Figures_new", "All_County_SF19.png"),plot = SF_County19)
+ggsave(here::here("results", "Figures_new", "All_County_SF19.png"),plot = SF_County19)
 
 #alterntive way of plotting mapping data
 ```
 
 
 ```{r}
+
+
+#like we did earlier for our national map, lets get some data for the larger cities in georgia as reference points
+colnames(uscitiesdf)[3] <- "Population"
+GAcitiesspread <- uscitiesdf %>% subset(country.etc %in% "GA") %>% filter(Population>100000)
 GA_county_19 <- subset(SE_freq_19, State %in% "Georgia") %>% as.data.frame()
+
 
 GA_County19SF <- ggplot() + 
   geom_sf(data = GA_county_19, aes(geometry=geometry, fill = Freq))  +scale_fill_gradient(high = "purple4", low = "thistle1", na.value="white", trans = "log10") +
@@ -253,15 +314,14 @@ GA_County19SF <- ggplot() +
 
 GA_County19SF
 
-ggsave(here("results", "Figures_new", "GA_County_SF19.png"),plot = GA_County19SF)
-
+ggsave(here::here("results", "Figures_new", "GA_County_SF19.png"),plot = GA_County19SF)
 
 ```
 
 ```{r}
 #lets do presence map
 
-sdf<- f %>% mutate(Presence=Freq) 
+sdf<- SE_freq_19 %>% mutate(Presence=Freq) 
 sdf$Presence <- ifelse(sdf$Presence >0 ,TRUE, FALSE) 
 
 
@@ -270,12 +330,13 @@ sdf <- sdf %>% mutate(Presence = ifelse(is.na(Presence), FALSE, Presence))
 
 presenceSF_County19 <- ggplot() + 
   geom_sf(data = sdf, aes(geometry=geometry, fill = Presence))  +
-  labs(fill= "Presence") +  scale_fill_manual(values = c('white', 'turquoise4')) #+facet_wrap(~State)
-# #+ 
-#   geom_point(data = GAcitiesspread, aes(x = long, y = lat, size = Population), alpha = 0.5) + 
-#   geom_text(data = GAcitiesspread, aes(x = long, y = lat, label = name, group = NULL), position = position_jitter(width=0.3,height=0.3)) 
+  labs(fill= "Presence") +  scale_fill_manual(values = c('white', 'turquoise4')) 
 
 presenceSF_County19
+
+ggsave(here::here("results", "Figures_new", "presenceSF_County19.png"),plot = presenceSF_County19)
+
+
 ```
 ```{r}
 GA_presence_19 <- subset(sdf, State %in% "Georgia") %>% as.data.frame()
@@ -283,691 +344,328 @@ GA_presence_19 <- subset(sdf, State %in% "Georgia") %>% as.data.frame()
 
 GApresenceSF_County19 <- ggplot() + 
   geom_sf(data = GA_presence_19, aes(geometry=geometry, fill = Presence))  +
-  labs(fill= "Presence") +  scale_fill_manual(values = c('white', 'turquoise4')) #+facet_wrap(~State)
-# #+ 
-#   geom_point(data = GAcitiesspread, aes(x = long, y = lat, size = Population), alpha = 0.5) + 
-#   geom_text(data = GAcitiesspread, aes(x = long, y = lat, label = name, group = NULL), position = position_jitter(width=0.3,height=0.3)) 
+  labs(fill= "Presence") +  scale_fill_manual(values = c('white', 'turquoise4'))  +   geom_point(data = GAcitiesspread, aes(x = long, y = lat, size = Population), alpha = 0.5) +    geom_text(data = GAcitiesspread, aes(x = long, y = lat, label = name, group = NULL), position = position_jitter(width=0.3,height=0.3)) 
 
 GApresenceSF_County19
 
-```
 
-
-```{r}
-#having looked broadly at the data from the South East its clear that GA is where we should focus our county analysis
-#so we'll pull map data for US counties and subset for GA
-library(RColorBrewer)
-counties <- map_data("county")
-GA_county <- subset(counties, region %in% "georgia") %>% as.data.frame()
-#lets just focus on raccoon and gray fox from here
-GAC <- dplyr :: rename(GA_county, County = subregion)
-GAC$County <- capFirst(GAC$County)
-
-GAC %>% saveRDS(here("data", "processed_data", "Georgia_County_Map_Data.rds"))
-CDVGA <- subset(CDV_Clean, State %in% "Georgia" & Species %in% c("Raccoon", "Gray Fox"))
-
-CoFr <- with(CDVGA, table(County))
-COFR <- as.data.frame(CoFr)
-
-
+ggsave(here::here("results", "Figures_new", "GApresenceSF_County19.png"),plot = GApresenceSF_County19)
 
 ```
 
 
 ```{r}
-#Quick bar chart of counties to see if some are over represented
-Countysquared<- ggplot(CDVGA, aes(County, fill=County, color=County)) +
-  geom_bar() + 
-  theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 8), legend.position = "none")
-Countysquared
-ggsave(here("results", "Figures", "County_per_Year.png"),plot = Countysquared)
-```
-
-```{r}
-#we'll look at what unique county names we have to look for obvious typos
-table(sort(unique(COFR$County)))
-```
-
-```{r}
-#we'll recode chatoogna and dekalb but there isn't much to do with the 3 counties in one so it won't be plotted as it won't join our other data
-CDVGA2 <- CDVGA %>% mutate(County = recode(County, "Chattoogna" = "Chattooga", "Dekalb" = "DeKalb"))
-
-CDVGA2 %>% saveRDS(here("data", "processed_data", "CDVGA2.rds"))
-#repeat process for county map data to see if therte are mismatches which will cause us to lose dtat when we join
-table(sort(unique(GAC$County)))
-```
-```{r}
-#recode dekalb county and jeff davis +ben hill
-GAC <-  GAC %>% mutate(County = recode(County, "De kalb" = "DeKalb", "Jeff davis" = "Jeff Davis", "Ben hill" = "Ben Hill", "Mcintosh" ="McIntosh", "Mcduffie" = "McDuffie"))
-CDVGA2 <-  CDVGA2 %>% mutate(County = recode(County, "De kalb" = "DeKalb", "Jeff davis" = "Jeff Davis", "Ben hill" = "Ben Hill", "Mcintosh" ="McIntosh", "Mcduffie" = "McDuffie"))
-```
-```{r}
-#pull the frequency data for positive cases per county and join to county mapping dtata
-GACOFR <- with(CDVGA2, table(County))
-GACOFRdf <- as.data.frame(GACOFR)
-cotr <- left_join(GAC, GACOFRdf)
-```
-```{r}
-#we'll do a full join to check to make sure the spelling all matches
-FJC <- full_join(GAC, GACOFRdf)
-table(sort(unique(FJC$County)))
-```
-
-```{r}
-#like we did earlier for our national map, lets get some data for the larger cities in georgia as reference points
-colnames(uscitiesdf)[3] <- "Population"
-GAcitiesspread <- uscitiesdf %>% subset(country.etc %in% "GA") %>% filter(Population>100000)
-#now plot all the positive data by county
-g1 <- ggplot(data = cotr) +  
-  geom_polygon(aes(x = long, y = lat, fill = Freq, group = group), color = "azure4") + 
-  coord_fixed(1.3)  + 
-  scale_fill_gradient(high = "purple4", low = "thistle1", na.value="white", trans = "log10") + 
-  theme_map() 
-
-g2 <- g1 + 
-  theme( 
-  axis.text = element_blank(),
-  axis.line = element_blank(),
-  axis.ticks = element_blank(),
-  panel.border = element_blank(),
-  panel.grid = element_blank(),
-  axis.title = element_blank(), legend.position = "right")  + labs(fill= "Number of cases") 
-
-g3 <- g2 + 
-  geom_point(data = GAcitiesspread, aes(x = long, y = lat), alpha = 0.5) + 
-  geom_text(data = GAcitiesspread, aes(x = long, y = lat, label = name, group = NULL), position = position_jitter(width=0.3,height=0.3)) 
-g3
-
-ggsave(here("results", "Figures", "County_map.png"),plot = g3)
-#I introduced a log scale as it is more informative for the dynamics of distemper as either the presenc e of absence of clinical cases demonstrates an outbreak, so whether there is 1 case or 100 cases in an area isn't that importnat
-```
-
-```{r}
-#now wew'll repeat the county process over time
-CoYr <- with(CDVGA2, table(County, CollectionYear, Species))
-COYR <- as.data.frame(CoYr)
-COYR <-  COYR %>% mutate(County = recode(County, "Mcintosh" ="McIntosh", "Mcduffie" = "McDuffie"))
-cotry <- left_join(GAC, COYR)
-```
-```{r}
-cotry_complete <- cotry %>% filter(!is.na(CollectionYear))
-c<- ggplot(data = cotry_complete) +  
-  geom_polygon(data = GAC, aes(x = long, y = lat, group = group), color ="gray50", fill = "white") + 
-  geom_polygon(aes(x = long, y = lat, fill = Freq, group = group), color = "azure4") + 
-  coord_fixed(1.3)  + 
-  scale_fill_gradient(high = "red", low = "white", na.value="azure", trans = "log10") + theme_map() + theme( 
-  axis.text = element_blank(),
-  axis.line = element_blank(),
-  axis.ticks = element_blank(),
-  panel.border = element_blank(),
-  panel.grid = element_blank(),
-  axis.title = element_blank(), legend.position = "right") + facet_wrap( ~ CollectionYear)  + labs(fill= "Number of cases")
-
-c
-
-ggsave(here("results", "Figures", "County_WrapYear.png"),plot = c)
-```
-
-```{r}
-cotry_comp <- cotry %>% mutate(CollectionYear = as.numeric(as.character(CollectionYear)))
-p <- ggplot(data = cotry_comp, aes(frame = CollectionYear)) +  geom_polygon(data = cotry_comp, aes(x = long, y = lat, group=group), color = "gray50", fill = "white") + 
-  geom_polygon(aes(x = long, y = lat, fill = Freq, group = group), color = "azure4") + 
-  coord_fixed(1.3)  + 
-  scale_fill_gradient(high = "red4", low = "red", na.value="white", trans = "log10") + 
-  theme_map() + 
-  theme( 
-  axis.text = element_blank(),
-  axis.line = element_blank(),
-  axis.ticks = element_blank(),
-  panel.border = element_blank(),
-  panel.grid = element_blank(),
-  axis.title = element_blank(), legend.position = "right") +  labs(fill= "Number of cases")
-
-p2 <- ggplotly(p)
-
-p2 <- p2 %>% animation_opts( mode= "immediate", transition= 0, easing = "linear-out" , redraw = FALSE)
-p2
-#the data isn't right here, no 1988 in glynn co.
-```
-```{r}
-#now we'll subset for raccoon and gray fow and compare the couty distribution
-Cospe <- subset(CDVGA2, Species %in% c("Raccoon", "Gray Fox"))
-CoSPE <- with(Cospe, table(County, Species))
-COSPE <- as.data.frame(CoSPE)
-COSPEC <- left_join(GAC, COSPE)
-```
-
-```{r}
-#plot the cases per countiy for each species
-SP1 <- ggplot(data = COSPEC) +  
-  geom_polygon(data = GAC, aes(x = long, y = lat, group = group), color ="gray50", fill = "white") + 
-  geom_polygon(aes(x = long, y = lat, fill = Freq, group = group), color = "azure4") + 
-  coord_fixed(1.3)  
-
-SP2 <- SP1 + 
-  scale_fill_gradient(high = "purple", low = "white", na.value="white", trans = "log10") + 
-  theme_map() + 
-  theme( 
-  axis.text = element_blank(),
-  axis.line = element_blank(),
-  axis.ticks = element_blank(),
-  panel.border = element_blank(),
-  panel.grid = element_blank(),
-  axis.title = element_blank(), legend.position = "right") 
-SP3 <- SP2 +  
-  geom_point(data = GAcitiesspread, aes(x = long, y = lat), size = 1, fill = "black", alpha = 0.5) + 
-  geom_text(data = GAcitiesspread, aes(x = long, y = lat, label = name, group = NULL), position = position_jitter(width=0.3,height=0.3), size=2) 
-
-SP4 <- SP3 + 
-  facet_wrap( ~ Species)  + 
-  labs(fill= "Number of cases")
-
-SP4
-
-ggsave(here("results", "Figures", "CountyCases_WrapSpecies.png"),plot = SP4)
-```
-```{r}
-#now we want just the racoon data over time so we can compare any pattern to gray fox
-RACMAP <- with(CDVGA2, table(County, Species, CollectionYear))
-RRACMAP<- as.data.frame(RACMAP)
-racmap <- left_join(GAC, RRACMAP)
-RMP <- subset(racmap, Species %in% "Raccoon")
-```
-```{r}
-#plot the raccon cases in each coutny for ewach year
-Raccoonplot<- ggplot(data = RMP) +  
-  geom_polygon(data = GAC, aes(x = long, y = lat, group = group), color ="gray50", fill = "white") + 
-  geom_polygon(aes(x = long, y = lat, fill = Freq, group = group), color = "azure4") +
-  coord_fixed(1.3)  + scale_fill_gradient(high = "purple", low = "white", na.value="azure", trans = "log10") + theme_map() + theme( 
-  axis.text = element_blank(),
-  axis.line = element_blank(),
-  axis.ticks = element_blank(),
-  panel.border = element_blank(),
-  panel.grid = element_blank(),
-  axis.title = element_blank(), legend.position = "right") + facet_wrap( ~ CollectionYear)  + labs(fill= "Number of cases")
-
-Raccoonplot
-
-ggsave(here("results", "Figures", "Rac_County_WrapYear.png"),plot = Raccoonplot)
-
-```
-```{r}
-
-GFMP <- subset(racmap, Species %in% "Gray Fox")
-```
-```{r}
-#repoeat the above process for grayfoxes
-GrayFoxPlot <- ggplot(data = GFMP) +  
-  geom_polygon(data = GAC, aes(x = long, y = lat, group = group), color ="gray50", fill = "white") + 
-  geom_polygon(aes(x = long, y = lat, fill = Freq, group = group), color = "azure4") + 
-  coord_fixed(1.3)  + 
-  scale_fill_gradient(high = "purple", low = "white", na.value="azure", trans = "log10") + 
-  theme_map() + 
-  theme( 
-  axis.text = element_blank(),
-  axis.line = element_blank(),
-  axis.ticks = element_blank(),
-  panel.border = element_blank(),
-  panel.grid = element_blank(),
-  axis.title = element_blank(), legend.position = "right") + facet_wrap( ~ CollectionYear)  + labs(fill= "Number of cases")
-
-GrayFoxPlot
-
-ggsave(here("results", "Figures", "Gray_County_WrapYear.png"),plot = GrayFoxPlot)
-```
+CDV_Clean19
+CDV19_fi<-  subset(CDV_Clean19, Species %in% c("Raccoon", "Gray Fox") & State=="Georgia")
+County_year<- as.data.frame(table(CDV19_fi$County, CDV19_fi$CollectionYear))
+colnames(County_year)[1] <- "County"
+colnames(County_year)[2] <- "Year"
 
 
-```{r}
-#lets change the freq data to TRUE or FALSE as presence vs absence is more important than the number of cases
 
 
-cotry_comp$Freq <- ifelse(cotry_comp$Freq >0 ,TRUE, FALSE) #%>% replace_na(list(Freq = FALSE)) 
-#presence_absence<- cotry_complete
-```
-```{r}
-colnames(cotry_comp)[9] <- "Present"
-cotry_comp <- cotry_comp %>% mutate(Present = ifelse(is.na(Present), FALSE, Present))
- cotry_comp %>% saveRDS(here("data", "processed_data", "Presence_map_data.rds"))
 
+GA_County_year<-right_join(Georgia_coorod, County_year)
 
-Presence <- ggplot(data = cotry_comp) +  
-  geom_polygon(data = GAC, aes(x = long, y = lat, group = group), color ="gray50", fill = "white") + 
-  geom_polygon(aes(x = long, y = lat, fill = Present, group = group), color = "azure4") + 
-  scale_fill_manual(values = c('white', 'turquoise4')) +
-  coord_fixed(1.3)  + 
-  theme_map() + theme( 
-  axis.text = element_blank(),
-  axis.line = element_blank(),
-  axis.ticks = element_blank(),
-  panel.border = element_blank(),
-  panel.grid = element_blank(),
-  axis.title = element_blank(), legend.position = "right") + facet_wrap( ~ CollectionYear)  + 
-  labs(fill= "Presence")
-
-Presence
-
-ggsave(here("results", "Figures", "Presence_WrapYear.png"),plot = Presence, height = 7, width = 7)
-```
-
-```{r}
-#plot animation of county presence over time
-
-PA <- ggplot(data = cotry_comp, aes(frame = CollectionYear)) +  geom_polygon(data = cotry_comp, aes(x = long, y = lat, group=group), color = "gray50", fill = "white") + 
-  geom_polygon(aes(x = long, y = lat, fill = Present, group = group), color = "azure4") + 
-  coord_fixed(1.3)  + 
-  scale_fill_manual(values = c('white', 'turquoise4')) +
-  theme_map() + 
-  theme( 
-  axis.text = element_blank(),
-  axis.line = element_blank(),
-  axis.ticks = element_blank(),
-  panel.border = element_blank(),
-  panel.grid = element_blank(),
-  axis.title = element_blank(), legend.position = "none") +  labs(fill= "Presence")
-
-PA2 <- ggplotly(PA) %>% animation_opts( transition= 1,  redraw = FALSE)
-PA2 
-
-```
-
-
-```{r}
-RACnum <- racmap %>% mutate(CollectionYear = as.numeric(as.character(CollectionYear)))
-RACnum$Freq <- ifelse(RACnum$Freq >0 ,TRUE, FALSE)
-
-RACFOX <- subset(RACnum, Species %in% c("Raccoon", "Gray Fox"))
-
-RACnum %>% saveRDS(here("data", "processed_data", "RaCFoxMappingData.rds"))
-```
-
-
-```{r}
-#import georgia counties as simple feaatues so we can get the centroids for each coutny as we don't have specific co-ordinate data for ewach case we will just use the county centrod
-
-GAC_sf <- st_as_sf(map("county", regions = 'georgia', plot = FALSE, fill = TRUE))
-
-sepGAC_sf<- GAC_sf %>% separate(ID, c("State", "County"), ",")
-
-sepGAC_sf$County<- capFirst(sepGAC_sf$County)
-
-sepGAC_sf$State<- capFirst(sepGAC_sf$State)
-```
-
-```{r}
-unique(sepGAC_sf$County)
-
-sepGAC2_sf <- sepGAC_sf %>% mutate(County = recode(County, "Ben hill" = "Ben Hill", "De kalb" = "DeKalb", "Jeff davis" = "Jeff Davis", "Mcintosh" ="McIntosh", "Mcduffie" = "McDuffie"))
-```
-```{r}
-#The top county map is wrong, lets try with simple feature
-sepGAC3_sf <- left_join(sepGAC2_sf,GACOFRdf)
-plot(sepGAC3_sf["Freq"])
-```
-```{r}
-#replot using simplefeatures for each county
-SF_County <- ggplot() + 
-  geom_sf(data = sepGAC3_sf, aes(fill = Freq))  +scale_fill_gradient(high = "purple4", low = "thistle1", na.value="white", trans = "log10") +
-  labs(fill= "Number of cases") + 
-  geom_point(data = GAcitiesspread, aes(x = long, y = lat, size = Population), alpha = 0.5) + 
-  geom_text(data = GAcitiesspread, aes(x = long, y = lat, label = name, group = NULL), position = position_jitter(width=0.3,height=0.3)) 
-
-SF_County
-
-ggsave(here("results", "Figures", "County_SF.png"),plot = SF_County)
-
-#alterntive way of plotting mapping data
-
-```
-```{r}
-#save centroid data
-GA_centroid <- st_centroid(sepGAC2_sf)
-
-GA_centroid %>% saveRDS(here("data", "processed_data", "GA_centroid.rds"))
-```
-
-```{r}
-#split the centroid data into lattitude and longtiude as well as the point data
-test3 <- left_join(CDVGA2, GA_centroid)
-glimpse(test3)
-test4 <- test3 %>% mutate(tosplit= as.character(geometry))
-
-test4$tosplit <- sub(test4$tosplit, pattern = "c", replacement = "")
-test4$tosplit <- sub(test4$tosplit, pattern = "[(]", replacement = "")
-test4$tosplit <- sub(test4$tosplit, pattern = "[)]", replacement = "")
-test4$tosplit<- sub(test4$tosplit, pattern = "[,]", replacement = "")
-test5 <- test4 %>% separate(tosplit, c("long", "lat"), " ")
-centrLL<- test5 %>% mutate(lat = as.numeric(as.character(lat))) %>% mutate(long = as.numeric(as.character(long)))
-
-centrLL %>% saveRDS(here("data", "processed_data", "GACentroiddata.rds"))
-```
-```{r}
-#species plotted as different colored points for each year
-k1 <- ggplot(data = RACnum) +  
-  geom_polygon(data= GAC, aes(x = long, y = lat, group = group),fill= "white", color = "azure4") + 
-  coord_fixed(1.3)  + 
-
-  theme_map() 
-
-k2 <- k1 + 
-  theme( 
-  axis.text = element_blank(),
-  axis.line = element_blank(),
-  axis.ticks = element_blank(),
-  panel.border = element_blank(),
-  panel.grid = element_blank(),
-  axis.title = element_blank(), legend.position = "right")  + labs(fill= "Number of cases") 
-
-k3 <- k2 + 
-  geom_point(data = centrLL, aes(x = long, y = lat, color= Species), alpha = 0.5, size=1, position = position_jitter(width=0.05,height=0.05 ) ) 
+GCY1<- GA_County_year%>% mutate(Presence=Freq) 
+GCY1$Presence <- ifelse(GCY1$Presence >0 ,TRUE, FALSE) 
+ GCY2<- GCY1 %>% mutate(Presence = ifelse(is.na(Presence), FALSE, Presence))
  
-k3
+GA_Presence_year19<-  ggplot() + 
+geom_sf(data=Georgia_coorod, aes(geometry=geometry), fill="white")+  geom_sf(data = GCY2, aes(geometry=geometry, fill =Presence))  +
+  labs(fill= "Presence") +  scale_fill_manual(values = c('white', 'turquoise4')) + theme_map() + facet_wrap(~Year,  drop =  T) + theme(legend.position="right")
 
-k4 <- k3 +facet_wrap(~CollectionYear)
-k4
 
-ggsave(here("results", "Figures", "Species_County_stationary.png"), plot=k4, height = 7, width = 7)
+GA_Presence_year19
+
+ggsave(here::here("results", "Figures_new", "GA_Presence_year19.png"),plot = GA_Presence_year19)
+
+```
+
+
+
+
+
+```{r}
+
+
+GA_cases_year19<-  ggplot() + 
+geom_sf(data=Georgia_coorod, aes(geometry=geometry), fill="white")+  geom_sf(data = GA_County_year, aes(geometry=geometry, fill =Freq)) +
+  labs(fill= "Cases per year") +  scale_fill_gradient(high = "purple", low="white", na.value="white", trans = "log10") + theme_map() + facet_wrap(~Year) + theme(legend.position="right")
+
+GA_cases_year19
+
+ggsave(here::here("results", "Figures_new", "County_Wrap_casesYear19.png"),plot = GA_cases_year19)
+
+
+
+```
+
+
+
+```{r}
+County_Species<- as.data.frame(table(CDV19_fi$County, CDV19_fi$Species))
+colnames(County_Species)[1]<-"County"
+colnames(County_Species)[2]<-"Species"
+County_species_map<-right_join(Georgia_coorod, County_Species)
+  
+GA_cases_Species19<-  ggplot() + 
+geom_sf(data=Georgia_coorod, aes(geometry=geometry), fill="white")+  geom_sf(data = County_species_map, aes(geometry=geometry, fill =Freq)) +
+  labs(fill= "Total cases 1975-2019") +  scale_fill_gradient(high = "purple", low="white", na.value="white", trans = "log10") + theme_map() + facet_wrap(~Species) + theme(legend.position="right") 
+
+GA_cases_Species19
+
+
+ggsave(here::here("results", "Figures_new", "GA_cases_Species19.png"),plot = GA_cases_Species19)
+```
+
+```{r}
+
+County_year_split<- as.data.frame(table(CDV19_fi$County, CDV19_fi$Species, CDV19_fi$CollectionYear))
+colnames(County_year_split)[1]<-"County"
+colnames(County_year_split)[2]<-"Species"
+colnames(County_year_split)[3]<-"Year"
+County_year_split_map<-right_join(Georgia_coorod, County_year_split)
+  
+RMY <- subset(County_year_split_map, Species %in% "Raccoon")
+GFMY<-subset(County_year_split_map, Species %in% "Gray Fox")
+```
+
+```{r}
+
+GARac_cases_year19<-  ggplot() + 
+geom_sf(data=Georgia_coorod, aes(geometry=geometry), fill="white")+  geom_sf(data = RMY, aes(geometry=geometry, fill =Freq)) +
+  labs(fill= "Raccoon cases per year") +  scale_fill_gradient(high = "purple", low="white", na.value="white", trans = "log10") + theme_map() + facet_wrap(~Year) + theme(legend.position="right")
+
+GARac_cases_year19
+
+ggsave(here::here("results", "Figures_new", "GARac_cases_year19.png"),plot = GARac_cases_year19)
+
 ```
 ```{r}
 
-#Re do plotly mapping over time but in this case use the centroid data to plot raccoon and gray fox cases seperately using jitter so they are offset form each other, may show different species patterns
-g1 <- ggplot(data = RACnum, aes(frame = CollectionYear, text= County)) +  
-  geom_polygon(aes(x = long, y = lat, group = group), fill= "white", color = "azure4") + 
-  coord_fixed(1.3)  + 
+GAGF_cases_year19<-  ggplot() + 
+geom_sf(data=Georgia_coorod, aes(geometry=geometry), fill="white")+  geom_sf(data = GFMY, aes(geometry=geometry, fill =Freq)) +
+  labs(fill= "Raccoon cases per year") +  scale_fill_gradient(high = "purple", low="white", na.value="white", trans = "log10") + theme_map() + facet_wrap(~Year) + theme(legend.position="right")
 
-  theme_map() 
+GAGF_cases_year19
 
-g2 <- g1 + 
-  theme( 
-  axis.text = element_blank(),
-  axis.line = element_blank(),
-  axis.ticks = element_blank(),
-  panel.border = element_blank(),
-  panel.grid = element_blank(),
-  axis.title = element_blank(), legend.position = "right")  + labs(fill= "Number of cases") 
+ggsave(here::here("results", "Figures_new", "GAGF_cases_year19.png"),plot = GAGF_cases_year19)
 
-g3 <- g2 + 
-  geom_point(data = centrLL, aes(x = long, y = lat, color= Species), alpha = 0.5, position = position_jitter(width=0.05,height=0.05 ) ) 
- 
-g3s <- ggplotly(g3) %>% animation_opts( transition= 1,  redraw = FALSE) 
-g4 <- style(g3s, tooltip= "text")
+```
 
-g4  
+
+
+
+```{r}
+
+Cases_co_ord<-left_join(CDV19_fi, Georgia_coorod)
+
 
 ```
 ```{r}
 #plot cases with stat density to try to show higher risk areas
-w1<- k2+ stat_density2d(data=centrLL, aes(x=long, y=lat, fill=..level.., alpha=..level..), 
+Case_density19<- GAspec+ stat_density2d(data=Cases_co_ord, aes(x=long, y=lat, fill=..level.., alpha=..level..), 
                  size=2, bins=5, geom='polygon')+
   geom_point(data = centrLL, aes(x = long, y = lat, color= Species), alpha = 0.5, position = position_jitter(width=0.05,height=0.05 ) ) 
- w1
+
+Case_density19
  
- ggsave(here("results", "Figures", "RGF_case_map_smoothed.png"), plot = w1)
-```
-```{r}
-#is it possible to use colour to seprate the cases per year on the map
-ll3 <- g2 + 
-  geom_point(data = centrLL, aes(x = long, y = lat, color= CollectionYear), size=2,  alpha = 0.5, position = position_jitter(width=0.05,height=0.05 ) ) +
-   scale_color_viridis(option = "D")
- ll3
- 
- #there is still a lot of overlap and its difficult to read into this
- 
+ ggsave(here::here("results", "Figures_new", "Case_density19.png"), plot = Case_density19)
 ```
 
 
+#do i need this elsewhere?
 
-```{r}
-#returning to the north-south issue, as georgia has distinct geographical areas, mountain north, piedmont plateau and then coastal plain in the south, lets divide are data using twiggs county as the state centre
-GA_centroid[grep("Twiggs", GA_centroid$County), ]
+<!-- #returning to the north-south issue, as georgia has distinct geographical areas, mountain north, piedmont plateau and then coastal plain in the south, lets divide are data using twiggs county as the state centre -->
+<!-- GA_centroid[grep("Twiggs", GA_centroid$County), ] -->
 
-NorthGA <- centrLL %>% filter(lat>=32.67328)
-SouthGA <- centrLL %>% filter(lat<32.67328)
-```
+<!-- NorthGA <- centrLL %>% filter(lat>=32.67328) -->
+<!-- SouthGA <- centrLL %>% filter(lat<32.67328) -->
+7520
 ```{r}
 #pull census data to use population density for mapping
-Raw_Census_GA <- read_csv(here("data", "raw_data", "2013_GAcensus_data.csv"))
+Raw_pop_GA <- read_csv(here::here("data", "raw_data", "2013_GAcensus_data.csv"))
 
-glimpse(Raw_Census_GA)
+glimpse(Raw_pop_GA)
 
-RAw_GA_col <- Raw_Census_GA[c(2,3)]
+Raw_GApop_col <- Raw_pop_GA[c(2,3)]
 
-Raw_GA_Col2 <- RAw_GA_col[-c(1),] 
+Raw_GApop_Col2 <- Raw_GApop_col[-c(1),] 
 
-Raw_GA_Col2$`GEO.display-label` <- sub(Raw_GA_Col2$`GEO.display-label`, pattern = " County, Georgia", replacement = "")
+Raw_GApop_Col2$`GEO.display-label` <- sub(Raw_GApop_Col2$`GEO.display-label`, pattern = " County, Georgia", replacement = "")
 
-GA_census <- dplyr :: rename(Raw_GA_Col2,County = `GEO.display-label`) 
-GA_census_2013 <- dplyr::rename(GA_census, Population = respop72013)
+GA_popcensus <- dplyr :: rename(Raw_GApop_Col2,County = `GEO.display-label`) 
+GA_censuspop_2013 <- dplyr::rename(GA_popcensus, Population = respop72013)
+
+#population per cpunty
+
+Raw_census_GA <- read_csv(here::here("data", "raw_data", "GA_County_Area.csv"))
+
+glimpse(Raw_census_GA)
+
+Raw_census_area_col <- Raw_census_GA[c(3,8)]
+
+Raw_census_area_Col2 <- Raw_census_area_col[-c(0,2,3),] 
+GA_census_area1 <- dplyr :: rename(Raw_census_area_Col2,County = `GCT_STUB.display-label_1`) 
+GA_census_area2 <- dplyr::rename(GA_census_area1, Land_Area_sqm = SUBHD0303)
+
+GA_census_area2 <- GA_census_area2[-1,]
+GA_census_area2$County <- sub(GA_census_area2$County, pattern = " County", replacement = "")
+
+GA_Pop_Area_2013<-left_join(GA_census_area2, GA_censuspop_2013)
+
+#join to cases data
+
+GA_Pop_Den<-GA_Pop_Area_2013 %>%    mutate(Population= as.numeric(as.character(Population)))  %>% mutate(Land_Area_sqm= as.numeric(as.character(Land_Area_sqm))) %>% mutate(Pop_Density = (Population/Land_Area_sqm))
+
+Cases_humanpop<- left_join(pointRGF19, GA_Pop_Den, by="County") 
 ```
 
 ```{r}
 
-#looking purely at populatiopn number
-testing123 <- left_join(centrLL, GA_census_2013, by="County") %>% mutate(Population = as.numeric(as.character(Population)))
+pop_points1 <- ggplot() + geom_sf(data= Cases_humanpop, aes(geometry=geometry, fill=Population)) +  geom_point(data = Cases_humanpop, aes(x = long, y = lat, color= Species), alpha = 0.5, position = position_jitter(width=0.05,height=0.05 ), na.rm = T)
 
-testing456 <- left_join(RACnum, GA_census_2013, by="County") %>% mutate(Population = as.numeric(as.character(Population)))
+pop_points2<-pop_points1+ scale_colour_discrete( na.translate=F )  + labs(fill= "Human population per county") + scale_fill_gradient(low = "white", high = "purple") + theme_map() + theme(legend.position="right")
 
-GACpop <- left_join(GAC, GA_census_2013, by="County") %>% mutate(Population = as.numeric(as.character(Population)))
+pop_points2
 
-testing1 <- ggplot(data = testing456) +  
-  geom_polygon(data= GACpop, aes(x = long, y = lat, fill= Population, group = group), color = "azure4") + 
-  coord_fixed(1.3)  + 
+ggsave(here::here("results", "Figures_new", "Pop_cases_19.png"), plot = pop_points2)
+#as atlanta is so densly populated its probably best to use a log scale
 
-  theme_map() 
 
-testing2 <- testing1 + 
-  theme( 
-  axis.text = element_blank(),
-  axis.line = element_blank(),
-  axis.ticks = element_blank(),
-  panel.border = element_blank(),
-  panel.grid = element_blank(),
-  axis.title = element_blank(), legend.position = "right")  + labs(fill= "Population") + scale_fill_gradient(low = "white", high = "purple")
-
-testing3 <- testing2 + 
-  geom_point(data = centrLL, aes(x = long, y = lat, color= Species), alpha = 0.5, size=1, position = position_jitter(width=0.05,height=0.05 ) ) 
- 
-testing3
-#as atlanta is so densely populated its probably best to use a log scale
 ```
 ```{r}
-log2 <- testing1 + 
-  theme( 
-  axis.text = element_blank(),
-  axis.line = element_blank(),
-  axis.ticks = element_blank(),
-  panel.border = element_blank(),
-  panel.grid = element_blank(),
-  axis.title = element_blank(), legend.position = "right")  + labs(fill= "log10Population") + scale_fill_gradient(low = "white", high = "purple", trans= "log10")
+log_pop_points2<-pop_points1 +  scale_colour_discrete( na.translate=F )  + labs(fill= "log10 human population per county") + scale_fill_gradient(low = "white", high = "purple", trans= "log10") + theme_map() + theme(legend.position="right")
 
-log3 <- log2 + 
-  geom_point(data = centrLL, aes(x = long, y = lat, color= Species), alpha = 0.5, size=1, position = position_jitter(width=0.05,height=0.05 ) ) 
- 
-log3
+log_pop_points2
+
+
+ggsave(here::here("results", "Figures_new", "logPop_cases19.png"), plot = log_pop_points2)
+
+```
+
+```{r}
 #a log scale looks better, should replot with county population density instead
-```
-```{r}
 
 #pull the population density data
-Raw_Area_GA <- read_csv(here("data", "raw_data", "GA_County_Area.csv"))
-
-glimpse(Raw_Area_GA)
-
-RAw_Area_col <- Raw_Area_GA[c(3,4,5,6,7,8,9,10)]
-
-Raw_Area_Col2 <- RAw_Area_col[-c(0,2,3),] 
-GA_Area1 <- dplyr :: rename(Raw_Area_Col2,County = `GCT_STUB.display-label_1`) 
-GA_Area2 <- dplyr::rename(GA_Area1, Housing_Units = HD02)
-GA_Area3 <- dplyr::rename(GA_Area2, Total_Area_sqm = SUBHD0301)
-GA_Area4 <- dplyr::rename(GA_Area3, Water_Area_sqm = SUBHD0302)
-GA_Area5 <- dplyr::rename(GA_Area4, Land_Area_sqm = SUBHD0303)
-GA_Area6 <- dplyr::rename(GA_Area5, Population = HD01)
-GA_Area7 <- dplyr::rename(GA_Area6, Pop_per_land_area = SUBHD0401)
-GA_Area8 <- dplyr::rename(GA_Area7, Housing_per_land_area = SUBHD0402)
-GA_Area8 <- GA_Area8[-1,]
-GA_Area8$County <- sub(GA_Area8$County, pattern = " County", replacement = "")
-
 
 ```
 
 ```{r}
 #repaeated with pop desnity
-Densitytest1 <- left_join(GAC, GA_Area8, by="County") %>%   mutate(Pop_per_land_area = as.numeric(as.character(Pop_per_land_area))) %>%   mutate(Housing_per_land_area = as.numeric(as.character(Housing_per_land_area)))
 
-DT2 <- ggplot(data = RACnum) +  
-  geom_polygon(data= Densitytest1, aes(x = long, y = lat, fill= Pop_per_land_area, group = group), color = "azure4") + 
-  coord_fixed(1.3)  + 
+density_points1 <- ggplot() + geom_sf(data= Cases_humanpop, aes(geometry=geometry, fill=Pop_Density)) +  geom_point(data = Cases_humanpop, aes(x = long, y = lat, color= Species), alpha = 0.5, position = position_jitter(width=0.05,height=0.05 ), na.rm = T)
 
-  theme_map() 
+density_points2<-density_points1+ scale_colour_discrete( na.translate=F )  + labs(fill= "Human population per county") + scale_fill_gradient(low = "white", high = "purple") + theme_map() + theme(legend.position="right")
 
-DT3 <- DT2 + 
-  theme( 
-  axis.text = element_blank(),
-  axis.line = element_blank(),
-  axis.ticks = element_blank(),
-  panel.border = element_blank(),
-  panel.grid = element_blank(),
-  axis.title = element_blank(), legend.position = "right")  + labs(fill= "Population Density per SqM land area") + scale_fill_gradient(low = "white", high = "red")
+density_points2
 
-DT4 <- DT3 + 
-  geom_point(data = centrLL, aes(x = long, y = lat, color= Species), alpha = 0.5, size=1, position = position_jitter(width=0.05,height=0.05 ) ) 
- 
-DT4
-#again should log this scale
-```
-
-```{r}
-
-HT2 <- ggplot(data = RACnum) +  
-  geom_polygon(data= Densitytest1, aes(x = long, y = lat, fill= Housing_per_land_area, group = group), color = "azure4") + 
-  coord_fixed(1.3)  + 
-
-  theme_map() 
-
-HT3 <- HT2 + 
-  theme( 
-  axis.text = element_blank(),
-  axis.line = element_blank(),
-  axis.ticks = element_blank(),
-  panel.border = element_blank(),
-  panel.grid = element_blank(),
-  axis.title = element_blank(), legend.position = "right")  + labs(fill= "Housing Density per SqM land area") + scale_fill_gradient(low = "white", high = "red")
-
-HT4 <- HT3 + 
-  geom_point(data = centrLL, aes(x = long, y = lat, color= Species), alpha = 0.5, size=1, position = position_jitter(width=0.05,height=0.05 ) ) 
- 
-HT4
-
-#no real difference using hosuing, stick with pop
+ggsave(here::here("results", "Figures_new", "Pop_Density_cases19.png"), plot = density_points2)
 
 ```
 ```{r}
-#plot species cases on a background of populati9n density per state
-logDT3 <- DT2 + 
-  theme( 
-  axis.text = element_blank(),
-  axis.line = element_blank(),
-  axis.ticks = element_blank(),
-  panel.border = element_blank(),
-  panel.grid = element_blank(),
-  axis.title = element_blank(), legend.position = "right")  + labs(fill= "log10 of Population Density per SqM land area") + scale_fill_gradient(low = "beige", high = "chocolate4", trans="log10")
+#logdesnity
 
-logDT4 <- logDT3 + 
-  geom_point(data = centrLL, aes(x = long, y = lat, color= Species), alpha = 0.5, size=2, position = position_jitter(width=0.05,height=0.05 ) ) 
- 
-logDT4
+logdensity_points1 <- ggplot() + geom_sf(data= Cases_humanpop, aes(geometry=geometry, fill=Pop_Density)) +  geom_point(data = Cases_humanpop, aes(x = long, y = lat, color= Species), alpha = 0.5, position = position_jitter(width=0.05,height=0.05 ), na.rm = T)
 
-ggsave(here("results", "figures", "Cases_Density_Map.png"), plot= logDT4)
+logdensity_points2<-density_points1+ scale_colour_discrete( na.translate=F )  + labs(fill= "log10 population density per county") + scale_fill_gradient(low = "beige", high = "chocolate4", trans= "log10") + theme_map() + theme(legend.position="right")
+
+logdensity_points2
+
+ggsave(here::here("results", "Figures_new", "logPop_Density_cases19.png"), plot = logdensity_points2)
 ```
+
+####75202
+
+
 
 ```{r}
 #lets plot a graph of cases against population density of each county
-CDFG <- as.data.frame(with(CDVGA2,table(County)))
 
-CD1<-left_join(GA_Area8,CDFG) %>% mutate(Freq = ifelse(is.na(Freq), 0, Freq)) %>%   mutate(Pop_per_land_area = as.numeric(as.character(Pop_per_land_area))) 
+Countyfreq<-left_join(GA_county_19, GA_Pop_Den, by="County")
+  
+Countyfreq[is.na(Countyfreq)] <- 0
 
-ggplot(CD1, aes(Pop_per_land_area, Freq)) + geom_point()
+
+
+Density_casesfreq<-ggplot(Countyfreq, aes(Pop_Density, Freq)) + geom_point()
+
+Density_casesfreq
 
 #converted na to zeros, end up with very large number of zeros, might be best to leave these as NA so they aren't included
 #lots of counties have no cases
 ```
 ```{r}
 #repeated with leaving out the counties with no cases, removing them doesnt really affect our graph very much
-CD1na<-left_join(GA_Area8,CDFG) %>%   mutate(Pop_per_land_area = as.numeric(as.character(Pop_per_land_area))) 
 
-ggplot(CD1na, aes(Pop_per_land_area, Freq)) + geom_point()
+Countyfreq_NA<-left_join(GA_county_19, GA_Pop_Den, by="County")
+  
+
+Density_casesfreq_NA<-ggplot(Countyfreq_NA, aes(Pop_Density, Freq)) + geom_point()
+
+Density_casesfreq_NA
+
+
 ```
 ```{r}
 #lets correct the number of cases for the size of the county this time
-CD1dens<-left_join(GA_Area8,CDFG)%>%   mutate(Pop_per_land_area = as.numeric(as.character(Pop_per_land_area)))  %>%   mutate(Land_Area_sqm = as.numeric(as.character(Land_Area_sqm))) %>% dplyr::mutate(Cases_per_area= Freq/Land_Area_sqm)
+Cases_per_area_PopD<-Countyfreq %>% dplyr::mutate(Cases_per_area= Freq/Land_Area_sqm)
 
-ggplot(CD1dens, aes(Pop_per_land_area, Cases_per_area)) + geom_point() 
+ggplot(Cases_per_area_PopD, aes(Pop_Density, Cases_per_area)) + geom_point() 
 #looks like there might be a relationship, between cases (corrected for county are) and population density
+
+```
+```{r}
+#Repeat with NA instead
+Cases_per_area_PopD_NA<-Countyfreq_NA %>% dplyr::mutate(Cases_per_area= Freq/Land_Area_sqm)
+
+ggplot(Cases_per_area_PopD_NA, aes(Pop_Density, Cases_per_area)) + geom_point() 
+
+#Removes big cluster of zeros
 ```
 ```{r}
 #lets log the population density as atlanta is much more densely populated than anywhere else and is throwing everything off
-CD1denslog <- CD1dens %>% dplyr::mutate(log_pop_dens = log10(Pop_per_land_area))
 
-j1<- ggplot(CD1denslog, aes(log_pop_dens, Cases_per_area)) +geom_point() + geom_smooth()
-j1
+Logpopdens_cases<- ggplot(Cases_per_area_PopD_NA , aes(log10(Pop_Density), Cases_per_area)) +geom_point() + geom_smooth()
+Logpopdens_cases
+
 #again an outlier is making it difficult to pic trends so lets log the cases per area too as it might be possible there is a hump shaped relationship
 
-kl<-ggplot(CD1denslog, aes(log_pop_dens, log10(Cases_per_area))) + geom_point() +geom_smooth() + labs(x="log10(Population Density per sqm", y="log10(Cases per sqm)")
+Logpop_logcases<-ggplot(Cases_per_area_PopD_NA, aes(log10(Pop_Density), log10(Cases_per_area))) + geom_point() +geom_smooth() + labs(x="log10(Population Density per sqm", y="log10(Cases per sqm)")
 
-kl
+Logpop_logcases
 
-ggsave(here("results", "Figures", "log_casespersqm_log_popdens.png"), plot= kl)
-```
-```{r}
-#cases per population against population density
-CD1caseperpop <- CD1dens %>%  dplyr::mutate(Population = as.numeric(as.character(Population))) %>% dplyr::mutate(cases_per_pop = Freq/Population)
-
-
-pop1 <- ggplot(CD1caseperpop, aes(log10(Pop_per_land_area), cases_per_pop)) + geom_point() +geom_smooth() + labs( title = "CDV cases per population vs population density", x= "County population density", y= "cases/county population" )
-pop1
-ggsave(here("results", "Figures", "Cases_per_pop_vs_pop_dens.png"), plot= pop1)
+ggsave(here::here("results", "Figures_new", "Logpop_logcases.png"), plot= Logpop_logcases)
 ```
 
 
 
+
 ```{r}
+#Wrap by species
+Species_density<-left_join(County_Species, GA_Pop_Den) %>% replace_with_na(replace = list(Freq = 0)) %>% dplyr::mutate(Cases_per_area= Freq/Land_Area_sqm)
 
-CDFGSpe <- as.data.frame(with(CDVGA2,table(County, Species)))
-CDFGSpe2<-left_join(GA_Area8,CDFGSpe) %>%   mutate(Pop_per_land_area = as.numeric(as.character(Pop_per_land_area))) 
 
-ggplot(CDFGSpe2, aes(log10(Pop_per_land_area), Freq, fill = Species, color = Species, group = Species)) + geom_point()
+
+Spec_Freq_pop<-ggplot(Species_density, aes(log10(Pop_Density), Freq, fill = Species, color = Species, group = Species)) + geom_point()  
+
+Spec_Freq_pop
+
+#Repeat with case per area
+Spec_dens_pop<-ggplot(Species_density, aes(log10(Pop_Density), log10(Cases_per_area), fill = Species, color = Species, group = Species)) + geom_point()+geom_smooth() + labs(x="log10(Population Density per sqm", y="log10(Cases per sqm)")
+
+Spec_dens_pop
+
+#do a wrap
+
+Spec_dens_pop_wrap<-Spec_dens_pop+ facet_wrap(~Species, ncol=1)
+
+Spec_dens_pop_wrap
 
 #no clear difference in Species distribution of cases per pop density
 
 
-CD3<- na.omit(CDFGSpe2)  %>%mutate(Pop_per_land_area = as.numeric(as.character(Pop_per_land_area)))  %>%   mutate(Land_Area_sqm = as.numeric(as.character(Land_Area_sqm)))%>% dplyr::mutate(Cases_per_area= Freq/Land_Area_sqm)
 
-ggplot(CD3, aes(log10(Pop_per_land_area), Cases_per_area, fill = Species, color = Species, group = Species)) + geom_point()
 ```
 
-```{r}
- #plot ,map of cases per area with popualtion centres
-ds<- CD1caseperpop[,c(1,10)]
-dens<- left_join(cotr, ds, by= "County") 
-
-DES1 <- ggplot(data = dens) +  
-  geom_polygon(aes(x = long, y = lat, fill = Cases_per_area, group = group), color = "azure4") + 
-  coord_fixed(1.3)  + 
-  scale_fill_gradient(high = "magenta4", low = "white", na.value="white", trans = "log10") + 
-  theme_map() 
-
-
-DES2 <- DES1 + 
-  theme( 
-  axis.text = element_blank(),
-  axis.line = element_blank(),
-  axis.ticks = element_blank(),
-  panel.border = element_blank(),
-  panel.grid = element_blank(),
-  axis.title = element_blank(), legend.position = "right")  + labs(fill= "Cases/Area") 
-
-DES3 <- DES2 + 
-  geom_point(data = GAcitiesspread, aes(x = long, y = lat, size = 2), alpha = 0.5) + 
-  geom_text(data = GAcitiesspread, aes(x = long, y = lat, label = name, group = NULL), position = position_jitter(width=0.3,height=0.3)) 
-DES3
-
-ggsave(here("results", "Figures", "Cases_per_area_map.png"), plot = DES3)

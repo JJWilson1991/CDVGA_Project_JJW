@@ -580,7 +580,7 @@ SouthGA <- centrLL %>% filter(lat<32.67328)
 ```
 ```{r}
 #pull census data to use population density for mapping
-Raw_Census_GA <- read_csv(here("data", "raw_data", "2013_GAcensus_data.csv"))
+Raw_Census_GA <- read_csv(here::here("data", "raw_data", "2013_GAcensus_data.csv"))
 
 glimpse(Raw_Census_GA)
 
@@ -643,7 +643,7 @@ log3
 ```{r}
 
 #pull the population density data
-Raw_Area_GA <- read_csv(here("data", "raw_data", "GA_County_Area.csv"))
+Raw_Area_GA <- read_csv(here::here("data", "raw_data", "GA_County_Area.csv"))
 
 glimpse(Raw_Area_GA)
 
