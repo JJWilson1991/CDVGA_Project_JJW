@@ -6,9 +6,6 @@ output: html_document
 ---
 
 ```{r}
-
-
-
 library(fpp2)
 library(tidyr)
 library(here)
@@ -132,227 +129,10 @@ summary(fox_mod1)
 
  #months not useful for model, coefficient less than 2 std away from zero and p value greater than 0.05
 
-# 
-# # Creat Lagged predictors for raccoon numbers for constructin ARIMA model for predicting Gray foxes. Test 0, 1, 2 or 3 lags.
-# Raccoon_lag <- cbind(
-#     RaccoonLag0 = f6_ts[,"Raccoon"],
-#     RaccoonLag1 = stats::lag(f6_ts[,"Raccoon"],-1),
-#     RaccoonLag2 = stats::lag(f6_ts[,"Raccoon"],-2),
-#     RaccoonLag3 = stats::lag(f6_ts[,"Raccoon"],-3),
-#     RaccoonLag4 = stats::lag(f6_ts[,"Raccoon"],-4),
-#     RaccoonLag5 = stats::lag(f6_ts[,"Raccoon"],-5),
-#     RaccoonLag6 = stats::lag(f6_ts[,"Raccoon"],-6),
-#      RaccoonLag7 = stats::lag(f6_ts[,"Raccoon"],-7),
-#     RaccoonLag8 = stats::lag(f6_ts[,"Raccoon"],-8),
-#     RaccoonLag9 = stats::lag(f6_ts[,"Raccoon"],-9),
-#     RaccoonLag10 = stats::lag(f6_ts[,"Raccoon"],-10),
-#     RaccoonLag11 = stats::lag(f6_ts[,"Raccoon"],-11),
-#     RaccoonLag12 = stats::lag(f6_ts[,"Raccoon"],-12)) %>%
-#   head(NROW(f6_ts))
-# 
-# Fox_lag <- cbind(
-#     FoxLag0 = f6_ts[,"Gray_Fox"],
-#     FoxLag1 = stats::lag(f6_ts[,"Gray_Fox"],-1),
-#     FoxLag2 = stats::lag(f6_ts[,"Gray_Fox"],-2),
-#     FoxLag3 = stats::lag(f6_ts[,"Gray_Fox"],-3),
-#     FoxLag4 = stats::lag(f6_ts[,"Gray_Fox"],-4),
-#     FoxLag5 = stats::lag(f6_ts[,"Gray_Fox"],-5),
-#     FoxLag6 = stats::lag(f6_ts[,"Gray_Fox"],-6),
-#      FoxLag7 = stats::lag(f6_ts[,"Gray_Fox"],-7),
-#     FoxLag8 = stats::lag(f6_ts[,"Gray_Fox"],-8),
-#     FoxLag9 = stats::lag(f6_ts[,"Gray_Fox"],-9),
-#     FoxLag10 = stats::lag(f6_ts[,"Gray_Fox"],-10),
-#     FoxLag11 = stats::lag(f6_ts[,"Gray_Fox"],-11),
-#     FoxLag12 = stats::lag(f6_ts[,"Gray_Fox"],-12)) %>%
-#   head(NROW(f6_ts))
-# 
-# 
-# # Restrict data so models use same fitting period
-# n <- dim(f6_ts)[1]
-# fit1 <- auto.arima(f6_ts[4:n,1], xreg=Raccoon_lag[4:n,1],
-#   stationary=TRUE)
-# fit2 <- auto.arima(f6_ts[4:n,1], xreg=Raccoon_lag[4:n,1:2],
-#   stationary=TRUE)
-# fit3 <- auto.arima(f6_ts[4:n,1], xreg=Raccoon_lag[4:n,1:3],
-#   stationary=TRUE)
-# fit4 <- auto.arima(f6_ts[4:n,1], xreg=Raccoon_lag[4:n,1:4],
-#   stationary=TRUE)
-# fit5 <- auto.arima(f6_ts[4:n,1], xreg=Raccoon_lag[4:n,1:5],
-#   stationary=TRUE)
-# fit6 <- auto.arima(f6_ts[4:n,1], xreg=Raccoon_lag[4:n,1:6],
-#   stationary=TRUE)
-# fit7 <- auto.arima(f6_ts[4:n,1], xreg=Raccoon_lag[4:n,1:7],
-#   stationary=TRUE)
-# fit8 <- auto.arima(f6_ts[4:n,1], xreg=Raccoon_lag[4:n,1:8],
-#   stationary=TRUE)
-# fit9 <- auto.arima(f6_ts[4:n,1], xreg=Raccoon_lag[4:n,1:9],
-#   stationary=TRUE)
-# fit10 <- auto.arima(f6_ts[4:n,1], xreg=Raccoon_lag[4:n,1:10],
-#   stationary=TRUE)
-# fit11 <- auto.arima(f6_ts[4:n,1], xreg=Raccoon_lag[4:n,1:11],
-#   stationary=TRUE)
-# fit12 <- auto.arima(f6_ts[4:n,1], xreg=Raccoon_lag[4:n,1:12],
-#   stationary=TRUE)
-# fit13 <- auto.arima(f6_ts[4:n,1], xreg=Raccoon_lag[4:n,1:13],
-#   stationary=TRUE)
-# summary(fit1)
-# summary(fit2)
-# summary(fit3)
-# summary(fit4)
-# summary(fit5)
-# summary(fit6)
-# summary(fit7)
-# summary(fit8)
-# summary(fit9)
-# summary(fit10)
-# summary(fit11)
-# summary(fit12)
-# summary(fit13)
-# 
-# Null_GF <- Arima(f6_ts[4:n,1],  model = NULL)
-# 
-# GF_Model_summaries <- rbind(
-#     Summary_fit1 = summary(fit1)[,c("RMSE")],
-#     Summary_fit2 = summary(fit2)[,"RMSE"],
-#     Summary_fit3 = summary(fit3)[,"RMSE"],
-#     Summary_fit4 = summary(fit4)[,"RMSE"],
-#     Summary_fit5 = summary(fit5)[,"RMSE"],
-#     Summary_fit6 = summary(fit6)[,"RMSE"],
-#     Summary_fit7 = summary(fit7)[,"RMSE"],
-#         Summary_fit8 = summary(fit8)[,"RMSE"],
-#     Summary_fit9 = summary(fit9)[,"RMSE"],
-#     Summary_fit10 = summary(fit10)[,"RMSE"],
-#     Summary_fit11 = summary(fit11)[,"RMSE"],
-#     Summary_fit12 = summary(fit12)[,"RMSE"],
-#     Summary_fit13 = summary(fit13)[,"RMSE"],
-#     Summary_Null_GF = summary(Null_GF)[,"RMSE"])
-# colnames(GF_Model_summaries)[1] <- "RMSE"
-# 
-# 
-# #repeat using gray fox to predict raccoon
-# #repeat using gray lag to predict and raccoon lag to predict raccoon
-# #can use model to predict numbers of one or other if one is easier to sample
-# #can either use to predict future or what other species is this month
-# 
-#  #using gray fox to predict raccoon
-# rfit1 <- auto.arima(f6_ts[4:n,2], xreg=Fox_lag[4:n,1],
-#   stationary=TRUE)
-# rfit2 <- auto.arima(f6_ts[4:n,2], xreg=Fox_lag[4:n,1:2],
-#   stationary=TRUE)
-# rfit3 <- auto.arima(f6_ts[4:n,2], xreg=Fox_lag[4:n,1:3],
-#   stationary=TRUE)
-# rfit4 <- auto.arima(f6_ts[4:n,2], xreg=Fox_lag[4:n,1:4],
-#   stationary=TRUE)
-# rfit5 <- auto.arima(f6_ts[4:n,2], xreg=Fox_lag[4:n,1:5],
-#   stationary=TRUE)
-# rfit6 <- auto.arima(f6_ts[4:n,2], xreg=Fox_lag[4:n,1:6],
-#   stationary=TRUE)
-# rfit7 <- auto.arima(f6_ts[4:n,2], xreg=Fox_lag[4:n,1:7],
-#   stationary=TRUE)
-# rfit8 <- auto.arima(f6_ts[4:n,2], xreg=Fox_lag[4:n,1:8],
-#   stationary=TRUE)
-# rfit9 <- auto.arima(f6_ts[4:n,2], xreg=Fox_lag[4:n,1:9],
-#   stationary=TRUE)
-# rfit10 <- auto.arima(f6_ts[4:n,2], xreg=Fox_lag[4:n,1:10],
-#   stationary=TRUE)
-# rfit11 <- auto.arima(f6_ts[4:n,2], xreg=Fox_lag[4:n,1:11],
-#   stationary=TRUE)
-# rfit12 <- auto.arima(f6_ts[4:n,2], xreg=Fox_lag[4:n,1:12],
-#   stationary=TRUE)
-# rfit13 <- auto.arima(f6_ts[4:n,2], xreg=Fox_lag[4:n,1:13],
-#   stationary=TRUE)
-# 
-# 
-# 
-# summary(rfit1)
-# summary(rfit2)
-# summary(rfit3)
-# summary(rfit4)
-# summary(rfit5)
-# summary(rfit6)
-# summary(rfit7)
-# summary(rfit8)
-# summary(rfit9)
-# summary(rfit10)
-# summary(rfit11)
-# summary(rfit12)
-# summary(rfit13)
-# 
-# #null model#
-# 
-# Null_R <- Arima(f6_ts[4:n,2],  model = NULL)
-# summary(Null_R)
-# 
-# R_Model_summaries <- rbind(
-#       Summary_rfit1 = summary(rfit1)[,c("RMSE")],
-#     Summary_rfit2 = summary(rfit2)[,"RMSE"],
-#     Summary_rfit3 = summary(rfit3)[,"RMSE"],
-#     Summary_rfit4 = summary(rfit4)[,"RMSE"],
-#     Summary_rfit5 = summary(rfit5)[,"RMSE"],
-#     Summary_rfit6 = summary(rfit6)[,"RMSE"],
-#     Summary_rfit7 = summary(rfit7)[,"RMSE"], 
-#    Summary_rfit8 = summary(rfit8)[,"RMSE"],
-#     Summary_rfit9 = summary(rfit9)[,"RMSE"],
-#     Summary_rfit10 = summary(rfit10)[,"RMSE"],
-#     Summary_rfit11 = summary(rfit11)[,"RMSE"],
-#     Summary_rfit12 = summary(rfit12)[,"RMSE"],
-#     Summary_rfit13 = summary(rfit13)[,"RMSE"],
-#     Summary_Null_R = summary(Null_R)[,"RMSE"])
-# colnames(R_Model_summaries)[1] <- "RMSE"
-# 
-# ```
 
 ```
 
-# ```{r}
-# #split data for trainign and testing 80%
-# 
-# f6train <- f6[1:423,]
-# f6test <- f6[424:529,]
-# 
-# f6_ts_train <- ts(f6train, start = c(1975, 4), frequency = 12)
-# 
-# f6_ts_test <- ts(f6test, start = c(2010, 4), frequency = 12)
-# ####do need to isuse the shortened lag tfor training?
-# 
-# 
-# # Lagged predictors. Test 0, 1, 2 or 3 lags.
-# Raccoon_lag_train <- cbind(
-#     RaccoonLag0tr = f6_ts_train[,"Raccoon"],
-#     RaccoonLag1tr = stats::lag(f6_ts_train[,"Raccoon"],-1),
-#     RaccoonLag2tr = stats::lag(f6_ts_train[,"Raccoon"],-2),
-#     RaccoonLag3tr = stats::lag(f6_ts_train[,"Raccoon"],-3),
-#      RaccoonLag4tr = stats::lag(f6_ts_train[,"Raccoon"],-4),
-#      RaccoonLag5tr = stats::lag(f6_ts_train[,"Raccoon"],-5),
-#      RaccoonLag6tr = stats::lag(f6_ts_train[,"Raccoon"],-6),
-#   RaccoonLag7tr = stats::lag(f6_ts_train[,"Raccoon"],-7),
-#     RaccoonLag8tr = stats::lag(f6_ts_train[,"Raccoon"],-8),
-#     RaccoonLag9tr = stats::lag(f6_ts_train[,"Raccoon"],-9),
-#     RaccoonLag10tr = stats::lag(f6_ts_train[,"Raccoon"],-10),
-#      RaccoonLag11tr = stats::lag(f6_ts_train[,"Raccoon"],-11),
-#      RaccoonLag12tr = stats::lag(f6_ts_train[,"Raccoon"],-12)) %>%
-#   head(NROW(f6_ts_train))
-# 
-# 
-# 
-# Fox_lag_train <- cbind(
-#     FoxLag0 = f6_ts_train[,"Gray_Fox"],
-#     FoxLag1 = stats::lag(f6_ts_train[,"Gray_Fox"],-1),
-#     FoxLag2 = stats::lag(f6_ts_train[,"Gray_Fox"],-2),
-#     FoxLag3 = stats::lag(f6_ts_train[,"Gray_Fox"],-3),
-#     FoxLag4 = stats::lag(f6_ts_train[,"Gray_Fox"],-4),
-#     FoxLag5 = stats::lag(f6_ts_train[,"Gray_Fox"],-5),
-#     FoxLag6 = stats::lag(f6_ts_train[,"Gray_Fox"],-6),
-#     FoxLag7 = stats::lag(f6_ts_train[,"Gray_Fox"],-7),
-#     FoxLag8 = stats::lag(f6_ts_train[,"Gray_Fox"],-8),
-#     FoxLag9 = stats::lag(f6_ts_train[,"Gray_Fox"],-9),
-#     FoxLag10 = stats::lag(f6_ts_train[,"Gray_Fox"],-10),
-#     FoxLag11= stats::lag(f6_ts_train[,"Gray_Fox"],-11),
-#     FoxLag12 = stats::lag(f6_ts_train[,"Gray_Fox"],-12)) %>%
-#   head(NROW(f6_ts_train))
-# 
-# ```
-# 
+
 ```{r}
 #split data for trainign and testing 80%
 #ftb
@@ -618,7 +398,7 @@ summary(rfit14tr)
 summary(Null_R_train)
 ```
 ```{r}
-###
+
 Rac_C_models<- c(rfit1tr,rfit2tr,rfit3tr,rfit4tr,rfit5tr,rfit6tr,rfit7tr,rfit8tr,rfit9tr,rfit10tr,rfit11tr,rfit12tr,rfit13tr,rfit14tr,Null_R_train)
 
 AIC(rfit1tr,rfit2tr,rfit3tr,rfit4tr,rfit5tr,rfit6tr,rfit7tr,rfit8tr,rfit9tr,rfit10tr,rfit11tr,rfit12tr,rfit13tr,rfit14tr,Null_R_train)
@@ -1019,31 +799,7 @@ accuracy(rfitNull_test)
 
 
 ```{r}
-# fit9_train <- auto.arima(f6_ts[4:368,2], xreg = Fox_lag[4:368,1:3], stationary = T)
-# accuracy(fit9_train)
-# 
-# fit9_test <- Arima(f6_ts[369:n,2], xreg = Fox_lag[369:n,1:3], model = fit9_train)
-# accuracy(fit9_test)
-# 
-# #fit1 has lower rmse, rherefore its easier to predict foxes using foxes and raccoo s athan raccons using raccoons and foxes
 
-
-# RRMSEtr <- rbind(
-#   R_Fit1_train = accuracy(rfit1tr)[,("RMSE")],
-#   R_Fit2_train = accuracy(rfit2tr)[,("RMSE")],
-#   R_Fit3_train = accuracy(rfit3tr)[,("RMSE")], 
-#   R_Fit4_train = accuracy(rfit4tr)[,("RMSE")],
-#   R_Fit5_train = accuracy(rfit5tr)[,("RMSE")],
-#   R_Fit6_train = accuracy(rfit6tr)[,("RMSE")],
-#   R_Fit7_train = accuracy(rfit7tr)[,("RMSE")],
-#   R_Fit8_train = accuracy(rfit8tr)[,("RMSE")],
-#   R_Fit9_train = accuracy(rfit9tr)[,("RMSE")],
-#   R_Fit10_train = accuracy(rfit10tr)[,("RMSE")],
-#   R_Fit11_train = accuracy(rfit11tr)[,("RMSE")],
-#   R_Fit12_train = accuracy(rfit12tr)[,("RMSE")],
-#   R_Fit13_train = accuracy(rfit13tr)[,("RMSE")],
-#   R_Fit14_train = accuracy(rfit14tr)[,("RMSE")],
-#   R_Null_train = accuracy(Null_R_train)[,("RMSE")])
 RRMSEte <- rbind(
   R_Fit1_test = accuracy(rfit1_test)[,"RMSE"],
   R_Fit2_test = accuracy(rfit2_test)[,"RMSE"],
@@ -1060,22 +816,7 @@ RRMSEte <- rbind(
   R_Fit13_test = accuracy(rfit13_test)[,"RMSE"],
   R_Fit14_test = accuracy(rfit14_test)[,"RMSE"],
   R_Null_test = accuracy(rfitNull_test)[,"RMSE"])
-  #   
-  # RFittr<-c("Fit1_train",
-  # "Fit2_train",
-  # "Fit3_train", 
-  # "Fit4_train",
-  # "Fit5_train" ,
-  # "Fit6_train",
-  # "Fit7_train",
-  # "Fit8_train",
-  # "Fit9_train" ,
-  # "Fit10_train",
-  # "Fit11_train",
-  # "Fit12_train",
-  # "Fit13_train",
-  # "Fit14_train",
-  # "Null_train")
+ 
   
   RFitte<-c(
   "Fit1_test",
@@ -1393,6 +1134,19 @@ GFI_Test_Model_Accuracy %>% saveRDS(here::here("results", "Models","GFI_Test_Mod
 
 GFI_Test<-ggplot(GFI_Test_Model_Accuracy,  aes(Model_Number, RMSE_testing)) +geom_point() +ggtitle("Gray Fox Prediction with individual Raccoon lag predictors") +  theme(plot.title = element_text(size = 8, face = "bold"), axis.text.x = element_text( size = 5), axis.title.x = element_text(size = 6), axis.text.y = element_text( size = 5), axis.title.y = element_text(size = 6))
 
+```
+
+```{r}
+Best_Model_Accuracy19 <- rbind(
+   Fit_2GF_train = summary(gfit2tr)[,"RMSE"],
+    Fit_2GF_test = summary(gfit2_test)[,"RMSE"],
+     Fit_4R_train = summary(rfit4tr)[,"RMSE"],
+      Fit_4R_test = summary(rfit2_test )[,"RMSE"])
+  
+colnames(Best_Model_Accuracy19)[1] <- "RMSE"
+Best_Model_Accuracy19
+
+Best_Model_Accuracy19 %>% saveRDS(here::here("results", "Models","Best_Models_19.rds"))
 ```
 ```{r}
 grid.arrange(R_AIC,RI_AIC, R_Test,RI_Test, nrow = 2, ncol = 2)

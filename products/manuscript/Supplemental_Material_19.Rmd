@@ -1,30 +1,80 @@
 ---
-title: "Supplemental material19"
+title: "Supplementary Materials:Temporal and Spatial Patterns in Distemper Virus Cases Reported to SCWDS, 1975-2019"
 author: "Jonathan Wilson"
-date: "08/05/2020"
-output: html_document
+date: "`r Sys.Date()`"
+output:
+  bookdown::word_document2:
+     toc: no
+documentclass: article
+institute: University of Georgia
+csl: ../apa.csl
+site: bookdown::bookdown_site
+subtitle: ''
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+
+```{r, resultfigure1,  fig.cap='**Figure 1:Number of cases of CDV per state, submitted to SCWDS, 1975-2013.**', echo=FALSE, warning=FALSE, message=FALSE}
+knitr::include_graphics(here("results", "Figures_new", "State_freq19.png"))
 ```
 
-## R Markdown
+_A total of 17 states clustered in the south east were represented in the data set with Georgia containing the majority of cases (n=422)._
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+```{r, mapfigure1, fig.cap='**Figure 2:CDV cases per state submitted to SCWDS, 1975-2013 .**', echo=FALSE, warning=FALSE, message=FALSE}
 
-```{r cars}
-summary(cars)
+knitr::include_graphics(here("results", "Figures", "Cases_per_State.png"))
 ```
 
-## Including Plots
 
-You can also embed plots, for example:
+*The states represented were clustered in the south east of the US, with Pennsylvania the most north easterly and Nebraska the most north westerly states.*
 
-```{r pressure, echo=FALSE}
-plot(pressure)
+
+```{r, resultfigure2,  fig.cap='**Figure 3:Number of CDV cases per species submitted to SCWDS, 1975-2013**', echo=FALSE, warning=FALSE, message=FALSE}
+knitr::include_graphics(here("results", "Figures", "Species_freq.png"))
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+_There are eight species represented, with Gray Foxes (n=254) and Raccoons (n=646) making up the majority of cases._
+
+
+```{r, resultfigure4, fig.cap= '**Figure 4:Total number of cases of CDV diagnosed at SCWDS per Year, 1975-2013.**', echo=FALSE, warning=FALSE, message=FALSE}
+knitr::include_graphics(here("results", "Figures", "All_Cases_Year.png"))
+
+```
+
+
+*Every year between 1975 and 2019 had at least one diagnosed case of CDV.*
+
+
+
+GA and Raccoon GF
+
+
+
+```{r, resultfigure5, fig.cap= '**Figure 5: Species and Age of CDV cases submitted to SCWDS, 1975-2013.**', echo=FALSE, warning=FALSE, message=FALSE}
+
+knitr::include_graphics(here("results", "Figures", "RGFAge_mosaic.png"))
+
+```
+
+_Despite the Chi-squared value (7.686, p=0.02143) being greater than the critical value in this case, the age data is difficult to use as it is a particularly subjective measure in this case and there would need to be very marked changes for any relationships to be suggested._
+
+
+```{r, resultfigure6, fig.cap= '**Figure 6: Species and Sex of CDV cases submitted to SCWDS, 1975-2013.**', echo=FALSE, warning=FALSE, message=FALSE}
+
+knitr::include_graphics(here("results", "Figures", "SexSpecies_Mosaic.png"))
+
+```
+
+
+*The Chi-squared value of Sex and Species did not reach the critical so the null hypothesis that sex and species are independent can be accepted in this case.*
+
+
+
+```{r, fig.cap= '**Figure 10:Raccoon and Gray Fox cases in Georgia in the Northern and Southern halves of the state, presented to SCWDS, 1975-2013.**', echo=FALSE, warning=FALSE, message=FALSE}
+knitr:: include_graphics(here("results", "Figures", "NS_Mosaic.png"))
+
+```
+
+
+*The cases were divided into North and South by using the central point of the state, which is in Twiggs County, 32.67328 latitude. Chi-squared analysis was performed using the null hypothesis that species and northern and southern latitudes are independent. The Chi-squared value was 6.9591, which is above the critical value with a p-value of 0.008339 so the null hypothesis can be rejected. In this data set it appears that Gray Fox cases are more likely to occur in the northern part of the state *

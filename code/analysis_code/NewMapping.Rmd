@@ -261,7 +261,7 @@ GAspec
 ggsave(here::here("results", "Figures_new", "RGFGA19.png"),plot = GAspec)
 ```
 ```{r}
-4444
+
 #wrap species pounts by year
 Georgia_coorod<-subset(cent_SE_19, State%in% "Georgia")
 
@@ -269,10 +269,10 @@ pointRGF19_wrap<-right_join(GApoint,RGFfil_spec_19)
 
 pointRGF19_wrap %>% saveRDS(here::here("data", "processed_data", "Case_GA_Centroids.rds"))
 
-GAspecyear19<- ggplot() + geom_sf(data=Georgia_coorod, aes(geometry=geometry)) +  geom_point(data = pointRGF19_wrap, aes(x = long, y = lat, color= Species), alpha = 0.5, position = position_jitter(width=0.05,height=0.05 ), na.rm = T) + scale_colour_discrete( na.translate=F ) +facet_wrap(~CollectionYear) + theme_map() + theme(legend.position="right")
+GAspecyear19<- ggplot() + geom_sf(data=Georgia_coorod, lwd=0.1, aes(geometry=geometry)) +  geom_point(data = pointRGF19_wrap, aes(x = long, y = lat, color= Species), alpha = 0.5, size=0.8,  position = position_jitter(width=0.05,height=0.05 ), na.rm = T) + scale_colour_discrete( na.translate=F ) +facet_wrap(~CollectionYear) + theme_map() + theme(legend.position="right")
 GAspecyear19
 
-ggsave(here::here("results", "Figures_new", "GAspecyear19.png"),plot = GAspecyear19)
+ggsave(here::here("results", "Figures_new", "GAspecyear19.png"),plot = GAspecyear19, width = 8, height = 8)
 
 ```
 ```{r}
@@ -310,7 +310,7 @@ GA_county_19 <- subset(SE_freq_19, State %in% "Georgia") %>% as.data.frame()
 
 GA_County19SF <- ggplot() + 
   geom_sf(data = GA_county_19, aes(geometry=geometry, fill = Freq))  +scale_fill_gradient(high = "purple4", low = "thistle1", na.value="white", trans = "log10") +
-  labs(fill= "Number of cases") +   geom_point(data = GAcitiesspread, aes(x = long, y = lat, size = Population), alpha = 0.5) +    geom_text(data = GAcitiesspread, aes(x = long, y = lat, label = name, group = NULL), position = position_jitter(width=0.3,height=0.3)) 
+  labs(fill= "Number of cases per county") +   geom_point(data = GAcitiesspread, aes(x = long, y = lat), alpha = 0.5) +    geom_text(data = GAcitiesspread, aes(x = long, y = lat, label = name, group = NULL), position = position_jitter(width=0.3,height=0.3))  +theme_map()  + theme(legend.position="right")
 
 GA_County19SF
 
@@ -372,13 +372,13 @@ GCY1$Presence <- ifelse(GCY1$Presence >0 ,TRUE, FALSE)
  GCY2<- GCY1 %>% mutate(Presence = ifelse(is.na(Presence), FALSE, Presence))
  
 GA_Presence_year19<-  ggplot() + 
-geom_sf(data=Georgia_coorod, aes(geometry=geometry), fill="white")+  geom_sf(data = GCY2, aes(geometry=geometry, fill =Presence))  +
+geom_sf(data=Georgia_coorod, lwd=0.1, aes(geometry=geometry), fill="white")+  geom_sf(data = GCY2, lwd=0.1, aes(geometry=geometry, fill =Presence))  +
   labs(fill= "Presence") +  scale_fill_manual(values = c('white', 'turquoise4')) + theme_map() + facet_wrap(~Year,  drop =  T) + theme(legend.position="right")
 
 
 GA_Presence_year19
 
-ggsave(here::here("results", "Figures_new", "GA_Presence_year19.png"),plot = GA_Presence_year19)
+ggsave(here::here("results", "Figures_new", "GA_Presence_year19.png"),plot = GA_Presence_year19, width = 8, height = 8)
 
 ```
 
