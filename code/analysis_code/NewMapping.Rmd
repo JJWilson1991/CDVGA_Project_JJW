@@ -369,7 +369,7 @@ GA_County_year<-right_join(Georgia_coorod, County_year)
 
 GCY1<- GA_County_year%>% mutate(Presence=Freq) 
 GCY1$Presence <- ifelse(GCY1$Presence >0 ,TRUE, FALSE) 
- GCY2<- GCY1 %>% mutate(Presence = ifelse(is.na(Presence), FALSE, Presence))
+ GCY2<- GCY1 %>% mutate(Presence = ifelse(is.na(Presence), FALSE, Presence)) #check if this second presence in if else is correct
  
 GA_Presence_year19<-  ggplot() + 
 geom_sf(data=Georgia_coorod, lwd=0.1, aes(geometry=geometry), fill="white")+  geom_sf(data = GCY2, lwd=0.1, aes(geometry=geometry, fill =Presence))  +
@@ -467,7 +467,7 @@ Cases_co_ord<-left_join(CDV19_fi, Georgia_coorod)
 #plot cases with stat density to try to show higher risk areas
 Case_density19<- GAspec+ stat_density2d(data=Cases_co_ord, aes(x=long, y=lat, fill=..level.., alpha=..level..), 
                  size=2, bins=5, geom='polygon')+
-  geom_point(data = centrLL, aes(x = long, y = lat, color= Species), alpha = 0.5, position = position_jitter(width=0.05,height=0.05 ) ) 
+  geom_point(data = pointRGF19, aes(x = long, y = lat, color= Species), alpha = 0.5, position = position_jitter(width=0.05,height=0.05 ) )  
 
 Case_density19
  

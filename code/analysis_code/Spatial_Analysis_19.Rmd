@@ -8,13 +8,104 @@ output: html_document
 ```{r}
 
 library(spatstat)
-
+library(ggplot2)
 library(here)
 library(dplyr)
 library(gridExtra)
-
+library(ggmosaic)
+library(corrplot)
 GA_Case_Centroids <- readRDS(here("data", "processed_data", "Case_GA_Centroids.rds"))
 GA_Case_Centroids
+```
+
+```{r}
+CDVGA_lat <- readRDS(here::here("data", "processed_data", "RGF_lat_long.rds"))
+CDVGA_lat<-CDVGA_lat[!is.na(CDVGA_lat$Species), ]
+
+```
+
+
+```{r}
+#If we quickly plot a histogram using latitude it suggest there are some geographic differences in distribution 
+
+lat_hist1<-ggplot(CDVGA_lat, aes(lat)) + geom_histogram()  
+
+lat_hist1
+
+lat_hist_spec<-lat_hist1 +  facet_wrap(~Species)
+lat_hist_spec
+
+ggsave(here::here("results", "Figures_new", "Latitude_RGF_19.png"), plot = lat_hist_spec)
+
+#This is interesting, there are two disticnt latitudinal peaks for raccoons but only 1 for gray foxes
+```
+
+```{r}
+#using the centre point of the state to divide into north and south
+
+
+CDVGA_NS<- CDVGA_lat %>% dplyr:: mutate(NS= lat)  %>% dplyr::mutate(NS= 
+
+                      ifelse(lat < 32.67328, "South", "North"))
+
+RGF_NS<- ggplot(CDVGA_NS, aes(NS)) +geom_bar(aes(fill = Species)) +labs(y="No. of Cases")
+
+ggsave(here::here("results", "Figures_new", "NS_RGF_19.png"), plot = RGF_NS)
+```
+#look at monthly cases in nrth and south, any patterns?
+```{r}
+Month_NS <- as.data.frame(with(CDVGA_NS, table(NS, Month)))
+MonthNS<- ggplot(Month_NS, aes(Month, Freq, fill = NS, color = NS, group = NS))  + 
+  geom_point() +geom_line() + 
+  theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 6)) 
+MonthNS
+
+ggsave(here::here("results", "Figures_new", "NS_month_19.png"), plot = MonthNS)
+
+```
+#Wrap species
+```{r}
+Species_Month_NS<- as.data.frame(with(CDVGA_NS, table(NS, Month, Species)))
+
+SP_M_NS<- ggplot(Species_Month_NS, aes(Month, Freq, fill = NS, color = NS, group = NS))  + geom_point() +geom_line() + 
+  theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 6)) + facet_wrap(~Species) 
+
+SP_M_NS
+
+ggsave(here::here("results", "Figures_new", "NS_month_RGF_19.png"), plot = SP_M_NS)
+```
+
+#there doesn't appear to be any difference in peak cases in this rough look at north vs south... 
+
+
+```{r}
+Species_NS_mo <- ggplot(CDVGA_NS) +geom_mosaic(aes(x=product(NS,Species), fill=NS), na.rm = TRUE) +labs(x= "Species", y="North/South")
+Species_NS_mo
+
+ggsave(here::here("results", "Figures_new", "NS_Mosaic_19.png"), plot=Species_NS_mo)
+
+```
+```{r}
+
+#Do chi sqaured for noth south species
+Species_NS<- table(CDVGA_NS$Species, CDVGA_NS$NS)
+
+chi_sp <- chisq.test(Species_NS)
+chi_sp
+
+chi_sp$observed
+
+round(chi_sp$expected,2)
+
+chi_sp$residuals
+
+corrplot(chi_sp$residuals, is.corr = F)
+
+contrib <- 100*chi_sp$residuals^2/chi_sp$statistic
+round(contrib, 3)
+
+#the value of chisq is above the critical value so we can reject the null hypothesis that species and northern and southern latitudes are independent. ie. Gray fox cases are more likely in the northern part of the state
+
 ```
 
 
