@@ -41,6 +41,11 @@ library(ggmosaic)
 library(here)
 
 library(gridExtra)
+
+library(formattable)
+
+library(magrittr)
+library(ggsci)
 ```
 
 
@@ -60,15 +65,17 @@ glimpse(CDV19_clean)
 vis_miss(CDV19_clean)
 
 
+
 ```
 ```{r}
 
-
+CDV19_clean$Species<-as.factor(as.character(CDV19_clean$Species))
 
 #The data we are most interested in is the Species data over time and the area data over time so we'll begin by exploring these
 
-Species_freq19 <- ggplot(CDV19_clean, aes(Species, fill=Species, color=Species)) +geom_bar()  +
-theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 8), legend.position = "none") +labs(y="Number of Cases")
+Species_freq19 <- ggplot(CDV19_clean, aes(fct_infreq(Species))) +
+  geom_bar(aes( fill=fct_infreq(Species)))  +   scale_fill_npg()+
+theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 8), legend.position = "none") +labs(y="Number of Cases")  +geom_text(stat='count', aes(label=..count..), vjust=-0.5) +ylim(c(0,700))
 
 Species_freq19
 ggsave(here::here("results", "Figures_new", "Species_freq19.png"), plot = Species_freq19)
@@ -76,29 +83,67 @@ ggsave(here::here("results", "Figures_new", "Species_freq19.png"), plot = Specie
 Speciestable19<- as.data.frame(with(CDV19_clean, table(Species))) 
 colnames(Speciestable19)[2] <- "n"
 
-Speciestable19
+
+
+Speciestable19%<>%as.data.frame() %>%   arrange(desc(n))
+n<-964
+Species<-c("Total")
+Totaldf<-data.frame(Species, n)
+
+
+Species_total_19<-rbind(Speciestable19, Totaldf)
+
+Ft_Spec_tab19<-formattable(Speciestable19, align = c("l",rep("r", NCOL(Speciestable19) )), list(Species = formatter("span", style = ~ style(color = "black", font.weight = "bold")), n = formatter("span",
+  style = n ~ style(
+
+    display = "inline-block",
+
+    direction = "rtl",
+
+    "border-radius" = "4px",
+
+    "padding-right" = "2px",
+
+    "background-color" = csscolor("gray"),
+
+    width = percent(proportion(n)),
+
+    color = csscolor(gradient(n, "darkgreen", "darkgreen"))))))
+
+
 Speciestable19 %>% saveRDS(here::here("results", "Tables","Speciestable19.rds"))
 #we can see that Raccoon and Gray fox are hugely over represented compared to the others so we should focus our analysis on these two species
+Ft_Spec_tab19%>% saveRDS(here::here("results", "Tables","Spec_table.rds"))
+
+
+```
+
+```{r}
+year_mean<-as.data.frame(table(CDV19_clean$CollectionYear))
+print(sum(year_mean$Freq))
+print(mean(year_mean$Freq))#mean for total cases per year
+print(sd(year_mean$Freq))#sd for all years
 ```
 ```{r}
 library(RColorBrewer)
 #are there any obvious differneces in species by state?
-Species_by_state19 <- ggplot(CDV19_clean, aes(Species, fill=Species, color=Species)) +
+Species_by_state19 <- ggplot(CDV19_clean, aes(fct_infreq(Species), fill=Species, color=Species)) +
 geom_bar()   + 
-theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 8), legend.position = "none") +facet_wrap( ~ State)
+theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 8), legend.position = "none") +facet_wrap( ~ fct_infreq(State))
 
 Species_by_state19 
 ggsave(here::here("results", "Figures_new","Species_by_state19.png"), plot = Species_by_state19 )
 ```
 ```{r}
+CDV19_clean$Species%<>%as.character()
 raccoongrayfox19 <- subset(CDV19_clean, Species %in% c("Raccoon", "Gray Fox"))
 RGF19 <- with(raccoongrayfox19, table(Species, CollectionYear))
-RacFox19<- ggplot(as.data.frame(RGF19), aes(CollectionYear, Freq, fill = Species, color = Species, group = Species))  + 
+RacFox19SE<- ggplot(as.data.frame(RGF19), aes(CollectionYear, Freq, fill = Species, color = Species, group = Species))  + 
   geom_point() +geom_line() + 
   theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 6)) +labs(x="Collection Year, 1975-2019", y= "No. of Cases")
 
-RacFox19
-ggsave(here::here("results", "Figures_new", "RacFox_year19_allSE.png"), plot = RacFox19)
+RacFox19SE
+ggsave(here::here("results", "Figures_new", "RacFox_year19_allSE.png"), plot = RacFox19SE)
 
 
 #looking overtime there appears to be some patterns in the number of postive cases, with definite peaks possibly relating to epizootics of CDV
@@ -109,7 +154,9 @@ ggsave(here::here("results", "Figures_new", "RacFox_year19_allSE.png"), plot = R
 
 ```{r}
 #plot no of cases per state
-State_freq19 <- ggplot(CDV19_clean, aes(State, fill=State, color=State)) +geom_bar() + theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 8), legend.position = "none") +labs(y="Number of Cases")
+CDV19_clean$State<-as.factor(as.character(CDV19_clean$State))
+
+State_freq19 <- ggplot(CDV19_clean, aes(fct_infreq(State), fill=State, color=State)) +geom_bar() + theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 8), legend.position = "none") +labs(y="Number of Cases")
 
 State_freq19
 ggsave(here::here("results", "Figures_new", "State_freq19.png"), plot = State_freq19)
@@ -119,8 +166,8 @@ ggsave(here::here("results", "Figures_new", "State_freq19.png"), plot = State_fr
 ```
 ```{r}
 #plot number of cases per state for each species
-State_wrap_species19 <- ggplot(CDV19_clean, aes(State, fill=State, color=State)) +geom_bar() + theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 8), legend.position = "none") + 
-  facet_wrap(~Species)
+State_wrap_species19 <- ggplot(CDV19_clean, aes(fct_infreq(State), fill=State, color=State)) +geom_bar() + theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 8), legend.position = "none") + 
+  facet_wrap(~fct_infreq(Species))
 
 State_wrap_species19
 ggsave(here::here("results", "Figures_new", "State_wrap_species19.png"), plot=State_wrap_species19)
@@ -129,8 +176,10 @@ ggsave(here::here("results", "Figures_new", "State_wrap_species19.png"), plot=St
 #plot number of cases per age group for each species
 
 CDV_Clean_age19 <- CDV19_clean%>% dplyr :: filter(Age %in% c("Adult", "Subadult", "Juvenile"))
-Age_wrap_species19 <- ggplot(CDV_Clean_age19, aes(Age, fill=Age, color=Age)) +geom_bar() + theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 8), legend.position = "none") + 
-  facet_wrap(~Species)
+CDV_Clean_age19$Age<-as.factor(as.character(CDV_Clean_age19$Age))
+
+Age_wrap_species19 <- ggplot(CDV_Clean_age19, aes(fct_infreq(Age), fill=Age, color=Age)) +geom_bar() + theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 8), legend.position = "none") + 
+  facet_wrap(~fct_infreq(Species))
 
 Age_wrap_species19
 ggsave(here::here("results", "Figures_new", "Age_wrap_species19.png"), plot=Age_wrap_species19)
@@ -138,7 +187,9 @@ ggsave(here::here("results", "Figures_new", "Age_wrap_species19.png"), plot=Age_
 ```{r}
 #plot of sex distribution per species
 CDV_Clean_sex19 <- subset(CDV19_clean, Sex %in% c("Male", "Female"))
-SexSpecies19<- ggplot(CDV_Clean_sex19, aes(Sex, color=Sex, fill=Sex)) + geom_bar() +facet_wrap(~Species)
+CDV_Clean_sex19$Sex<-as.factor(as.character(CDV_Clean_sex19$Sex))
+
+SexSpecies19<- ggplot(CDV_Clean_sex19, aes(fct_infreq(Sex), color=Sex, fill=Sex)) + geom_bar() +facet_wrap(~fct_infreq(Species))
 SexSpecies19
 ggsave(here::here("results", "Figures_new", "Sex_Species_freq19.png"), plot = SexSpecies19)
 
@@ -215,7 +266,57 @@ ggsave(here::here("results", "Figures_new", "All_Cases_Year19.png"), plot = All_
 #From here lets just focus on Georgia, Foxes, Raccoons, 
 
 CDV19_filter1 <-  subset(CDV19_clean, Species %in% c("Raccoon", "Gray Fox") & State=="Georgia")
+```
+```{r}
+seq19<-as.data.frame(seq(1975,2019))
+colnames(seq19)[1]<-"CollectionYear"
 
+
+GA_RGF_year_mean1<-as.data.frame(table(CDV19_filter1$CollectionYear))
+colnames(GA_RGF_year_mean1)[1]<-"CollectionYear"
+GA_RGF_year_mean1$CollectionYear%<>%as.character()%>%as.integer()
+GA_RGF_year_mean<-left_join(seq19,GA_RGF_year_mean1)
+GA_RGF_year_mean[is.na(GA_RGF_year_mean)] = 0
+
+
+print(sum(GA_RGF_year_mean$Freq))
+print(mean(GA_RGF_year_mean$Freq))#mean for total cases per year
+print(sd(GA_RGF_year_mean$Freq))#sd for all years
+```
+```{r}
+CDV19_filter1$Species%<>%as.character()
+RGF19GA <- as.data.frame(with(CDV19_filter1, table( CollectionYear, Species)))
+RGF19GA$CollectionYear%<>%as.character()%>%as.numeric()
+
+#this is missing the years with no cases
+rc<-c("Raccoon")
+gf<-c("Gray Fox")
+
+fixer1<-as.data.frame(cbind(seq(1975,2019),rc))
+
+colnames(fixer1)[1]<-"CollectionYear"
+colnames(fixer1)[2]<-"Species"
+
+fixer2<-as.data.frame(cbind(seq(1975,2019),gf))
+
+colnames(fixer2)[1]<-"CollectionYear"
+colnames(fixer2)[2]<-"Species"
+
+f<-rbind(fixer2, fixer1)
+f$CollectionYear%<>%as.character()%>%as.numeric()
+
+RGF19GAu<-left_join(f, RGF19GA)
+RGF19GAu[is.na(RGF19GAu)] = 0
+#writee this all in nice above
+RacFox19GA<- ggplot(RGF19GAu, aes(CollectionYear, Freq, fill = Species, color = Species, group = Species))  + 
+  geom_point() +geom_line() + 
+  theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 6)) +labs(x="Collection Year, 1975-2019", y= "No. of Cases")
+RacFox19GA
+ggsave(here::here("results", "Figures_new", "RacFox_year19_GA.png"), plot = RacFox19GA)
+
+```
+
+```{r}
 vis_miss(CDV19_filter1)
 #lets take a look if there is any obvious variation in ages affected between raccoon and  gray fox
 RGFAge19 <- subset(CDV19_filter1, Age %in% c("Adult", "Subadult", "Juvenile"))
@@ -268,10 +369,12 @@ ggsave(here::here("results", "Figures_new", "RacFox_Sex219.png"),plot = RacFox_S
 ```{r}
 #as there seemed to potnetially be some difference in gender distribution, lets look at gender difference over time between raccoon and gray fox
 #ceratinly in the earlier time frame there seems to be more female gray foxes affected, has this got a role in why there were many fewer cases after this as population has fallen?
-RGFSEXYEAR19<- with(RGFSex19, table(Species, CollectionYear, Sex))
-Gender_year19 <- ggplot(as.data.frame(RGFSEXYEAR19), aes(CollectionYear, Freq, fill = Sex, color = Sex, group = Sex))  + 
+RGFSEXYEAR19<- as.data.frame(with(RGFSex19, table(Species, CollectionYear, Sex)))
+RGFSEXYEAR19$Species%<>%as.factor()
+
+Gender_year19 <- ggplot(RGFSEXYEAR19, aes(CollectionYear, Freq, fill = Sex, color = Sex, group = Sex))  + 
   geom_point() +geom_line() + 
-  theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 6)) + facet_wrap(~Species)
+  theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 6)) + facet_wrap(~fct_infreq(Species))
 
 Gender_year19
 
@@ -341,7 +444,7 @@ corrplot(chisex19$residuals, is.corr = F)
 contribsex19 <- 100*chisex19$residuals^2/chisex19$statistic
 round(contribsex19, 3)
 
-corrplot(contribsex19, is.cor = FALSE)
+#corrplot(contribsex19, is.cor = FALSE)
 ```
 ```{r}
 na.omit(RGFSex19) %>% crosstab(Species, Age, chi_square =  TRUE)
@@ -358,6 +461,7 @@ na.omit(RGFSex19) %>% crosstab(Species, Age, chi_square =  TRUE)
 glimpse(CDV19_filter1)
 
 CDVGA_Breeding<- as.data.frame(CDV19_filter1) %>% dplyr:: mutate(Season= Month)  %>% dplyr::mutate(Season= recode(Season, "February"="Breeding", "March"= "Breeding", "April"="Breeding", "May"= "Lactation", "June"="Lactation", "July"="Lactation", "August"= "Non-Breeding", "September"= "Non-Breeding","October" ="Non-Breeding", "November"= "Non-Breeding", "December" = "Non-Breeding", "January"= "Non-Breeding" ))
+CDVGA_Breeding$Species%<>%as.character() #recode as harqter, removes emoty facotrs 
 
 
 breeding <- as.data.frame(with(CDVGA_Breeding, table(Season, Species)))
@@ -372,6 +476,14 @@ breedingplot19<- ggplot(breedingadj2, aes(Season, SeaAdj, fill = Species, color 
 breedingplot19
 
 ggsave(here::here("results", "Figures_new", "breeding_plot_19.png"), plot=breedingplot19)
+
+
+breed_bar<- ggplot(breedingadj2, aes(Season, SeaAdj, fill = Species, color = Species, group = Species)) + geom_bar(stat="identity",position = "dodge") + labs(y="Cases per season/season length")
+
+breed_bar
+
+ggsave(here::here("results", "Figures_new", "breeding_bar_19.png"), plot=breed_bar)
+
 ```
 ```{r}
 #as there was suggested to possibly be more female gray foxes, does the proportion change accroding to breeding season?

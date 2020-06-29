@@ -264,4 +264,19 @@ year = {2000}
   note      = {https://ggplot2.tidyverse.org},
 }
 
+@Book{Baddeley2015,
+  title     = {Spatial Point Patterns: Methodology and Applications with R. Chapman and Hall},
+  publisher = {CRC Press},
+  year      = {2015},
+  author    = {A. Baddeley, E. Rubak and R.Turner.},
+}
+
+@Misc{RStudio2019,
+  author = {RStudio Team},
+  title  = {RStudio: Integrated Development Environment for R},
+  year   = {2019},
+  owner  = {RStudio, Inc},
+  url    = {http://www.rstudio.com/},
+}
+
 @Comment{jabref-meta: databaseType:bibtex;}

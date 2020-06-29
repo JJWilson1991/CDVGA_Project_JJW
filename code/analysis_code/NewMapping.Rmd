@@ -58,6 +58,8 @@ CDV_Clean19 <-   readRDS(here::here("data","processed_data","CDV19_clean.rds"))
 
 glimpse(CDV_Clean19)
 
+CDV_Clean19$CollectionYear%<>%as.factor()
+
 ```
 ```{r}
 #to be able to join our data sets with dplyr we need to capitalise the state names from the mapping data and change the ttle of the states vaiable to region so we can properly join our datasets
@@ -182,7 +184,7 @@ SE_centroid <- st_centroid(sepSE_sf)
 
 
 
-SEtest4 <-  SE_centroid%>% mutate(tosplit= as.character(geometry))
+SEtest4 <-  SE_centroid%>% mutate(tosplit= as.character(geom))
 
 SEtest4$tosplit <- sub(SEtest4$tosplit, pattern = "c", replacement = "")
 
@@ -217,7 +219,7 @@ cent_SE_19<-left_join(sepSE_sf, SE_centroid_split)
 
 cent_spec_19<- left_join(cent_SE_19,CDV_Clean19 )
 
-SESpec<- ggplot(cent_spec_19) + geom_sf(aes(geometry=geometry)) +  geom_point(data = cent_spec_19, aes(x = long, y = lat, color= Species), alpha = 0.5, position = position_jitter(width=0.05,height=0.05 ), na.rm = T) + scale_colour_discrete( na.translate=F )
+SESpec<- ggplot(cent_spec_19) + geom_sf(aes(geometry=geom)) +  geom_point(data = cent_spec_19, aes(x = long, y = lat, color= Species), alpha = 0.5, position = position_jitter(width=0.05,height=0.05 ), na.rm = T) + scale_colour_discrete( na.translate=F )
 SESpec
 
 
@@ -226,7 +228,7 @@ ggsave(here::here("results", "Figures_new", "SE_AllSpec.png"),plot = SESpec)
 ```{r}
 cent_spec_19_na_rm<- left_join(CDV_Clean19, cent_SE_19 )
 
-SEYear<- ggplot(cent_spec_19) + geom_sf(aes(geometry=geometry), fill="grey90") +  geom_point(data = cent_spec_19_na_rm, aes(x = long, y = lat, color= CollectionYear),  alpha = 0.5, position = position_jitter(width=0.05,height=0.05 ), na.rm = T) +scale_color_continuous()
+SEYear<- ggplot(cent_spec_19) + geom_sf(aes(geometry=geom), fill="grey90") +  geom_point(data = cent_spec_19_na_rm, aes(x = long, y = lat, color= CollectionYear),  alpha = 0.5, position = position_jitter(width=0.05,height=0.05 ), na.rm = T) +scale_color_continuous()
 SEYear
 
 ggsave(here::here("results", "Figures_new", "SE_Allyear.png"),plot = SESpec)
@@ -255,7 +257,7 @@ pointRGF19<-left_join(GApoint,RGFfil_spec_19)
 
 pointRGF19 %>% saveRDS(here::here("data","processed_data","RGF_lat_long.rds"))
 
-GAspec<- ggplot(pointRGF19) + geom_sf(aes(geometry=geometry)) +  geom_point(data = pointRGF19, aes(x = long, y = lat, color= Species), alpha = 0.5, position = position_jitter(width=0.05,height=0.05 ), na.rm = T) + scale_colour_discrete( na.translate=F )
+GAspec<- ggplot(pointRGF19) + geom_sf(aes(geometry=geom)) +  geom_point(data = pointRGF19, aes(x = long, y = lat, color= Species), alpha = 0.5, position = position_jitter(width=0.05,height=0.05 ), na.rm = T) + scale_colour_discrete( na.translate=F )
 GAspec
 
 ggsave(here::here("results", "Figures_new", "RGFGA19.png"),plot = GAspec)
@@ -269,14 +271,17 @@ pointRGF19_wrap<-right_join(GApoint,RGFfil_spec_19)
 
 pointRGF19_wrap %>% saveRDS(here::here("data", "processed_data", "Case_GA_Centroids.rds"))
 
-GAspecyear19<- ggplot() + geom_sf(data=Georgia_coorod, lwd=0.1, aes(geometry=geometry)) +  geom_point(data = pointRGF19_wrap, aes(x = long, y = lat, color= Species), alpha = 0.5, size=0.8,  position = position_jitter(width=0.05,height=0.05 ), na.rm = T) + scale_colour_discrete( na.translate=F ) +facet_wrap(~CollectionYear) + theme_map() + theme(legend.position="right")
+GAspecyear19<- ggplot() + geom_sf(data=Georgia_coorod, lwd=0.1, aes(geometry=geom)) +  geom_point(data = pointRGF19_wrap, aes(x = long, y = lat, color= Species), alpha = 0.5, size=0.8,  position = position_jitter(width=0.05,height=0.05 ), na.rm = T) + scale_colour_discrete( na.translate=F ) +facet_wrap(~CollectionYear) + theme_map() + theme(legend.position="right")
 GAspecyear19
 
 ggsave(here::here("results", "Figures_new", "GAspecyear19.png"),plot = GAspecyear19, width = 8, height = 8)
 
 ```
 ```{r}
-RGFGA_CY<- ggplot(pointRGF19) + geom_sf(aes(geometry=geometry)) +  geom_point(data = pointRGF19, aes(x = long, y = lat, color= CollectionYear), alpha = 0.5, position = position_jitter(width=0.05,height=0.05 ), na.rm = T) +scale_color_continuous(na.value="grey90")
+npointRGF19<-pointRGF19
+npointRGF19$CollectionYear%<>%as.character()%>%as.numeric()
+
+RGFGA_CY<- ggplot(npointRGF19) + geom_sf(aes(geometry=geom)) +  geom_point(data = npointRGF19, aes(x = long, y = lat, color= CollectionYear), alpha = 0.5, position = position_jitter(width=0.05,height=0.05 ), na.rm = T) +scale_color_continuous(na.value="grey90")
 
 RGFGA_CY
 
@@ -285,7 +290,7 @@ ggsave(here::here("results", "Figures_new", "RGF_Years_19.png"),plot = RGFGA_CY)
 ```{r}
 #replot using simplefeatures for each county
 SF_County19 <- ggplot() + 
-  geom_sf(data = SE_freq_19, aes(geometry=geometry, fill = Freq))  +scale_fill_gradient(high = "purple4", low = "thistle1", na.value="white", trans = "log10") +
+  geom_sf(data = SE_freq_19, aes(geometry=geom, fill = Freq))  +scale_fill_gradient(high = "purple4", low = "thistle1", na.value="white", trans = "log10") +
   labs(fill= "Number of cases") #+facet_wrap(~State)
 # #+ 
 #   geom_point(data = GAcitiesspread, aes(x = long, y = lat, size = Population), alpha = 0.5) + 
@@ -307,9 +312,10 @@ colnames(uscitiesdf)[3] <- "Population"
 GAcitiesspread <- uscitiesdf %>% subset(country.etc %in% "GA") %>% filter(Population>100000)
 GA_county_19 <- subset(SE_freq_19, State %in% "Georgia") %>% as.data.frame()
 
+GAcitiesspread$name<-str_remove(GAcitiesspread$name, " GA") #corect names of ciries 
 
 GA_County19SF <- ggplot() + 
-  geom_sf(data = GA_county_19, aes(geometry=geometry, fill = Freq))  +scale_fill_gradient(high = "purple4", low = "thistle1", na.value="white", trans = "log10") +
+  geom_sf(data = GA_county_19, aes(geometry=geom, fill = Freq))  +scale_fill_gradient(high = "purple4", low = "thistle1", na.value="white", trans = "log10") +
   labs(fill= "Number of cases per county") +   geom_point(data = GAcitiesspread, aes(x = long, y = lat), alpha = 0.5) +    geom_text(data = GAcitiesspread, aes(x = long, y = lat, label = name, group = NULL), position = position_jitter(width=0.3,height=0.3))  +theme_map()  + theme(legend.position="right")
 
 GA_County19SF
@@ -328,8 +334,7 @@ sdf$Presence <- ifelse(sdf$Presence >0 ,TRUE, FALSE)
 sdf <- sdf %>% mutate(Presence = ifelse(is.na(Presence), FALSE, Presence))
 
 
-presenceSF_County19 <- ggplot() + 
-  geom_sf(data = sdf, aes(geometry=geometry, fill = Presence))  +
+presenceSF_County19 <- ggplot() +   geom_sf(data = sdf, aes(geometry=geom, fill = Presence))  +
   labs(fill= "Presence") +  scale_fill_manual(values = c('white', 'turquoise4')) 
 
 presenceSF_County19
@@ -339,15 +344,11 @@ ggsave(here::here("results", "Figures_new", "presenceSF_County19.png"),plot = pr
 
 ```
 ```{r}
-GA_presence_19 <- subset(sdf, State %in% "Georgia") %>% as.data.frame()
+GA_presence_19 <- subset(sdf, State == "Georgia") 
 
-
-GApresenceSF_County19 <- ggplot() + 
-  geom_sf(data = GA_presence_19, aes(geometry=geometry, fill = Presence))  +
-  labs(fill= "Presence") +  scale_fill_manual(values = c('white', 'turquoise4'))  +   geom_point(data = GAcitiesspread, aes(x = long, y = lat, size = Population), alpha = 0.5) +    geom_text(data = GAcitiesspread, aes(x = long, y = lat, label = name, group = NULL), position = position_jitter(width=0.3,height=0.3)) 
+GApresenceSF_County19 <-   ggplot()  +geom_sf(data=GA_presence_19,  aes(geometry=geom, fill=Presence))  +  scale_fill_manual(values = c('white', 'turquoise4'))
 
 GApresenceSF_County19
-
 
 ggsave(here::here("results", "Figures_new", "GApresenceSF_County19.png"),plot = GApresenceSF_County19)
 
@@ -355,11 +356,15 @@ ggsave(here::here("results", "Figures_new", "GApresenceSF_County19.png"),plot = 
 
 
 ```{r}
-CDV_Clean19
-CDV19_fi<-  subset(CDV_Clean19, Species %in% c("Raccoon", "Gray Fox") & State=="Georgia")
+# CDV_Clean19
+# 
+# CDV_Clean19$CollectionYear%<>%as.factor()
+# 
+# CDV19_fi<-  subset(CDV_Clean19, Species %in% c("Raccoon", "Gray Fox") & State=="Georgia")
 County_year<- as.data.frame(table(CDV19_fi$County, CDV19_fi$CollectionYear))
 colnames(County_year)[1] <- "County"
 colnames(County_year)[2] <- "Year"
+
 
 
 
@@ -372,9 +377,8 @@ GCY1$Presence <- ifelse(GCY1$Presence >0 ,TRUE, FALSE)
  GCY2<- GCY1 %>% mutate(Presence = ifelse(is.na(Presence), FALSE, Presence)) #check if this second presence in if else is correct
  
 GA_Presence_year19<-  ggplot() + 
-geom_sf(data=Georgia_coorod, lwd=0.1, aes(geometry=geometry), fill="white")+  geom_sf(data = GCY2, lwd=0.1, aes(geometry=geometry, fill =Presence))  +
-  labs(fill= "Presence") +  scale_fill_manual(values = c('white', 'turquoise4')) + theme_map() + facet_wrap(~Year,  drop =  T) + theme(legend.position="right")
-
+geom_sf(data=Georgia_coorod, lwd=0.1, aes(geometry=geom), fill="white")+  geom_sf(data = GCY2, lwd=0.1, aes(geometry=geom, fill =Presence))  +
+  labs(fill= "Presence") +  scale_fill_manual(values = c('white', 'turquoise4')) + theme_map() + facet_wrap(~Year,  drop =  T) + theme(legend.position="right")  
 
 GA_Presence_year19
 
@@ -390,7 +394,7 @@ ggsave(here::here("results", "Figures_new", "GA_Presence_year19.png"),plot = GA_
 
 
 GA_cases_year19<-  ggplot() + 
-geom_sf(data=Georgia_coorod, aes(geometry=geometry), fill="white")+  geom_sf(data = GA_County_year, aes(geometry=geometry, fill =Freq)) +
+geom_sf(data=Georgia_coorod, aes(geometry=geom), fill="white")+  geom_sf(data = GA_County_year, aes(geometry=geom, fill =Freq)) +
   labs(fill= "Cases per year") +  scale_fill_gradient(high = "purple", low="white", na.value="white", trans = "log10") + theme_map() + facet_wrap(~Year) + theme(legend.position="right")
 
 GA_cases_year19
@@ -410,7 +414,7 @@ colnames(County_Species)[2]<-"Species"
 County_species_map<-right_join(Georgia_coorod, County_Species)
   
 GA_cases_Species19<-  ggplot() + 
-geom_sf(data=Georgia_coorod, aes(geometry=geometry), fill="white")+  geom_sf(data = County_species_map, aes(geometry=geometry, fill =Freq)) +
+geom_sf(data=Georgia_coorod, aes(geometry=geom), fill="white")+  geom_sf(data = County_species_map, aes(geometry=geom, fill =Freq)) +
   labs(fill= "Total cases 1975-2019") +  scale_fill_gradient(high = "purple", low="white", na.value="white", trans = "log10") + theme_map() + facet_wrap(~Species) + theme(legend.position="right") 
 
 GA_cases_Species19
@@ -434,7 +438,7 @@ GFMY<-subset(County_year_split_map, Species %in% "Gray Fox")
 ```{r}
 
 GARac_cases_year19<-  ggplot() + 
-geom_sf(data=Georgia_coorod, aes(geometry=geometry), fill="white")+  geom_sf(data = RMY, aes(geometry=geometry, fill =Freq)) +
+geom_sf(data=Georgia_coorod, aes(geometry=geom), fill="white")+  geom_sf(data = RMY, aes(geometry=geom, fill =Freq)) +
   labs(fill= "Raccoon cases per year") +  scale_fill_gradient(high = "purple", low="white", na.value="white", trans = "log10") + theme_map() + facet_wrap(~Year) + theme(legend.position="right")
 
 GARac_cases_year19
@@ -445,7 +449,7 @@ ggsave(here::here("results", "Figures_new", "GARac_cases_year19.png"),plot = GAR
 ```{r}
 
 GAGF_cases_year19<-  ggplot() + 
-geom_sf(data=Georgia_coorod, aes(geometry=geometry), fill="white")+  geom_sf(data = GFMY, aes(geometry=geometry, fill =Freq)) +
+geom_sf(data=Georgia_coorod, aes(geometry=geom), fill="white")+  geom_sf(data = GFMY, aes(geometry=geom, fill =Freq)) +
   labs(fill= "Raccoon cases per year") +  scale_fill_gradient(high = "purple", low="white", na.value="white", trans = "log10") + theme_map() + facet_wrap(~Year) + theme(legend.position="right")
 
 GAGF_cases_year19
@@ -524,7 +528,7 @@ Cases_humanpop<- left_join(pointRGF19, GA_Pop_Den, by="County")
 
 ```{r}
 
-pop_points1 <- ggplot() + geom_sf(data= Cases_humanpop, aes(geometry=geometry, fill=Population)) +  geom_point(data = Cases_humanpop, aes(x = long, y = lat, color= Species), alpha = 0.5, position = position_jitter(width=0.05,height=0.05 ), na.rm = T)
+pop_points1 <- ggplot() + geom_sf(data= Cases_humanpop, aes(geometry=geom, fill=Population)) +  geom_point(data = Cases_humanpop, aes(x = long, y = lat, color= Species), alpha = 0.5, position = position_jitter(width=0.05,height=0.05 ), na.rm = T)
 
 pop_points2<-pop_points1+ scale_colour_discrete( na.translate=F )  + labs(fill= "Human population per county") + scale_fill_gradient(low = "white", high = "purple") + theme_map() + theme(legend.position="right")
 
@@ -555,7 +559,7 @@ ggsave(here::here("results", "Figures_new", "logPop_cases19.png"), plot = log_po
 ```{r}
 #repaeated with pop desnity
 
-density_points1 <- ggplot() + geom_sf(data= Cases_humanpop, aes(geometry=geometry, fill=Pop_Density)) +  geom_point(data = Cases_humanpop, aes(x = long, y = lat, color= Species), alpha = 0.5, position = position_jitter(width=0.05,height=0.05 ), na.rm = T)
+density_points1 <- ggplot() + geom_sf(data= Cases_humanpop, aes(geometry=geom, fill=Pop_Density)) +  geom_point(data = Cases_humanpop, aes(x = long, y = lat, color= Species), alpha = 0.5, position = position_jitter(width=0.05,height=0.05 ), na.rm = T)
 
 density_points2<-density_points1+ scale_colour_discrete( na.translate=F )  + labs(fill= "Human population per county") + scale_fill_gradient(low = "white", high = "purple") + theme_map() + theme(legend.position="right")
 
@@ -567,7 +571,7 @@ ggsave(here::here("results", "Figures_new", "Pop_Density_cases19.png"), plot = d
 ```{r}
 #logdesnity
 
-logdensity_points1 <- ggplot() + geom_sf(data= Cases_humanpop, aes(geometry=geometry, fill=Pop_Density)) +  geom_point(data = Cases_humanpop, aes(x = long, y = lat, color= Species), alpha = 0.5, position = position_jitter(width=0.05,height=0.05 ), na.rm = T)
+logdensity_points1 <- ggplot() + geom_sf(data= Cases_humanpop, aes(geometry=geom, fill=Pop_Density)) +  geom_point(data = Cases_humanpop, aes(x = long, y = lat, color= Species), alpha = 0.5, position = position_jitter(width=0.05,height=0.05 ), na.rm = T)
 
 logdensity_points2<-density_points1+ scale_colour_discrete( na.translate=F )  + labs(fill= "log10 population density per county") + scale_fill_gradient(low = "beige", high = "chocolate4", trans= "log10") + theme_map() + theme(legend.position="right")
 
@@ -627,8 +631,12 @@ ggplot(Cases_per_area_PopD_NA, aes(Pop_Density, Cases_per_area)) + geom_point()
 ```{r}
 #lets log the population density as atlanta is much more densely populated than anywhere else and is throwing everything off
 
-Logpopdens_cases<- ggplot(Cases_per_area_PopD_NA , aes(log10(Pop_Density), Cases_per_area)) +geom_point() + geom_smooth()
+Logpopdens_cases<- ggplot(Cases_per_area_PopD_NA , aes(log10(Pop_Density), Cases_per_area)) +geom_point() + geom_smooth() + labs(x="log10(Population Density per sqm)", y="Cases per sqm")
 Logpopdens_cases
+
+ggsave(here::here("results", "Figures_new", "popdens_logcases.png"), plot=Logpopdens_cases)
+
+
 
 #again an outlier is making it difficult to pic trends so lets log the cases per area too as it might be possible there is a hump shaped relationship
 
@@ -653,19 +661,129 @@ Spec_Freq_pop<-ggplot(Species_density, aes(log10(Pop_Density), Freq, fill = Spec
 Spec_Freq_pop
 
 #Repeat with case per area
-Spec_dens_pop<-ggplot(Species_density, aes(log10(Pop_Density), log10(Cases_per_area), fill = Species, color = Species, group = Species)) + geom_point()+geom_smooth() + labs(x="log10(Population Density per sqm", y="log10(Cases per sqm)")
+logSpec_dens_logpop<-ggplot(Species_density, aes(log10(Pop_Density), log10(Cases_per_area), fill = Species, color = Species, group = Species)) + geom_point(aes(shape=Species))+geom_smooth(inherit.aes = F, aes(log10(Pop_Density), log10(Cases_per_area))) + labs(x="log10(Population Density per sqm", y="log10(Cases per sqm)")
 
-Spec_dens_pop
+logSpec_dens_logpop
 
 #do a wrap
 
-Spec_dens_pop_wrap<-Spec_dens_pop+ facet_wrap(~Species, ncol=1)
+Spec_dens_pop_wrap<-logSpec_dens_logpop+ facet_wrap(~Species, ncol=1)
 
 Spec_dens_pop_wrap
 
+logSpec_dens_logpop_splitline<-ggplot(Species_density, aes(log10(Pop_Density), log10(Cases_per_area), fill = Species, color = Species, group = Species)) + geom_point(aes(shape=Species))+geom_smooth() +geom_smooth(inherit.aes = F,se=F, aes(log10(Pop_Density), log10(Cases_per_area)))+ labs(x="log10(Population Density per sqm", y="log10(Cases per sqm)")
+
+logSpec_dens_logpop_splitline
 #no clear difference in Species distribution of cases per pop density
+
+
+Spec_dens_logpop<-ggplot(Species_density, aes(log10(Pop_Density), Cases_per_area, fill = Species, color = Species, group = Species)) + geom_point(aes(shape=Species))+geom_smooth(inherit.aes = F, aes(log10(Pop_Density), Cases_per_area)) + labs(x="log10(Population Density per sqm", y="Cases per sqm")
+
+Spec_dens_logpop
+```
+
+```{r}
+New_census<-readRDS(here::here("data","processed_data","census_all.rds"))
+census_geo<-left_join(New_census,Georgia_coorod)
+
+census_species<-left_join(census_geo, pointRGF19_wrap)
+
+
+
+
+Pop_Spec_years<-ggplot()+
+  geom_sf(data = census_species, lwd=0.05, aes( geometry=geom, fill=Pop_density)) +
+  facet_wrap(~Year) + 
+  scale_fill_gradient(low = "beige", high = "chocolate4", trans= "log10") + 
+  theme_map() + 
+  theme(legend.position="right")+ 
+  geom_point(data = census_species, aes(x = long, y = lat, color= Species), alpha = 0.5, size=0.8,  position = position_jitter(width=0.05,height=0.05 ), na.rm = T) + 
+  scale_colour_discrete( na.translate=F ) + 
+  scale_color_manual(values = c("blue", "green2"), na.translate=F)
+
+Pop_Spec_years
+
+
+
+ggsave(here::here("results", "Figures_new", "Pop_spec_years19.png"), plot = Pop_Spec_years)
+
+
+# 
+# Pop_Spec_plotly<-ggplot(data = census_species, aes(frame=Year))+geom_sf(data = census_species, lwd=0.05, aes( geometry=geom, fill=Pop_density)) + scale_fill_gradient(low = "beige", high = "chocolate4", trans= "log10") + theme_map() + theme(legend.position="right")
+# 
+# Pop_Spec_plotly
+
+
+# ggplotly(Pop_Spec_plotly) %>% animation_opts( mode= "immediate", transition= 0, easing = "linear-out" , redraw = FALSE)
 
 
 
 ```
 
+```{r}
+
+County_Dens_freq<-left_join(census_geo, County_year_split)
+County_Dens_freq%<>%mutate(Cases_year_area=Freq/Land_Area_Sqm)
+
+#subset for only great than 0
+subCounty_Dens_freq<-subset(County_Dens_freq, Cases_year_area>0)
+
+Spec_dens_logpop<-ggplot(subCounty_Dens_freq, aes(log10(Pop_density), Cases_year_area, color = Species,  group=Species)) + geom_point(aes(shape=Species))+geom_smooth() + labs(title = "Population density of conties reporting CDv cases in a given year and the number of cases per square mile in the county in Georgia", x="log10(Human Population Density per sqm)", y="Cases per sqm")  + scale_color_manual(values = c("blue", "darkgreen"), na.translate=F)
+
+Spec_dens_logpop
+
+
+
+All_dens_Lm<-lm(log10(Pop_density)~Cases_year_area, data=subCounty_Dens_freq)#creae linear model
+
+summary(All_dens_Lm)#summary of model
+
+
+
+racsubCounty_Dens_freq<-filter(subCounty_Dens_freq, Species=="Raccoon")
+rac_dens_Lm<-lm(log10(Pop_density)~Cases_year_area, data=racsubCounty_Dens_freq)
+summary(rac_dens_Lm)#summary of model
+
+gfsubCounty_Dens_freq<-filter(subCounty_Dens_freq, Species=="Gray Fox")
+gf_dens_Lm<-lm(log10(Pop_density)~Cases_year_area, data=gfsubCounty_Dens_freq)
+summary(gf_dens_Lm)#summary of model
+
+
+#plot residuals
+```
+
+
+```{r}
+Av_County_density<-New_census%>%ungroup()%>% group_by(County) %>% summarise(Mean_Pop_density=mean(Pop_density))
+
+
+
+Av_pop_spec<-left_join(pointRGF19,Av_County_density)
+
+Av_pop_den_cases<-ggplot(Av_pop_spec) +geom_sf(aes(geometry=geom, fill=Mean_Pop_density)) + scale_fill_gradient(low = "beige", high = "chocolate4", trans= "log10") +geom_point(data =Av_pop_spec, aes(x = long, y = lat, color= Species), alpha = 0.5, position = position_jitter(width=0.05,height=0.05 ), na.rm = T) + scale_colour_discrete( na.translate=F )
+
+Av_pop_den_cases
+
+ggsave(here::here("results", "Figures_new", "logavPop_Density_cases7519.png"), plot = Av_pop_den_cases)
+
+```
+
+```{r}
+#uses average popualtion density per county amd plot
+
+
+av_pop_cases1<-left_join(GA_county_19, Av_County_density)
+areaga<-GA_Pop_Den[,c(1,2)]
+
+av_pop_cases<-left_join(av_pop_cases1,areaga)
+
+av_pop_cases%<>% dplyr::mutate(Cases_per_area= Freq/Land_Area_sqm)
+
+avLogpopdens_cases<- ggplot(av_pop_cases , aes(log10(Mean_Pop_density), Cases_per_area)) +geom_point() + geom_smooth() + labs(x="log10(Population Density per sqm)", y="Cases per sqm")
+avLogpopdens_cases
+
+ggsave(here::here("results", "Figures_new", "averagepopdens_logcases.png"), plot=avLogpopdens_cases)
+
+
+
+```

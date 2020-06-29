@@ -199,7 +199,7 @@ CDV19_clean3$Date_Recorded <- sub(CDV19_clean3$Date_Recorded, pattern = "/", rep
 
 CDV19_clean3$Date_Recorded <- sub(CDV19_clean3$Date_Recorded, pattern= "/", replacement = "-")
 
-#fix date recorded so all the same and recroed as dateusing lubrdate
+#fix date recorded so all the same and recroed as date using lubrdate
 
 CDV19_clean4<- CDV19_clean3%>% dplyr::mutate(Date = (mdy(CDV19_clean3$Date_Recorded)))  
 
