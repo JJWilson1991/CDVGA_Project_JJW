@@ -97,7 +97,7 @@ plot(f6R_ts)
 ```
 ```{r}
 #plot time series of each species per month over the whole time period
-Monthseries19<-ggplot2 :: autoplot(f6_ts[,c("Raccoon", "Gray_Fox")]) +
+Monthseries19<-ggplot2 :: autoplot(f6_ts[,c( "Gray_Fox","Raccoon")]) +
   ylab("Cases") + xlab("Year") 
 
 Monthseries19
@@ -167,7 +167,7 @@ Raccoon_lag_19 <- cbind(
 
 ```
 ```{r}
-
+#create lagged predictors for gf
 
 Fox_lag_19 <- cbind(
     FoxLag019 = f6_ts_19[,"Gray_Fox"],
@@ -324,7 +324,7 @@ summary(igfit14tr)
 
 ```
 ```{r}
-
+#pull all the rmse into table for indivialu predictors
 
 iGFtr_Model_summaries <- rbind(
     Summary_igfit1tr = summary(igfit1tr)[,("RMSE")],
@@ -347,6 +347,7 @@ iGFtr_Model_summaries
 ```
 
 ```{r}
+#create araim to rpedict raccoon using incrasing number of gF months into the past 
 rfit1tr <- auto.arima(f6_ts_19[13:423,2], stationary=TRUE)
 rfit2tr <- auto.arima(f6_ts_19[13:423,2], xreg=Fox_lag_19[13:423,1],
   stationary=TRUE)
@@ -399,7 +400,7 @@ summary(rfit14tr)
 summary(Null_R_train)
 ```
 ```{r}
-
+#table of model summaries
 Rac_C_models<- c(rfit1tr,rfit2tr,rfit3tr,rfit4tr,rfit5tr,rfit6tr,rfit7tr,rfit8tr,rfit9tr,rfit10tr,rfit11tr,rfit12tr,rfit13tr,rfit14tr,Null_R_train)
 
 AIC(rfit1tr,rfit2tr,rfit3tr,rfit4tr,rfit5tr,rfit6tr,rfit7tr,rfit8tr,rfit9tr,rfit10tr,rfit11tr,rfit12tr,rfit13tr,rfit14tr,Null_R_train)
@@ -800,6 +801,7 @@ accuracy(rfitNull_test)
 
 
 ```{r}
+#rmse for testing racc models
 
 RRMSEte <- rbind(
   R_Fit1_test = accuracy(rfit1_test)[,"RMSE"],
@@ -988,7 +990,7 @@ accuracy(gfitNull_test)
 
 
 ```{r}
-
+#gf test rmse
 GF_RMSEte <- rbind(
   GF_Fit1_test = accuracy(gfit1_test)[,"RMSE"],
   GF_Fit2_test = accuracy(gfit2_test)[,"RMSE"],
@@ -1181,30 +1183,50 @@ grid.arrange(GF_AIC, GFI_AIC, GF_Test,GFI_Test, nrow=2, ncol=2)
 ```{r}
 
 # y′t  =   c   +    ϕ1y′t−1     +    θ1εt−1    +    γ0xt    
-forecast(object  =gfit2tr, h=105, xreg=Raccoon_lag_19[13:423,1], lower = 0, level = c(80, 95) )%>%autoplot() +autolayer(werty) #autolayer plots a time series
+Rac_cases<-ts(f6$Raccoon) #create layer for actual recorded case numbers of raccoons
+
+Raccoon_model_plot<-forecast(object=rfit4tr, h=105, xreg=Fox_lag_19[13:423,1:3], lower = 0, level = c(80, 95) )%>%autoplot() +autolayer(Rac_cases) +theme_classic()+ theme(legend.position = "none") + labs(title="Best fit model for predicting CDV cases in Raccoons", x="Number of months since start of recording period, January 1975", y="Number of cases")#autolayer plots a time series
+
+
+print(Raccoon_model_plot)
+
+ggsave(here::here("results", "Models","Raccoon_model_plot.png"), plot = Raccoon_model_plot)
 
 
 
-trfgy<-f6_ts_19[424:529,1]
-plot(gfit2tr$x,col="red")+
-lines(fitted(gfit2tr),col="blue") +lines(f6$Raccoon)
+
+Fox_cases<-ts(f6$Gray_Fox)#create layer for gray fox cases
+
+Fox_model_plot<-forecast(object  =gfit2tr, h=105, xreg=Raccoon_lag_19[13:423,1], lower = 0, level = c(80, 95) )%>%autoplot() +autolayer(Fox_cases) +theme_classic()+theme(legend.position = "none") + labs(title="Best fit model for predicting CDV cases in Gray Foxes", x="Number of months since start of recording period, January 1975", y="Number of cases")#autolayer plots a time series
 
 
+print(Fox_model_plot)
 
-#gfit1tr %>%
- # forecast(h=105, xreg = Raccoon_lag_19[13:423,1], lower = 0) %>%
-  #autoplot() 
-
-forecast(rfit4tr, h=105, xreg=Fox_lag_19[13:423,1:3],
- lower=0, level = c(80, 95)) %>% plot(xlab="Months since April 1975") +lines(werty)
-werty<-ts(f6$Raccoon)
-
-plot(rfit4tr$x,col="black")+
-lines(fitted(rfit4tr),col="deeppink")
-  #forecast(h= 34, xreg = Raccoon_lag[,1]) %>%
-  #autoplot()
+ggsave(here::here("results", "Models","Fox_model_plot.png"), plot = Fox_model_plot)
 
 
-plot(ts(f6$Raccoon[424:529]),col="red")+
-lines(fitted(rfit4_test),col="darkgreen")
 ```
+# ```{r}
+# trfgy<-f6_ts_19[424:529,1]
+# plot(gfit2tr$x,col="red")+
+# lines(fitted(gfit2tr),col="blue") +lines(f6$Raccoon)
+# 
+# 
+# 
+# #gfit1tr %>%
+#  # forecast(h=105, xreg = Raccoon_lag_19[13:423,1], lower = 0) %>%
+#   #autoplot() 
+# 
+# forecast(rfit4tr, h=105, xreg=Fox_lag_19[13:423,1:3],
+#  lower=0, level = c(80, 95)) %>% plot(xlab="Months since April 1975") +lines(werty)
+# 
+# 
+# plot(rfit4tr$x,col="black")+
+# lines(fitted(rfit4tr),col="deeppink")
+#   #forecast(h= 34, xreg = Raccoon_lag[,1]) %>%
+#   #autoplot()
+# 
+# 
+# # plot(ts(f6$Raccoon[424:529]),col="red")+
+# # lines(fitted(rfit4_test),col="darkgreen")
+# # ```

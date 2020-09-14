@@ -33,6 +33,9 @@ library(maptools)
 library(sf)
 
 library(here)
+
+library(magrittr)
+library(gridExtra)
 ```
 
 ```{r}
@@ -51,7 +54,7 @@ SE19<- subset(statelines, region %in% c("south carolina", "georgia",        "ten
 ggplot(data = SE19) +  geom_polygon(aes(x = long, y = lat, fill = region, group = group), color = "white") + coord_fixed(1.3) + guides(fill=FALSE) 
 ```
 ```{r}
-
+#load cleaned data
 CDV_Clean19 <-   readRDS(here::here("data","processed_data","CDV19_clean.rds"))
 
 
@@ -161,6 +164,10 @@ ggsave(here::here("results", "Figures_new", "Cases_per_State_WrapYear19.png"),pl
 
 ```{r}
 library(sf)
+
+
+#load counties in SE
+
 SE_sf <- st_as_sf(map("county", regions = c("south carolina", "georgia",        "tennessee",      "virginia",       "west virginia", 
  "kentucky",       "north carolina", "florida",        "mississippi",    "kansas",        
  "maryland",       "louisiana",      "alabama",        "missouri",       "arkansas",      
@@ -181,7 +188,7 @@ sepSE_sf<-sepSE_sf%>% mutate(State = recode(State, "North carolina" = "North Car
 
 SE_centroid <- st_centroid(sepSE_sf)
 
-
+#split in to seprate long and lat coordinates
 
 
 SEtest4 <-  SE_centroid%>% mutate(tosplit= as.character(geom))
@@ -206,29 +213,36 @@ plot(sepSE_sf["State"])
 ```
 
 ```{r}
+#join mapping data to case data
 testing123<-left_join(CDV_Clean19, sepSE_sf, by=c("County", "State"))
 
 ttt<- as.data.frame(with(testing123,table(ID2)))
 
 SE_freq_19<-left_join(sepSE_sf, ttt, by="ID2")
 
-
+#add coords
 SE_centroid_split<-as_data_frame(SE_centroid_split)
 
 cent_SE_19<-left_join(sepSE_sf, SE_centroid_split)
 
 cent_spec_19<- left_join(cent_SE_19,CDV_Clean19 )
 
+#plot cases by species in SE
 SESpec<- ggplot(cent_spec_19) + geom_sf(aes(geometry=geom)) +  geom_point(data = cent_spec_19, aes(x = long, y = lat, color= Species), alpha = 0.5, position = position_jitter(width=0.05,height=0.05 ), na.rm = T) + scale_colour_discrete( na.translate=F )
 SESpec
 
 
 ggsave(here::here("results", "Figures_new", "SE_AllSpec.png"),plot = SESpec)
+
+
+SESpec +facet_wrap(~CollectionYear)
 ```
 ```{r}
+
+#reprat to plot by year
 cent_spec_19_na_rm<- left_join(CDV_Clean19, cent_SE_19 )
 
-SEYear<- ggplot(cent_spec_19) + geom_sf(aes(geometry=geom), fill="grey90") +  geom_point(data = cent_spec_19_na_rm, aes(x = long, y = lat, color= CollectionYear),  alpha = 0.5, position = position_jitter(width=0.05,height=0.05 ), na.rm = T) +scale_color_continuous()
+SEYear<- ggplot(cent_spec_19) + geom_sf(aes(geometry=geom), fill="grey90") +  geom_point(data = cent_spec_19_na_rm, aes(x = long, y = lat, color= CollectionYear),  alpha = 0.5, position = position_jitter(width=0.05,height=0.05 ), na.rm = T) #+scale_color_continuous()
 SEYear
 
 ggsave(here::here("results", "Figures_new", "SE_Allyear.png"),plot = SESpec)
@@ -267,17 +281,34 @@ ggsave(here::here("results", "Figures_new", "RGFGA19.png"),plot = GAspec)
 #wrap species pounts by year
 Georgia_coorod<-subset(cent_SE_19, State%in% "Georgia")
 
+
+#table of cases in each county in gerogia in each year
+County_year<- as.data.frame(table(CDV19_fi$County, CDV19_fi$CollectionYear))
+colnames(County_year)[1] <- "County"
+colnames(County_year)[2] <- "Year"
+
+
+CY_point<-County_year[,c(1,2)]
+colnames(CY_point)[2]<-"CollectionYear"
+
+#combine location data with GA Raccoon and GF data
 pointRGF19_wrap<-right_join(GApoint,RGFfil_spec_19) 
+
+RGF_point_allyears<-left_join(CY_point,pointRGF19_wrap) #add in all years
 
 pointRGF19_wrap %>% saveRDS(here::here("data", "processed_data", "Case_GA_Centroids.rds"))
 
-GAspecyear19<- ggplot() + geom_sf(data=Georgia_coorod, lwd=0.1, aes(geometry=geom)) +  geom_point(data = pointRGF19_wrap, aes(x = long, y = lat, color= Species), alpha = 0.5, size=0.8,  position = position_jitter(width=0.05,height=0.05 ), na.rm = T) + scale_colour_discrete( na.translate=F ) +facet_wrap(~CollectionYear) + theme_map() + theme(legend.position="right")
+
+#plot racc and GF cases by county in GA per year
+GAspecyear19<- ggplot() + geom_sf(data=Georgia_coorod, lwd=0.1, fill="white" , aes(geometry=geom)) +  geom_point(data = RGF_point_allyears, aes(x = long, y = lat, color= Species), alpha = 0.5, size=0.8,  position = position_jitter(width=0.05,height=0.05 ), na.rm = T) + scale_colour_discrete( na.translate=F ) +facet_wrap(~CollectionYear) + theme_map() + theme(legend.position="right")
 GAspecyear19
 
 ggsave(here::here("results", "Figures_new", "GAspecyear19.png"),plot = GAspecyear19, width = 8, height = 8)
 
 ```
 ```{r}
+
+#GF and racc cases per year on one map
 npointRGF19<-pointRGF19
 npointRGF19$CollectionYear%<>%as.character()%>%as.numeric()
 
@@ -344,6 +375,8 @@ ggsave(here::here("results", "Figures_new", "presenceSF_County19.png"),plot = pr
 
 ```
 ```{r}
+
+#filter for GA so presence of CDV in raccon and Gf in GA counties
 GA_presence_19 <- subset(sdf, State == "Georgia") 
 
 GApresenceSF_County19 <-   ggplot()  +geom_sf(data=GA_presence_19,  aes(geometry=geom, fill=Presence))  +  scale_fill_manual(values = c('white', 'turquoise4'))
@@ -361,14 +394,10 @@ ggsave(here::here("results", "Figures_new", "GApresenceSF_County19.png"),plot = 
 # CDV_Clean19$CollectionYear%<>%as.factor()
 # 
 # CDV19_fi<-  subset(CDV_Clean19, Species %in% c("Raccoon", "Gray Fox") & State=="Georgia")
-County_year<- as.data.frame(table(CDV19_fi$County, CDV19_fi$CollectionYear))
-colnames(County_year)[1] <- "County"
-colnames(County_year)[2] <- "Year"
 
 
 
-
-
+#take tabel of county cases in GA and score True or false for presence if >0 cases 
 
 GA_County_year<-right_join(Georgia_coorod, County_year)
 
@@ -391,7 +420,7 @@ ggsave(here::here("results", "Figures_new", "GA_Presence_year19.png"),plot = GA_
 
 
 ```{r}
-
+#plot absolute number of cases oin each county per year
 
 GA_cases_year19<-  ggplot() + 
 geom_sf(data=Georgia_coorod, aes(geometry=geom), fill="white")+  geom_sf(data = GA_County_year, aes(geometry=geom, fill =Freq)) +
@@ -408,6 +437,8 @@ ggsave(here::here("results", "Figures_new", "County_Wrap_casesYear19.png"),plot 
 
 
 ```{r}
+
+#split by raccoon and GF so that thr cases per county are split by species
 County_Species<- as.data.frame(table(CDV19_fi$County, CDV19_fi$Species))
 colnames(County_Species)[1]<-"County"
 colnames(County_Species)[2]<-"Species"
@@ -424,19 +455,19 @@ ggsave(here::here("results", "Figures_new", "GA_cases_Species19.png"),plot = GA_
 ```
 
 ```{r}
-
+#table with coutny species and year
 County_year_split<- as.data.frame(table(CDV19_fi$County, CDV19_fi$Species, CDV19_fi$CollectionYear))
 colnames(County_year_split)[1]<-"County"
 colnames(County_year_split)[2]<-"Species"
 colnames(County_year_split)[3]<-"Year"
 County_year_split_map<-right_join(Georgia_coorod, County_year_split)
-  
+  #slit into raccoon and Gf to look at cases per county per year seperately
 RMY <- subset(County_year_split_map, Species %in% "Raccoon")
 GFMY<-subset(County_year_split_map, Species %in% "Gray Fox")
 ```
 
 ```{r}
-
+#plot wrapped map of Raccoon cases
 GARac_cases_year19<-  ggplot() + 
 geom_sf(data=Georgia_coorod, aes(geometry=geom), fill="white")+  geom_sf(data = RMY, aes(geometry=geom, fill =Freq)) +
   labs(fill= "Raccoon cases per year") +  scale_fill_gradient(high = "purple", low="white", na.value="white", trans = "log10") + theme_map() + facet_wrap(~Year) + theme(legend.position="right")
@@ -447,7 +478,7 @@ ggsave(here::here("results", "Figures_new", "GARac_cases_year19.png"),plot = GAR
 
 ```
 ```{r}
-
+#plot wrapped mapmof GF cases
 GAGF_cases_year19<-  ggplot() + 
 geom_sf(data=Georgia_coorod, aes(geometry=geom), fill="white")+  geom_sf(data = GFMY, aes(geometry=geom, fill =Freq)) +
   labs(fill= "Raccoon cases per year") +  scale_fill_gradient(high = "purple", low="white", na.value="white", trans = "log10") + theme_map() + facet_wrap(~Year) + theme(legend.position="right")
@@ -462,6 +493,7 @@ ggsave(here::here("results", "Figures_new", "GAGF_cases_year19.png"),plot = GAGF
 
 
 ```{r}
+#GA/rac GF cases plus coordinate data
 
 Cases_co_ord<-left_join(CDV19_fi, Georgia_coorod)
 
@@ -479,14 +511,14 @@ Case_density19
 ```
 
 
-#do i need this elsewhere?
+
 
 <!-- #returning to the north-south issue, as georgia has distinct geographical areas, mountain north, piedmont plateau and then coastal plain in the south, lets divide are data using twiggs county as the state centre -->
 <!-- GA_centroid[grep("Twiggs", GA_centroid$County), ] -->
 
 <!-- NorthGA <- centrLL %>% filter(lat>=32.67328) -->
 <!-- SouthGA <- centrLL %>% filter(lat<32.67328) -->
-7520
+
 ```{r}
 #pull census data to use population density for mapping
 Raw_pop_GA <- read_csv(here::here("data", "raw_data", "2013_GAcensus_data.csv"))
@@ -580,8 +612,6 @@ logdensity_points2
 ggsave(here::here("results", "Figures_new", "logPop_Density_cases19.png"), plot = logdensity_points2)
 ```
 
-####75202
-
 
 
 ```{r}
@@ -654,7 +684,7 @@ ggsave(here::here("results", "Figures_new", "Logpop_logcases.png"), plot= Logpop
 #Wrap by species
 Species_density<-left_join(County_Species, GA_Pop_Den) %>% replace_with_na(replace = list(Freq = 0)) %>% dplyr::mutate(Cases_per_area= Freq/Land_Area_sqm)
 
-
+Species_density_zero<-left_join(County_Species, GA_Pop_Den)%>% dplyr::mutate(Cases_per_area= Freq/Land_Area_sqm) ###test with zeros
 
 Spec_Freq_pop<-ggplot(Species_density, aes(log10(Pop_Density), Freq, fill = Species, color = Species, group = Species)) + geom_point()  
 
@@ -677,9 +707,20 @@ logSpec_dens_logpop_splitline
 #no clear difference in Species distribution of cases per pop density
 
 
+Spec_dens_logpop_splitline<-ggplot(Species_density, aes(log10(Pop_Density), Cases_per_area, fill = Species, color = Species, group = Species)) + geom_point(aes(shape=Species))+geom_smooth() +geom_smooth(inherit.aes = F,se=F, aes(log10(Pop_Density), Cases_per_area))+ labs(x="log10(Population Density per sqm", y="log10(Cases per sqm)")
+
+Spec_dens_logpop_splitline
+
 Spec_dens_logpop<-ggplot(Species_density, aes(log10(Pop_Density), Cases_per_area, fill = Species, color = Species, group = Species)) + geom_point(aes(shape=Species))+geom_smooth(inherit.aes = F, aes(log10(Pop_Density), Cases_per_area)) + labs(x="log10(Population Density per sqm", y="Cases per sqm")
 
 Spec_dens_logpop
+
+
+Spec_dens_logpopz<-ggplot(Species_density_zero, aes(log10(Pop_Density), Cases_per_area, fill = Species, color = Species, group = Species)) + geom_point(aes(shape=Species))+geom_smooth(inherit.aes = F, aes(log10(Pop_Density), Cases_per_area)) + labs(x="log10(Population Density per sqm", y="Cases per sqm")
+
+Spec_dens_logpopz
+
+grid.arrange(Spec_dens_logpopz, Spec_dens_logpop)
 ```
 
 ```{r}
@@ -728,9 +769,9 @@ County_Dens_freq%<>%mutate(Cases_year_area=Freq/Land_Area_Sqm)
 #subset for only great than 0
 subCounty_Dens_freq<-subset(County_Dens_freq, Cases_year_area>0)
 
-Spec_dens_logpop<-ggplot(subCounty_Dens_freq, aes(log10(Pop_density), Cases_year_area, color = Species,  group=Species)) + geom_point(aes(shape=Species))+geom_smooth() + labs(title = "Population density of conties reporting CDv cases in a given year and the number of cases per square mile in the county in Georgia", x="log10(Human Population Density per sqm)", y="Cases per sqm")  + scale_color_manual(values = c("blue", "darkgreen"), na.translate=F)
+ySpec_dens_logpop<-ggplot(subCounty_Dens_freq, aes(log10(Pop_density), Cases_year_area, color = Species,  group=Species)) + geom_point(aes(shape=Species))+geom_smooth() + labs(title = "Population density of counties reporting CDV cases in a given year and the number of cases per square mile in the county in Georgia", x="log10(Human Population Density per sqm)", y="Cases per sqm")  + scale_color_manual(values = c("blue", "darkgreen"), na.translate=F)
 
-Spec_dens_logpop
+ySpec_dens_logpop
 
 
 
@@ -754,15 +795,16 @@ summary(gf_dens_Lm)#summary of model
 
 
 ```{r}
+#calculate avergae population density per county over the time frame
 Av_County_density<-New_census%>%ungroup()%>% group_by(County) %>% summarise(Mean_Pop_density=mean(Pop_density))
-
+#replot usimg avergae density
 
 
 Av_pop_spec<-left_join(pointRGF19,Av_County_density)
 
-Av_pop_den_cases<-ggplot(Av_pop_spec) +geom_sf(aes(geometry=geom, fill=Mean_Pop_density)) + scale_fill_gradient(low = "beige", high = "chocolate4", trans= "log10") +geom_point(data =Av_pop_spec, aes(x = long, y = lat, color= Species), alpha = 0.5, position = position_jitter(width=0.05,height=0.05 ), na.rm = T) + scale_colour_discrete( na.translate=F )
+Av_pop_den_cases<-ggplot(Av_pop_spec) +geom_sf(aes(geometry=geom, fill=Mean_Pop_density)) +theme_map() + scale_fill_gradient(low = "beige", high = "chocolate4", trans= "log10", name="Human population density per square mile") +geom_point(data =Av_pop_spec, aes(x = long, y = lat, color= Species), alpha = 0.5, position = position_jitter(width=0.05,height=0.05 ), na.rm = T) + scale_colour_discrete( na.translate=F )+ theme(legend.position="right")
 
-Av_pop_den_cases
+                                                                                            Av_pop_den_cases
 
 ggsave(here::here("results", "Figures_new", "logavPop_Density_cases7519.png"), plot = Av_pop_den_cases)
 
@@ -777,13 +819,47 @@ areaga<-GA_Pop_Den[,c(1,2)]
 
 av_pop_cases<-left_join(av_pop_cases1,areaga)
 
-av_pop_cases%<>% dplyr::mutate(Cases_per_area= Freq/Land_Area_sqm)
+av_pop_cases%<>%replace_with_na(replace = list(Freq = 0))%>%dplyr::mutate(Cases_per_area= Freq/Land_Area_sqm)
 
-avLogpopdens_cases<- ggplot(av_pop_cases , aes(log10(Mean_Pop_density), Cases_per_area)) +geom_point() + geom_smooth() + labs(x="log10(Population Density per sqm)", y="Cases per sqm")
-avLogpopdens_cases
+avLogpopdens_cases<- ggplot(av_pop_cases , aes(log10(Mean_Pop_density), Cases_per_area)) +geom_point() + geom_smooth() + labs(x="log10(Population Density per sqm)", y="Cases per sqm")#+ylim(0, 0.12)
+
+avLogpopdens_cases 
 
 ggsave(here::here("results", "Figures_new", "averagepopdens_logcases.png"), plot=avLogpopdens_cases)
 
 
 
+```
+```{r}
+County_Species$County%<>%as.character()
+county_split<-left_join(County_Species, areaga)
+
+avSpecies_density<-left_join(county_split, Av_County_density) %>% replace_with_na(replace = list(Freq = 0)) %>% dplyr::mutate(Cases_per_area= Freq/Land_Area_sqm)
+
+avSpec_dens_logpop<-ggplot(avSpecies_density, aes(log10(Mean_Pop_density), Cases_per_area, fill = Species, color = Species, group = Species)) + geom_point(aes(shape=Species))+geom_smooth(inherit.aes = F, aes(log10(Mean_Pop_density), Cases_per_area)) + labs(x="log10(Population Density per sqm", y="Cases per sqm")#+ylim(0, 0.1)
+
+#there is one major outlier which i've trimmed
+avSpec_dens_logpop 
+
+ggsave(here::here("results", "Figures_new", "av_dens_spec_1line.png"), plot = avSpec_dens_logpop)
+
+spavSpec_dens_logpop<-ggplot(avSpecies_density, aes(log10(Mean_Pop_density), Cases_per_area, fill = Species, color = Species, group = Species)) + geom_point(aes(shape=Species))+geom_smooth() + theme_minimal() +labs(x="Population density per square mile of county, transformed to log base 10", y="Cases per square mile")+coord_fixed(ratio=10)#+ylim(0, 0.1)
+
+#there is one major outlier trimmed, the outlier is clarke county, which is probably an inflated number as its where scwds is
+spavSpec_dens_logpop  
+ggsave(here::here("results", "Figures_new", "av_dens_spec_split_line.png"), plot = spavSpec_dens_logpop)
+
+# asdfgh<-avSpec_dens_logpop +theme(legend.position = "none")
+# 
+# grid.arrange(asdfgh, spavSpec_dens_logpop, nrow=1)
+
+ lm(log10(Mean_Pop_density)~ Cases_per_area,  data = avSpecies_density)
+```
+
+
+
+```{r}
+hnm<-Cases_per_area_PopD_NA%>%filter(Freq>0)
+
+ggplot(hnm, aes(log10(Pop_Density)))+geom_histogram()
 ```

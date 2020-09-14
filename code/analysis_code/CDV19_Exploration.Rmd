@@ -46,6 +46,8 @@ library(formattable)
 
 library(magrittr)
 library(ggsci)
+library(kableExtra)
+
 ```
 
 
@@ -65,6 +67,26 @@ glimpse(CDV19_clean)
 vis_miss(CDV19_clean)
 
 
+Spec_state<-addmargins(table(fct_infreq(CDV19_clean$State), fct_infreq(CDV19_clean$Species)))
+#save RDS
+Spec_state%>% saveRDS(here::here("results", "Tables","Spec_State_table.rds"))
+
+Kab_spec_stat<-kable(Spec_state)%>%
+  column_spec(1, color="black", bold=T, width_min = "3cm")%>%
+column_spec(11, background = "#E1E1E1")%>%
+  row_spec(18, background = "#E1E1E1")%>%
+  row_spec(0, angle = 330, color="black", bold=T, font_size = 10)%>%
+  row_spec(1:18,font_size = 10)%>%
+  column_spec(2:11, width_min = "1.6cm", color = "black")
+
+
+ Kab_spec_stat
+ save_kable(x=Kab_spec_stat, file="Spec_State_table.png")
+# 
+# 
+# write.xlsx(Spec_state, "c:/mydata.xlsx") 
+# 
+# write_excel_csv(Spec_state, path = (here::here("results", "Tables","Spec_State_table.csv")))
 
 ```
 ```{r}
@@ -123,6 +145,19 @@ year_mean<-as.data.frame(table(CDV19_clean$CollectionYear))
 print(sum(year_mean$Freq))
 print(mean(year_mean$Freq))#mean for total cases per year
 print(sd(year_mean$Freq))#sd for all years
+
+colnames(year_mean)[1]<-"CollectionYear"
+
+year_mean$CollectionYear%<>%as.character()%>%as.numeric()
+
+allcasesyears<-ggplot(year_mean, aes(x=CollectionYear, y=Freq, fill="royalblue"))+geom_histogram(stat = "identity") +theme_minimal()+theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 10), legend.position = "none") +labs(x="Collection Year", y= "No. of Cases")+scale_fill_manual(values = "royalblue")
+allcasesyears
+
+
+ggsave(here::here("results", "Figures_new", "allcasesallyears.png"), plot=allcasesyears)
+
+# 
+# ggplot(CDV19_clean, aes(CollectionYear))+geom_bar(aes(fill=fct_rev(fct_infreq(Species))))+scale_fill_npg()
 ```
 ```{r}
 library(RColorBrewer)
@@ -135,6 +170,7 @@ Species_by_state19
 ggsave(here::here("results", "Figures_new","Species_by_state19.png"), plot = Species_by_state19 )
 ```
 ```{r}
+#view cases inRacc and GF in GA per year
 CDV19_clean$Species%<>%as.character()
 raccoongrayfox19 <- subset(CDV19_clean, Species %in% c("Raccoon", "Gray Fox"))
 RGF19 <- with(raccoongrayfox19, table(Species, CollectionYear))
@@ -165,6 +201,8 @@ ggsave(here::here("results", "Figures_new", "State_freq19.png"), plot = State_fr
 
 ```
 ```{r}
+# Spec_State<-table(fct_infreq(CDV19_clean$State), fct_infreq(CDV19_clean$Species))
+
 #plot number of cases per state for each species
 State_wrap_species19 <- ggplot(CDV19_clean, aes(fct_infreq(State), fill=State, color=State)) +geom_bar() + theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 8), legend.position = "none") + 
   facet_wrap(~fct_infreq(Species))
@@ -261,6 +299,19 @@ ggsave(here::here("results", "Figures_new",  "SP_Fr_Yr_WrapState19.png"), plot =
 All_Cases_Year19<- ggplot(CDV19_clean, aes(CollectionYear)) + geom_bar() +labs(x= "Collection Year, 1975-2019", y= "No. of Cases")
 All_Cases_Year19
 ggsave(here::here("results", "Figures_new", "All_Cases_Year19.png"), plot = All_Cases_Year19)
+
+
+
+allyear_mean1<-as.data.frame(table(CDV19_clean$CollectionYear))
+colnames(allyear_mean1)[1]<-"CollectionYear"
+allyear_mean1$CollectionYear%<>%as.character()%>%as.integer()
+
+
+
+print(sum(allyear_mean1$Freq))
+print(mean(allyear_mean1$Freq))#mean for total cases per year
+print(sd(allyear_mean1$Freq))#sd for all years
+
 ```
 ```{r}
 #From here lets just focus on Georgia, Foxes, Raccoons, 
@@ -307,10 +358,11 @@ f$CollectionYear%<>%as.character()%>%as.numeric()
 
 RGF19GAu<-left_join(f, RGF19GA)
 RGF19GAu[is.na(RGF19GAu)] = 0
+
 #writee this all in nice above
 RacFox19GA<- ggplot(RGF19GAu, aes(CollectionYear, Freq, fill = Species, color = Species, group = Species))  + 
-  geom_point() +geom_line() + 
-  theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 6)) +labs(x="Collection Year, 1975-2019", y= "No. of Cases")
+  geom_point() +geom_line() + theme_minimal()+
+  theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 10)) +labs(x="Collection Year", y= "No. of Cases")
 RacFox19GA
 ggsave(here::here("results", "Figures_new", "RacFox_year19_GA.png"), plot = RacFox19GA)
 
@@ -418,7 +470,6 @@ chiage19
 
 #in this case the chisquared is greater than the critical value (5.99), but age is so subjective in this case it would need to be much higher 
 ```
-#######
 
 ```{r}
 library(tidycomm)
@@ -450,8 +501,12 @@ round(contribsex19, 3)
 na.omit(RGFSex19) %>% crosstab(Species, Age, chi_square =  TRUE)
 
 ```
+```{r}
+ggplot(CDV19_filter1, aes(Month))+ geom_bar(aes(group= "Year",fill="Year"))+facet_wrap(~Year)
 
-#do month species stuff#######
+
+```
+
 
 ```{r}
 #split into breeding season
@@ -460,13 +515,13 @@ na.omit(RGFSex19) %>% crosstab(Species, Age, chi_square =  TRUE)
 
 glimpse(CDV19_filter1)
 
-CDVGA_Breeding<- as.data.frame(CDV19_filter1) %>% dplyr:: mutate(Season= Month)  %>% dplyr::mutate(Season= recode(Season, "February"="Breeding", "March"= "Breeding", "April"="Breeding", "May"= "Lactation", "June"="Lactation", "July"="Lactation", "August"= "Non-Breeding", "September"= "Non-Breeding","October" ="Non-Breeding", "November"= "Non-Breeding", "December" = "Non-Breeding", "January"= "Non-Breeding" ))
+CDVGA_Breeding<- as.data.frame(CDV19_filter1) %>% dplyr:: mutate(Season= Month)  %>% dplyr::mutate(Season= recode(Season, "February"="Breeding", "March"= "Breeding", "April"="Lactation", "May"= "Lactation", "June"="Lactation", "July"="Non-Breeding", "August"= "Non-Breeding", "September"= "Non-Breeding","October" ="Non-Breeding", "November"= "Non-Breeding", "December" = "Non-Breeding", "January"= "Breeding" ))
 CDVGA_Breeding$Species%<>%as.character() #recode as harqter, removes emoty facotrs 
 
 
 breeding <- as.data.frame(with(CDVGA_Breeding, table(Season, Species)))
 #adjust for length of seasons
-breedingadj1 <- breeding %>% dplyr :: mutate(lengthSea= c(6,3,3,6,3,3))
+breedingadj1 <- breeding %>% dplyr :: mutate(lengthSea= c(3,3,6,3,3,6))
  breedingadj2 <- breedingadj1 %>% dplyr:: mutate(SeaAdj = (Freq/lengthSea))
 
 
@@ -478,11 +533,18 @@ breedingplot19
 ggsave(here::here("results", "Figures_new", "breeding_plot_19.png"), plot=breedingplot19)
 
 
-breed_bar<- ggplot(breedingadj2, aes(Season, SeaAdj, fill = Species, color = Species, group = Species)) + geom_bar(stat="identity",position = "dodge") + labs(y="Cases per season/season length")
-
+breed_bar<- ggplot(breedingadj2, aes(Season, SeaAdj, fill = Species, color = Species, group = Species)) + geom_bar(stat="identity",position = "dodge") + labs(y="Cases per Month", x="Reproductive Season")+ theme_minimal() +theme(axis.text.x = element_text(size = 10))
 breed_bar
+# breed_bar +  geom_errorbar( aes(x=Season, ymin=SeaAdj-sd(SeaAdj), ymax=SeaAdj+sd(SeaAdj)))
 
 ggsave(here::here("results", "Figures_new", "breeding_bar_19.png"), plot=breed_bar)
+
+bb<-breedingadj2[,c(1,2,5)]
+
+bb%>%
+  group_by(Season, Species)%>%
+    spread(Species, SeaAdj)%>%
+  kable()
 
 ```
 ```{r}
@@ -493,3 +555,152 @@ GF_Sexseason_Mosaic <- ggplot(CDVGA_Breeding) +geom_mosaic(aes(x=product(Sex, Se
 GF_Sexseason_Mosaic
 # not really
 ```
+
+```{r}
+
+ season_year<-table(CDVGA_Breeding$CollectionYear, CDVGA_Breeding$Season)
+#split into gf and Rac
+rac_breeding<-filter(CDVGA_Breeding, Species=="Raccoon")
+gf_breeding<-filter(CDVGA_Breeding, Species=="Gray Fox")
+
+
+rac_season_year<-table(rac_breeding$CollectionYear, rac_breeding$Season) 
+
+gf_season_year<-table(gf_breeding$CollectionYear, gf_breeding$Season)
+
+#mean number of cases in each season over 45 years
+colMeans(season_year)
+ 
+season_year%<>%as.data.frame() %>%mutate(Adj=ifelse(Var2=="Non-Breeding", Freq*1, Freq*2))
+colnames(season_year)[1]<-"Year"
+colnames(season_year)[2]<-"Season" 
+season_year%>%group_by(Season)
+seasonyear_summary<-season_year%>%group_by(Season)%>%summarise(mean=mean(Adj), n=sum(Adj), sd=sd(Adj))
+seasonyear_summary
+
+ggplot(seasonyear_summary, aes(Season, mean))+geom_bar(stat = "identity") + geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd), width=0.2)
+
+xcv<-data.frame(matrix(NA, nrow = 135, ncol = 1))
+xcv[1:45,]<-"Non-Breeding"
+xcv[46:90,]<-"Breeding"
+xcv[91:135,]<-"Lactation"
+fgh<-cbind(seq19, xcv)
+colnames(fgh)[2]<-"Season"
+colnames(fgh)[1]<-"Year"
+fgh$Season%<>%as.factor()
+
+season_year$Year%<>%as.character()%>%as.numeric()
+everyyear_season<-left_join(fgh, season_year)
+everyyear_season[is.na(everyyear_season)] = 0
+
+ggplot(everyyear_season, aes(Year, Adj, group=Season, colour=Season, fill=Season))+geom_point()+ geom_line(inherit.aes = T)
+
+ggplot(everyyear_season, aes(Season, Adj))+geom_boxplot()
+
+```
+
+
+
+```{r}
+#glm using adjusted cases per season and seaon (adjusted to account for non-breeding being twice as long)
+
+ glm(Adj~Season, family = poisson, data = everyyear_season)
+
+print(summary( glm(Adj~Season, family = poisson, data = season_year)))
+
+print(summary( glm(Adj~Season, family = poisson, data = everyyear_season)))
+#for both species
+
+# 
+# ggplot(data = everyyear_season, aes(Season, Freq)) +geom_bar(x=Season,y=mean(Freq), stat = "identity")
+```
+```{r}
+#repeat for species sepreately
+
+rac_season_year%<>%as.data.frame() %>%mutate(Adj=ifelse(Var2=="Non-Breeding", Freq*1, Freq*2))
+colnames(rac_season_year)[1]<-"Year"
+colnames(rac_season_year)[2]<-"Season" 
+
+rac_season_year$Year%<>%as.character()%>%as.numeric()
+rac_everyyear_season<-left_join(fgh, rac_season_year)
+rac_everyyear_season[is.na(rac_everyyear_season)] = 0
+
+print(summary( glm(Adj~Season, family = poisson, data = rac_season_year)))
+
+print(summary( glm(Adj~Season, family = poisson, data = rac_everyyear_season)))
+
+```
+```{r}
+#repeat for species sepreately
+
+gf_season_year%<>%as.data.frame() %>%mutate(Adj=ifelse(Var2=="Non-Breeding", Freq*1, Freq*2))
+colnames(gf_season_year)[1]<-"Year"
+colnames(gf_season_year)[2]<-"Season" 
+
+gf_season_year$Year%<>%as.character()%>%as.numeric()
+gf_everyyear_season<-left_join(fgh, gf_season_year)
+gf_everyyear_season[is.na(gf_everyyear_season)] = 0
+
+print(summary( glm(Adj~Season, family = poisson, data =gf_season_year)))
+
+print(summary( glm(Adj~Season, family = poisson, data = gf_everyyear_season)))
+
+```
+```{r}
+ season_all<-table(CDVGA_Breeding$Season)
+rac_season_all<-table(rac_breeding$Season)
+
+gf_season_all<-table(gf_breeding$Season)
+
+
+chisq.test(season_all, p=c(0.5,0.25, 0.25)) #chisq test for season, if the cases are evenly distributed would expect have in non-breeding, and a qiuarter in each of the other 2
+chisq.test(rac_season_all, p=c(0.5,0.25, 0.25))
+chisq.test(gf_season_all, p=c(0.5,0.25, 0.25))
+```
+
+```{r} 
+
+#repeat all for split by months seperately
+month_year<-table(CDV19_filter1$CollectionYear, CDV19_filter1$Month)
+
+month_year%<>%as.data.frame()
+colnames(month_year)[1]<-"Year"
+colnames(month_year)[2]<-"Month" 
+
+
+mon_seq<-data.frame(matrix(NA, nrow = 540, ncol = 1))
+mon_seq[1:45,]<-"January"
+mon_seq[46:90,]<-"February"
+mon_seq[91:135,]<-"March"
+mon_seq[136:180,]<-"April"
+mon_seq[181:225,]<-"May"
+mon_seq[226:270,]<-"June"
+mon_seq[271:315,]<-"July"
+mon_seq[316:360,]<-"August"
+mon_seq[361:405,]<-"September"
+mon_seq[406:450,]<-"October"
+mon_seq[451:495,]<-"November"
+mon_seq[496:540,]<-"December"
+
+amseq<-cbind(seq19, mon_seq)
+colnames(amseq)[2]<-"Month"
+colnames(amseq)[1]<-"Year"
+amseq$Month%<>%as.factor()
+
+# rac_breeding<-filter(CDVGA_Breeding, Species=="Raccoon")
+# gf_breeding<-filter(CDVGA_Breeding, Species=="Gray Fox")
+# 
+# 
+# rac_season_year<-table(rac_breeding$CollectionYear, rac_breeding$Season) 
+# 
+# gf_season_year<-table(gf_breeding$CollectionYear, gf_breeding$Season)
+
+month_year$Year%<>%as.character()%>%as.numeric()
+everyyear_month<-left_join(amseq, month_year)
+everyyear_month[is.na(everyyear_month)] = 0
+
+
+print(summary( glm(Freq~Month, family = poisson, data =everyyear_month)))
+
+```
+

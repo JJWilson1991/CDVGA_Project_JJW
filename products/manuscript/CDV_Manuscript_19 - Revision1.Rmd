@@ -68,7 +68,7 @@ Data was recorded from Canine distemper positive cases submitted to the Southeas
 
 Census and county land area data for Georgia was accessed and downloaded from [census.gov](https://census.gov/).
 
-```{r, resultfigure2,  fig.cap='**Figure 3:Number of CDV cases per species submitted to SCWDS, 1975-2013**', echo=FALSE, warning=FALSE, message=FALSE}
+```{r, resultfigure3,  fig.cap='**Figure 3:Number of CDV cases per species submitted to SCWDS, 1975-2013**', echo=FALSE, warning=FALSE, message=FALSE}
 knitr::include_graphics(here::here("results", "Figures_new", "Species_freq19.png"))
 ```
 
@@ -326,6 +326,10 @@ More systematic data collection would allow for more in depth analysis of the sp
 ## Conclusions
 The results from this analysis suggest that there are temporal and spatial patterns of CDV cases within the two most commonly infected wild carnivores in Georgia; raccoons and gray foxes. Time series analysis and ARIMA model construction suggests that numbers of raccoon cases can be predicted using data on the number of gray foxes cases from the previous two months. There appears to be temporal trends in cases in both species, with cases more likely to occur during the breeding season. Spatially there tends to be clustering of cases of both species within the same areas, with cases appearing more likely to occur in areas of medium human population density with fewer cases in very densely and sparsely populated areas. Ultimately, there are enough potential relationships suggested from this passively collected data which would support a worthwhile study, with compressive sampling of wild carnivores over time and space to try to elucidate spillover trends between species, particularly in suburban areas.
 
+[@Bianco2020]
+[@census]
+[@RStudio2019]
+[@Williams2001]
 
 
 

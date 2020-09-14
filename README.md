@@ -23,9 +23,12 @@ Run the markdown files in the following order to reproduce project:
 1.	code -> processing_code 
 Run the file “CDV19”, this will load and clean the raw data and save the processed data into the “data/processed_data folder”.
 
-2.	code -> analysis_code
+2.code -> processing_code 
+Run the file “Census_all”, this will load and clean the raw Census data and save the processed data into the “data/processed_data folder”.
+
+3.	code -> analysis_code
 Sequentially run the files; “CDV19_Exploration” -> ”NewMapping” -> ”Spatial_Analysis_19” -> ”Time_Series19”. These will reproduce the analyses conducted in the project and save the various results figures into the “results” folder.
 
-3.	products -> manuscript
+4.	products -> manuscript
 Run the file “CDV_Manuscript_19.rmd” to reproduce the manuscript as a Word document. Run the “Supplemental_Materials_19.rmd” file to reproduce the supplemental figures not included in the main manuscript.
 

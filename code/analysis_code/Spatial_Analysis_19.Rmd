@@ -6,7 +6,6 @@ output: html_document
 ---
 
 ```{r}
-
 library(spatstat)
 library(ggplot2)
 library(here)
@@ -14,6 +13,8 @@ library(dplyr)
 library(gridExtra)
 library(ggmosaic)
 library(corrplot)
+library(sf)
+
 GA_Case_Centroids <- readRDS(here("data", "processed_data", "Case_GA_Centroids.rds"))
 GA_Case_Centroids
 ```
@@ -127,18 +128,19 @@ plot(Kest(ripPointmap))
 
 Ripleys_K<- envelope(ripPointmap)
 
-Ripleys_Cases <- plot(Ripleys_K)
+Ripleys_Cases <- plot(Ripleys_K,main=list("Ripley's K-function for CDV cases in raccoons and gray foxes in Georgia", cex=0.8))
 
 png(here::here("results", "Figures_new", "RipK19.png"))
-plot(Ripleys_K)
+plot(Ripleys_K,main=list("Ripley's K-function for CDV cases in raccoons and gray foxes in Georgia", cex=0.8))
 dev.off()
 
 
+ 
 ```
 
 ```{r}
 #Check for Raccoon and Gray Fox serpeately
-Rac_Rip <- GA_Case_Centroids %>% dplyr::filter(Species=="Raccoon")
+Rac_Rip <-   GA_Case_Centroids %>% dplyr::filter(Species=="Raccoon")
 Rac_Rip_map<-ppp(x=Rac_Rip$long,y=Rac_Rip$lat, window= riprange)
 plot(Rac_Rip_map)
 
