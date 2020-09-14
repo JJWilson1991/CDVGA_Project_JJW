@@ -1,5 +1,5 @@
 ---
-title: "Temporal and Spatial Patterns in Distemper Virus Cases Reported to SCWDS, 1975-2019"
+title: "Temporal and Spatial Patterns in Distemper Virus Carnivore Cases Diagnosed at the Southeastern Cooperative Wildlife Disease Study (SCWDS), 1975-2019"
 author: "Jonathan Wilson"
 date: "`r Sys.Date()`"
 output:
@@ -17,310 +17,159 @@ bibliography: ../CDV_ref.bib
  
 ```{r, echo=FALSE, warning=FALSE, message=FALSE}
 library(here)
+library(tidyverse)
+library(kableExtra)
 ```
 
 
-## Summary
-Canine distemper is an important infectious disease that affects many mammal species.  There is evidence of CDV infection in all terrestrial carnivores families and some marine carnivore families. CDV has been detected in wild animal species such as the African lion and Amur tigers and has been responsible for substantial population declines of the animals during outbreaks.
-Analysis was conducted on passive surveillance necropsy diagnosed wild animal cases presented to the South-Eastern Cooperative Wildlife Disease Study between 1975 and 2013. These analyses demonstrated the ability to use an ARIMA model to predict the numbers of raccoon cases in a given month using data on the number of gray foxes cases from the previous three months. There also appears to be temporal trends in cases in both species, with cases more likely to occur during the breeding season. Spatially there tends to be clustering of cases of both species within the same areas, with cases appearing more likely to occur in area of medium human population density with fewer cases in very densely and sparsely populated areas, which may correspond to suburban areas where there is likely more contact with domestic dogs.
+## Abstract
+Canine distemper is an important infectious disease that can affect many mammal species, particularly carnivores, and is responsible for substantial carnivore population declines. Analysis was conducted on passive surveillance diagnostic data of canine distemper (CDV) positive wild mammal cases that were submitted to the Southeastern Cooperative Wildlife Disease Study (SCWDS), Athens, GA, USA between January 1975 and December 2019. Overall, 964 cases were submitted to SCWDS from 17 states that were identified as CDV positive, comprising raccoons (n=646), gray foxes (n=254), striped skunks (n=33), coyotes (n=18), red foxes (n=4), gray wolves (n=3), black bears (n=3), two mink, and one long-tailed weasel. Raccoon and gray fox case data from the state of Georgia (n=441) were selected for further analysis based on these forming the considerably greater part of the data set.  An auto regressive integrated moving average model used the numbers of gray fox CDV cases from the previous two months and of raccoon cases in the current month to predict the numbers of gray fox cases in the current month. There were temporal trends in CDV cases for both species, with cases more likely to occur during the breeding season. Spatial clustering of cases was more likely to occur in areas of medium to high human population density and fewer cases in both the most densely populated and sparsely populated areas. This pattern was most prominent for raccoons, which may correspond to high transmission rates in suburban areas, where population densities are highest, possibly due to a combination of suitable habitat and supplemental resources.  
 
 
 
 
 ## Introduction 
-Canine distemper is an important infectious disease that affects many mammal species. It is recognized as having the second highest case fatality rate of canine diseases , behind rabies [@Swango1995].  The causative agent, canine distemper virus (CDV) is an enveloped, single stranded, negative sense RNA virus in the Morbillivirus family. The major route of transmission is through aerosolization of virus containing respiratory exudate [@Deem2000]. CDV is highly infectious and virus may be shed for 60-90 days post infection [@Greene1990].
-
-Distemper pathogenesis is well characterized in domestic dogs, with infections in wild species following a similar pattern. There is often a systemic infection with viremia and variable central nervous system involvement, dependent on the host's immune response. Animals with a strong immune response will clear the virus and remain asymptomatic. A weak response will result in systemic disease and severe morbidity, often ultimately being fatal. An intermediate or delayed response results in delayed neurological signs and hyperkeratotic footpad lesions- the origin of the colloquial term “hard pad disease” [@Greene1990].  The clinical signs of CDV infection are influenced by multiple factors, including; strain virulence, environmental conditions, host age and immune status and the animal species infected [@Deem2000].
-
-CDV results in a highly immunizing, acute infection. This type of pathogen normally requires high densities and large populations of hosts for long‐term persistence. CDV has been shown to be able to survive in wild carnivores due to multihost transmission, which overcomes the obstacle of population size and density within species [@Almberg2010]. There is evidence of CDV infection in all terrestrial carnivores families and some marine carnivore families [@Deem2000]. Morbidity and mortality varies depending on the species but closely resembles rabies in wild carnivores [@Hoff1974]. The Mustelidae family is among the species with the highest fatality rate, while the domestic dog can be a asymptomatic carrier [@Deem2000].  CDV has been detected in wild animal species such as the African lion and Amur tigers and has been responsible for substantial population declines of the animals during outbreaks [@Roelke-Parker1996;  @Seimon2013].
-
-CDV is likely to have broad consequences for the health of both free-living and domestic carnivore species  [@Montali1987].  CDV's similarity to the measles virus suggest a shared ancestor and a zoonotic potential for CDV.
-
-
-
-### Canine Distemper Virus in the U.S.
-CDV is seen most commonly in domestic cats and dogs, but frequent cross species transmission does occur in non-domestic carnivores [@Greene1990].  Severity in domestic dogs depends on the animals’ immune status and age in addition to strain virulence [@Beineke2015].   In the US, raccoons (*Procyon lotor*), foxes (*Vulpes vulpes* and *Urocyon cinereoargenteus*), coyotes (*Canis latrans*), wolves (*Canis lupus*) , skunks (*Mephitis mephitis*), badgers (*Taxidea taxus*), mink (*Mustela vison*) and ferrets (*Mustelidae spp.*) are among the species susceptible to CDV infection[ @Kapil2008]. In domestic ferrets mortality rates can reach 100% [@Deem2000]. CDV has been responsible for population declines of endangered mustelids like the black-footed ferret [@Williams1988]. CDV is also endemic in the eastern U.S. raccoon population. Raccoons are thought to be a reservoir for other wild animals and domestic dogs as well as other species of carnivores [@Roscoe1993]. CDV has been found to persist in areas like Yellow Stone national park, which has a diverse carnivore population. Multiple outbreaks have occurred in the wolf, coyote and cougar populations [@Almberg2009; @Almberg2010]. 
-
-It has been shown that raccoons are able to maintain higher density populations within urban and suburban environments [@Prange2003]. It was also demonstrated that these higher density populations are more likely to suffer mortality due to infectious disease.  As distemper is a density dependent disease, it is likely that this disease incidence is influenced by urban vs rural environments.
-
-Although raccoons are thought to be a major reservoir for CDV, little research has been done to identify the disease dynamics within this population. Available data is sparse, dated and focuses on individual states and discrete sites. CDV has also been shown to be a major cause of disease in the south eastern USS, with 78% of necropsy cases being diagnosed with the disease in one study [@Davidson1992]. The objective of this study is to identify spatial and temporal patterns in CDV cases, in a range of wild mammals, reported to the Southeastern Cooperative Wildlife Disease Study from 1975 to 2013.
-
-
-
-### Description of data and data source
-Data was recorded from Canine distemper positive cases submitted to the Southeastern Cooperative Wildlife Disease Study (SCWDS) between 1975 and 20193. Cases were identified as CDV by fluorescent antibody testing and/or histologic diagnosis of characteristic lesions.  Species, date of submission, county of origin, and sex were noted. A total number of 964 positive cases were submitted from 17 states over the 45-year period. Positive cases were comprised of raccoons (n=646), gray foxes (n=254), striped skunks (n=33), coyotes (n=18), red foxes (n=4), gray wolves (n=3), black bears(n=3) two mink and one long-tailed weasel.
-
-Census and county land area data for Georgia was accessed and downloaded from [census.gov](https://census.gov/).
-
-
+Canine distemper is a significant infectious disease affecting a wide range of wild and domestic mammals, principally carnivores. It has the second highest case fatality rate of canine diseases after rabies [@Swango1995]. The causative agent, Canine morbillivirus (CDV) is an enveloped, single stranded, negative sense RNA virus in the Morbillivirus family. The major route of transmission is through aerosolization of virus from respiratory secretions [@Deem2000]. CDV is a highly infectious virus that may be shed for 60-90 days post infection [@Greene1990]. 
+CDV results in a highly immunizing, acute infection that typically requires high densities and large populations of hosts for long‐term persistence [@Williams2001]. The virus is maintained among wild carnivores by multi-host transmission, which overcomes the obstacles of population size and host density [@Almberg2010]. There is evidence of CDV infection in all terrestrial carnivore families and some marine carnivore families [@Deem2000]. The Mustelidae family is among the species with the highest fatality rate, while the domestic dog (*Canis lupus familiaris*) can be a subclinical carrier [@Deem2000]. CDV has been responsible for substantial population declines in the African lion (*Panthera leo*) [@Roelke-Parker1996] and Amur tigers (*Panthera tigris altaica*) [@Seimon2013]  and the endangered black-footed ferret (*Mustela nigripes*) in the US [@Williams1988].
+In North America, raccoons (*Procyon lotor*), foxes (*Vulpes vulpes* and *Urocyon cinereoargenteus*), coyotes (*Canis latrans*), wolves (*Canis lupus*) , skunks (*Mephitis mephitis*), badgers (*Taxidea taxus*), mink (*Mustela vison*) and ferrets (*Mustelidae spp*) are among the wild species susceptible to CDV infection [@Kapil2008]. CDV is endemic in the eastern U.S. raccoon population and raccoons are thought to be a reservoir for other wild animals and domestic dogs [@Roscoe1993]. CDV is also a major cause of disease among gray foxes in the southeastern US, with 78% of animals undergoing diagnostic evaluation from1972 to 1989 being diagnosed with the disease in one study [@Davidson1992]. CDV has been found to persist in areas like Yellowstone National Park, which has a diverse carnivore population, and has experienced multiple outbreaks in the wolf, coyote, and cougar (*Puma concolor*) populations [@Almberg2009; @Almberg2010]. 
+While there is a large body of work identifying distemper outbreaks in wild carnivores in the US, there has been more limited work on the spatio-temporal dynamics of CDV, particularly in raccoon populations. Further, most studies have been short term and often have focused on the Yellowstone National Park system, which differs from the southeast in a number of ways, including the absence of major urban centers [@Almberg2009; @Almberg2010]. 
+The primary objective of this study was to identify long-term spatial and temporal patterns in CDV cases in wildlife reported to the Southeastern Cooperative Wildlife Disease Study (SCWDS) at the University of Georgia. In addition, we aimed to identify how outbreaks in two different species may be related, as raccoons are thought of the primary wild reservoir, and epizootics in this species may be followed by epizootics in others. Finally, we identified spatial patterns of infection within the southeastern US including potential associations with human activity.
 
 
 
 ## Methods
 
+### Data acquisition and overview 
+We acquired data from wild mammals submitted to SCWDS between 1975 and 2019 that were diagnosed with CDV on postmortem examination. Cases of CDV were identified as CDV positive by fluorescent antibody testing [@Fairchild1971] or immunohistochemistry [@Palmer1990] and had characteristic histopathology (including intranuclear and intracytoplasmic inclusions). Many of the animals submitted were found dead or moribund and subsequently euthanized. The data set contained the following variables: case number, state, county, area, sex, species, age, and collection year. 
 
-### Data acquisition
-Data of animals brought to SCWDS between 1975 and 2019, which were diagnosed as having CDV at post-mortem examination. Cases were identified as CDV by fluorescent antibody testing and/or histologic diagnosis of characteristic lesions.  Species, date of submission, county of origin, and sex were noted. This data was provided by SCWDS. Census and county land area data for Georgia was accessed and downloaded from [census.gov](https://census.gov/). 
+Human population and land area data for Georgia counties from 1975-2019 was accessed and downloaded from census.gov [@census]. Data were imported into R Studio (version 1.3.1056). Detailed description of data analysis and cleaning is contained in the processing scripts within the project repository in the “processing_code” subfolder (https://github.com/JJWilson1991/CDVGA_Project_JJW).
+All analyses were conducted in the program R (version 3.5.3.). Exploratory analyses performed are in the “CDV19_Exploration” file within the project repository.
 
+### Spatial Analysis
+Mapping data for US states and counties is available through the *ggplot2* [@Wickham2016] package. As the CDV data only contained county level location information, county centroid coordinates were used for plotting case points. Individual cases were mapped for entire dataset and presence of CDV in raccoons and gray foxes were mapped at the county level in Georgia. Presence was defined as at least one CDV diagnosis in raccoon or gray fox in a particular county in Georgia in a particular year. Analysis of spatial clustering of cases in Georgia was performed using Ripley’s K from the *spatstat* package [@Baddeley2015].
 
-### Overview of Data
-CDV case data contained the following variables; Case number, State, county, area, Sex, Species, Age and collection year. Additional data including specific collection dates was also used from a separate spread sheet for the time series analysis. The census data contained human population, land area and population density data for each county in the state of Georgia. 
+### Temporal Analysis
+Cases were also analyzed in relation to the raccoon and gray fox reproduction cycle, defined as the breeding season being January to March, lactation as April to June and non-breeding for the remainder of the year [@Zeveloff2002]. Chi-square test [@McHugh2013] was performed on these data as well as used to produce generalized linear models for each species and stage of breeding cycle.
 
+Time series analysis and auto regressive integrated moving average (ARIMA) model construction was conducted using the *fpp2* package [@Hyndman2018]. The three components of an ARIMA model are auto-regression, differencing, and the moving average. Autoregression uses previous data in the time series from n number of previous time points to predict future data; differencing computes the difference between observations in non-stationary data to remove the influence of trends or seasonality, and the moving average uses the past forecast errors in the model to make future predictions. In addition to these basic components of the ARIMA model, lagged predictors were included in model building. In the case of the raccoon predictive model, the lagged predictors were comprised of current and past gray fox cases, and vice versa for the gray fox model.
 
-### Data import and cleaning
-Data was imported into R Studio and cleaned to correct data entry errors and missing data. Detailed description of data analysis and cleaning is contained in the processing scripts within the [project repository](https://github.com/JJWilson1991/CDVGA_Project_JJW) in the processing_code subfolder.
-
-
-### Exploratory Analysis
-All analyses were conducted in the Program R Studio version 3.5.3. The extent of exploratory analysis performed is outlined in the "CDV19_Exploration" file within the project repository. 
-
-
-### Mapping
-Mapping data for US states and Georgia counties is available through the [ggplot2](https://ggplot2.tidyverse.org/) [@Wickham2016] package. As the CDV data only contained county level location information, county centroid coordinates were used for plotting case points.
-
-Analysis of spatial spread of cases in Georgia was done using the [spatstat](http://spatstat.org/) package.[@Baddeley2015] Analysis of the level of clustering of cases was done using Ripley's K analysis. Ripley's K looks at the level of randomness of spatial points. It analyses whether a point is more or less likely to be near another point than to a randomly plotted point. 
-
-
-### Time Series Analysis
-Time series analysis and ARIMA model construction was conducted using the "fpp2" package from [Forecasting: principles and practice, Hyndman & Athanasopoulos](https://otexts.com/fpp2/).[@Hyndman2018]
-
-The three components of an ARIMA model are; auto-regression, differencing and the moving average. These translate as; autoregression uses previous data in the time series from *n* number of time points previously to predict future data, differencing computes the difference between observations in non-stationary data to remove the influence of trends or seasonality and the moving average uses the past forecast errors in the model to make future predictions. In addition to these basic components of the ARIMA model, lagged predictors were also included in model building. In the case of the raccoon predictive model the lagged predictors were current and past gray fox cases (up to three months previously) and vice versa for the gray fox model.
-
-For time series analysis the data was pooled into raccoon or gray fox cases per month from April 1975-December 2019, for the whole state of Georgia.
-For training and testing of the ARIMA models for predicting raccoon and gray fox cases per month, the sequence of months from April 1975-December 2019, a total of 524 time points,  was divided at into the training set, up to n=423 ie. July 2011, and the testing set from n=423 to n=524, ie. August 2011-December 2019. 
-The stationarity of the time series were confirmed using both the augmented Dickey–Fuller test (ADF-test) and the Kwiatkowski–Phillips–Schmidt–Shin test (KPSS-test), suggesting no overall trends or seasonality in the data. AutoARIMA analysis was performed on the time series using the *forecast* package.
-
-
-
+For time series analysis, the data were pooled into raccoon or gray fox distemper cases in Georgia per month from April 1975-December 2019. For training and testing of the ARIMA models, the sequence of months from April 1975-December 2019, n=524 time points, was divided approximately 80:20 into the training set (up to n=423 i.e. July 2011) and the testing set (n=423 to n=524, i.e. August 2011-December 2019). The training set is used for building the model and the testing set is used for testing the accuracy of the model’s predictions compared to the real data. The stationarity of the time series was confirmed using both the augmented Dickey–Fuller test [@Dickey1979] and the Kwiatkowski–Phillips–Schmidt–Shin test [@Kwiatkowski1992]. The best fit models for each species were evaluated using the Akaike Information Criterion (AIC) [@Akaike1981]. The best model from each species was tested using the later part of the data set, and the root mean squared error (RMSE) was used to evaluate model performance.
 
 
 ## Results
 
+A total of 964 cases diagnosed with canine distemper including 9 species were submitted from 17 states over the 45-year period (Table 1). There was a mean of 21.42 cases diagnosed with distemper submitted per year with a standard deviation of 16.96.
 
-### Data Exploration
+```{r, resulttable1, fig.cap= '**Table 1: Summary table of the species and state of wildlife cases diagnosed with canine distemper submitted to the Southeastern Cooperative Wildlife Disease Study, 1975-2019.**', echo=FALSE, warning=FALSE, message=FALSE}
+knitr:: include_graphics(here::here("code", "analysis_code", "Spec_State_table.png"))
 
-
-
-Initial probing of the data set revealed the vast majority of cases to be submitted from the state of Georgia. The other feature is that almost all of the submitted cases are raccoons or gray foxes.
-From this point, data exploration and analysis will focus only on gray foxes and raccoons in the state of Georgia as this compromises the majority of cases. 
-Figures from the exploartory analysis are included in the Supplementary Materials.
-
+```
+**Table 1: Summary table of the species and state of wildlife cases diagnosed with canine distemper submitted to the Southeastern Cooperative Wildlife Disease Study, 1975-2019.**
 
 
-```{r, resultfigure1, fig.cap= '**Figure 1: Raccoon and Gray Fox cases in Georgia presented to SCWDS, 1975-2019.**', echo=FALSE, warning=FALSE, message=FALSE}
-knitr:: include_graphics(here::here("results", "Figures_new", "RacFox_year19.png"))
+Canine distemper cases in all species most often originated in southeastern states, with cases tending to occur in the same or adjacent counties to those with raccoon cases (Supplementary Materials). Georgia submitted most cases throughout all years of study, but Louisiana submitted the most from 2010 to 2019. 
+
+
+```{r, resultfigure1, fig.cap= '**Total number of wildlife cases diagnosed with canine distemper for all species and all states per year submitted to the Southeastern Cooperative Wildlife Disease Study, 1975-2019.**', echo=FALSE, warning=FALSE, message=FALSE}
+knitr:: include_graphics(here::here("results", "Figures_new", "allcasesallyears.png"))
+
+```
+
+As the greatest proportion of the cases came from gray foxes and raccoons in Georgia, further spatial and temporal analyses were limited to these cases.
+From 1975 to 2019, numbers of raccoon and gray fox distemper cases varied significantly over time, with the 1980s having the greatest numbers per year for both species (n=441 mean=9.8 SD=11.82371). The years 2000, 2007, 2008 and 2010 had no reported cases in gray foxes or raccoons in Georgia.
+
+
+```{r, resultfigure2, fig.cap= '**Total number of raccoons and gray foxes diagnosed with canine distemper per year from Georgia that were submitted to the Southeastern Cooperative Wildlife Disease Study, 1975-2019.**', echo=FALSE, warning=FALSE, message=FALSE}
+knitr:: include_graphics(here::here("results", "Figures_new", "RacFox_year19_GA.png"))
 
 ```
 
 
-*Raccoon and gray foxes cases between 1975 and 2019 showed significant fluctuation with the 1980s having the greatest case numbers per year for both species. There were only four years in which the number of diagnosed gray fox cases exceeded the number of raccoon cases.*
+Most of the raccoon and gray fox cases in Georgia were received during the respective breeding seasons for these species [@Zeveloff2002]. There was a significant association between breeding season and the number of cases, particularly in raccoons (**Figure 3**).
 
-
-```{r, resultfigure2, fig.cap= '**Figure 2: Raccoon and Gray Fox cases across breeding cycle.**', echo=FALSE, warning=FALSE, message=FALSE}
-knitr:: include_graphics(here::here("results", "Figures_new", "breeding_plot_19.png"))
+```{r, resultfigure3, fig.cap= '**FTotal number of raccoon and gray foxes diagnosed with canine distemper per month, from Georgia, in each part of the species reproductive cycle, submitted to the Southeastern Cooperative Wildlife Disease Study, 1975-2019.**', echo=FALSE, warning=FALSE, message=FALSE}
+knitr:: include_graphics(here::here("results", "Figures_new", "breeding_bar_19.png"))
 
 ```
 
-
-_In this case the different parts of the reproduction cycle were defined as the Breeding season being February to April, Lactation as May to July and the rest of the year non-Breeding. The number of cases recorded in each of these parts of the reproductive cycle were adjusted by dividing by the length of the segment in months to account for any differences in the number of cases due to the length of the recording period._
-
-
-
-### Spatial Mapping of Georgia Data
-
-Further qualitative analysis was conducted by mapping disease presence over time at county level.
+Chi-square test revealed a significant association between breeding season and number of distemper cases in both raccoons (χ2=21.20, p=2.49e-05) and gray foxes (χ2=11.46, p=0.003) in Georgia.
+Generalized linear models for raccoon and gray foxes, using number of cases as the dependent variable and stage of reproductive cycle as the independent variable, revealed a significant negative association between lactation or non-breeding season and the number of distemper cases reported in both species.
 
 
-```{r, map1, fig.cap= '**Figure 3:Total Raccoon and Gray Fox cases in Georgia presented to SCWDS, 1975-2019, per county.**', echo=FALSE, warning=FALSE, message=FALSE}
+### Spatial Analysis
+
+```{r, resultfigure4, fig.cap= '**Total number of raccoons and gray foxes diagnosed with canine distemper per county in Georgia, that were submitted to the Southeastern Cooperative Wildlife Disease Study, 1975-2019.**', echo=FALSE, warning=FALSE, message=FALSE}
 knitr:: include_graphics(here::here("results", "Figures_new", "GA_County_SF19.png"))
 
 ```
 
+The general pattern over the entire study period tended to be with most cases occurring in counties in the northern part of the state around the population centers of Atlanta, Athens and Augusta, Georgia. Additionally, there is a second area with high case numbers in the southeastern part of the state, around Savannah and Brunswick. Ripley’s K analysis of CDV cases in Raccoons and Gray Foxes in Georgia showed that these cases are significantly clustered. This pattern is shown again in the presence data by year (**Figure 5**) with cases occurring near these population centers, particularly in the 1980s. The northern part of the state has a cluster of cases involving many counties during the 1980s and early 1990s, with a smaller number of counties involved in the southeast. 
 
-*Cases appear to be clustered in the northern part of the state with a second smaller cluster in the south east.*
-
-
-
-```{r, map2, fig.cap= "**Figure 4:County Presence over Time of CDV, from cases submitted to SCWDS, 1975-2019.**",echo=FALSE, warning=FALSE, message=FALSE}
-
-
+```{r, resultfigure5, fig.cap= '**Presence of raccoons or gray foxes diagnosed with canine distemper per county in Georgia per year that were submitted to the Southeastern Cooperative Wildlife Disease Study, 1975-2019.**', echo=FALSE, warning=FALSE, message=FALSE}
 knitr:: include_graphics(here::here("results", "Figures_new", "GA_Presence_year19.png"))
 
 ```
 
-
-_The presence of CDV positive necropsy cases in raccoons or gray foxes in each county is shown for the years 1975-2019. Presence is used in this scenario rather than number of cases, as with the epidemiology of the disease, one can assume that a symptomatic case corresponds to an outbreak, especially in this data set as the surveillance is passive so cases are likely to be missed. The majority of counties with positive cases appear to occur in the northern part of the state with another small cluster in the south-east._
-
-
-This was further analyzed by comparing this distribution of cases over time by splitting cases by species.
-
-
-```{r, map3, fig.cap= "**Figure 5: Cases of CDV in Gray Foxes and Raccoons in Georgia counties, from cases submitted to SCWDS, 1975-2019.**",echo=FALSE, warning=FALSE, message=FALSE}
-
-knitr:: include_graphics(here::here("results", "Figures_new", "GAspecyear19.png"))
+```{r, resultfigure6, fig.cap= '**The average human population density per square mile for each county in Georgia from 1975-2019 and the raccoons and gray foxes diagnosed with canine distemper, plotted as a county centroid coordinate,  submitted to the Southeastern Cooperative Wildlife Disease Study, 1975-2019.**', echo=FALSE, warning=FALSE, message=FALSE}
+knitr:: include_graphics(here::here("results", "Figures_new", "logavPop_Density_cases7519.png"))
 
 ```
 
-_Individual cases of raccoon and fox CDV are plotted over time. As cases were only recorded to the county level, the points are plotted using county centroid coordinates and a jitter to offset overlap of points._
-
-
-Analysis of the level of clustering of cases was done using Ripley's K analysis. Ripley's K looks at the level of randomness of spatial points. It analyses whether a point is more or less likely to be near another point than to a randomly plotted point. The null hypothesis is that the cases are completely random spatially and that one case is not more or less likely to a closer to another case than a random point. In this analysis the cases of CDV were shown to be significantly more likely to be near another case than randomly spread, disproving the null hypothesis. 
-
-
-```{r, ripK, fig.cap= "**Figure 6: Ripley's K analysis of CDV cases in Raccoons and Gray Foxes in Georgia, from cases submitted to SCWDs, 1975-2019.**", echo=FALSE, warning=FALSE, message=FALSE}
-knitr::include_graphics(here::here("results", "Figures_new", "RipK19.png"))
-```
-
-
-*In the Ripley’s K plot, the red line is the* Poisson *distribution of randomly spread points, with error margin. The black line represents the CDV case locations. As this line is above the random distribution line and outside of the error margins, it can be said that these cases are significantly more clustered than a random distribution.*
-
-
-```{r, map4, fig.cap= '**Figure 7: Raccoon and Gray Fox cases in Georgia presented to SCWDS, 1975-2019, and human population density.**', echo=FALSE, warning=FALSE, message=FALSE}
-knitr:: include_graphics(here::here("results", "Figures_new", "logPop_Density_cases19.png"))
+```{r, resultfigure7, fig.cap= '**Number of raccoons and gray foxes diagnosed with canine distemper per square mile of each county, which submitted cases to the Southeastern Cooperative Wildlife Disease Study, 1975-2019, plotted against average human population density per square mile in the county from 1975 to 2019.**', echo=FALSE, warning=FALSE, message=FALSE}
+knitr:: include_graphics(here::here("results", "Figures_new", "av_dens_spec_split_line.png"))
 
 ```
 
+The data indicate increased frequency of submitted distemper cases in the medium to medium-high human population density counties, with fewer cases diagnosed in very high and very low human density counties. This relationship is more noticeable for raccoons than gray fox (**Figures 6 and 7**).
 
-*Cases of CDV in raccoons and gray foxes in Georgia are plotted over a map showing population density per county. There appears to be fewer cases occurring in counties with the highest population densities and the lowest population densities.*
+
+### Predictive Model development
+
+The most accurate model for predicting the number of gray fox cases used the previous two months gray fox case numbers, the previous month’s predictive error, and the current month’s raccoon cases. Predictors were considered significant if the coefficient was more than two standard errors from zero.
 
 
-```{r, plot3, fig.cap= '**Figure 8: Raccoon and Gray Fox cases per spm against human population density.**', echo=FALSE, warning=FALSE, message=FALSE}
-knitr:: include_graphics(here::here("results", "Figures_new", "Logpop_logcases.png"))
+```{r, resultfigure8, fig.cap= '**Best fit auto regressive integrated moving average model for predicting canine distemper cases in gray foxes in Georgia, using the numbers of raccoons and gray foxes diagnosed with canine distemper  per month, which were submitted  to the Southeastern Cooperative Wildlife Disease Study, 1975-2019.** *The case data for gray foxes are shown by the red line, with the model prediction for the training period in black and the predictions for the test period and beyond in blue, with 80% and 95% prediction intervals.*', echo=FALSE, warning=FALSE, message=FALSE}
+knitr:: include_graphics(here::here("results", "Models", "Fox_model_plot.png"))
+
+```
+
+In the best performing model, differencing was not a useful predictor. As model error was useful in prediction, this means that if there was a significant change in the number of cases in the previous month, then that is likely to be followed by another significant change. In addition to the base model, the number of cases of raccoons in the current and previous months were used as predictors. The strongest model for predicting raccoon cases used the previous month’s raccoon cases and predictive error in addition to the number of gray fox cases in the current and previous two months.
+
+
+```{r, resultfigure9, fig.cap= '**Figure 9: Best fit auto regressive integrated moving average model for predicting canine distemper cases in raccoons in Georgia, using the numbers of raccoons and gray foxes diagnosed with canine distemper  per month, which were submitted  to the Southeastern Cooperative Wildlife Disease Study, 1975-2019.** *The original data for raccoon cases is shown by the red line, with the model prediction for the training period in black and the predictions for the test period and beyond in blue, with 80% and 95% prediction intervals.*', echo=FALSE, warning=FALSE, message=FALSE}
+knitr:: include_graphics(here::here("results", "Models", "Raccoon_model_plot.png"))
 
 ```
 
 
-*Overall cases per area for each county were plotted against human population density per SqM, which suggests a hump shaped relationship. This follows what was observable in the map, Figure 7.*
-
-
-### Time series analysis
-Time series analysis was conducted on the number of cases in gray foxes and raccoons for the whole state of Georgia in the period 1975-2013 and ARIMA models using lagged predictors constructed using the "fpp2" package from [Forecasting: principles and practice, Hyndman & Athanasopoulos](https://otexts.com/fpp2/).[@Hyndman2018]
-
-
-```{r, resultfigure11, fig.cap= '**Figure 9: Raccoon and Gray Fox cases per month 1975-2019.**', echo=FALSE, warning=FALSE, message=FALSE}
-
-knitr:: include_graphics(here::here("results", "Figures_new", "Month_TimeSeries19.png"))
-
-```
-
-
-#### Predictive Model
-The general model for predicting number of gray fox cases using an auto-regression model found using the previosu two months gray fox case numbers, the previous month's predictive error along with this month's raccoon cases as the most accurate model for prediction. The models tested used an ARIMA base, which uses the numbers of cases from the preceding months to predict future case numbers along with lagged regressors, in this case the raccoon case numbers for previous months. Predictors were considered significant if the coefficient was more than two standard errors away from zero.  
-
-
-```{r, resulttable1,  echo=FALSE}
-Gray_Fox_Models=readRDS(here::here("results", "Models", "Gray_Fox_Models19.rds"))
-knitr::kable(Gray_Fox_Models, caption = '**Gray Fox Prediction Models**')
-```
-
-*The autoARIMA part of the analysis tests for the most significant predictors in the autoregression part (Number of gray fox Cases from previous months) and the moving average part (the predictve error in the model in predicting gray fox cases in previous months) along with the differencing and prints coefficients of those predictors which are significant. Akaike's Information Criterion (AIC) is used as a measure of whether new predictors improve the model. This measure is penalized by adding 2 to the value for each new predictor added, so for an added predictor to be useful, it needs to decrease the AIC by more than 2, as a lower AIC represents a better model. As shown above, all of the models are an improvement on the null model.*
-
-
-
-In the best performing model, Fit_2GF, differencing was not a useful predictor, but the previous two months cases and the error in the model from one month previously were useful predictors, so are included. With the model error being useful in prediciton means that if there is a large change in the number of cases in the previous month, ie. a large model error, then that is likely to be followed by another large change. On top of that base model, the number of cases of raccoons in the current months and previous months were used as predictors, with increasing numbers of months into the past used in subsequent models.  
-
-
-```{r, Model1gen,  fig.cap='**Gray Fox Prediction General Model**', echo=FALSE, warning=FALSE, message=FALSE}
-knitr::include_graphics(here::here("results", "Models", "Gray_Foxgen_2_19.png"))
-```
-
-
-
-```{r, Model1,  fig.cap='**Gray Fox Prediction Model**', echo=FALSE, warning=FALSE, message=FALSE}
-knitr::include_graphics(here::here("results", "Models", "Gray_Fox_2_19.png"))
-```
-
-
-*In this model y is our response variable, gray fox cases. Epsilon is our moving average or predictive error from previous months and x is our lagged predictor, raccoon cases. *
-
-The process was repeated for predicting raccoon cases with the strongest model using the previous months raccoon cases and predictive error in addition to the number of gray fox cases this month and in the previous two months.
-
-
-```{r, resulttable2,  echo=FALSE}
-Raccoon_Models=readRDS(here::here("results", "Models", "Raccoon_Models19.rds"))
-knitr::kable(Raccoon_Models, caption = '**Raccoon Prediction Models**')
-```
-
-
-*The inclusion of the number of gray fox cases in the current month and in the previous two months as predictors resulted in the best performing model in the set of Raccoon prediction models.*
-
-
-```{r, Model2gen,  fig.cap='**Raccoon Prediction General Model**', echo=FALSE, warning=FALSE, message=FALSE}
-knitr::include_graphics(here::here("results", "Models", "Raccoongen_4_19.png"))
-```
-
-
-```{r, Model2,  fig.cap='**Raccoon Prediction Model**', echo=FALSE, warning=FALSE, message=FALSE}
-knitr::include_graphics(here::here("results", "Models", "Raccoon_4_19.png"))
-```
-
-
-*In this model  our response variable is raccoon cases. Lagged y is using previous raccoon cases as a predictor. Epsilon is our moving average or predictive error from previous months and x is our lagged predictor, gray fox cases. *
-
-
-The best model from each situation; predicting raccoon cases and predicting Gray fox cases, were tested using the later part of the data set, with the Root Mean Squared Error (RMSE) being used to evaluate model performance. 
-
-
-```{r, resulttable3,  echo=FALSE}
-Test_Models=readRDS(here::here("results", "Models", "Best_Models_19.rds"))
-knitr::kable(Test_Models, caption = '**Testing Prediction Models**')
-```
-
-
-
-
-The first model, which uses the number of raccoon cases from the current month, the predictive error for gray fox cases from the previous month in addition to the previosu two months gray fox cases to predict gray fox cases in the current month is the more accurate model  with an RMSE of 0.2668708 for the test data, meaning it is easier to predict gray fox cases from this data.
-The second model predicts the raccoon cases using the previous months raccoon data and model error in addition to gray fox cases from the current month and the previous two months. Whilst this model was still quite accurate at predicting the number of cases it had a slightly higher RMSE at 0.7290283.
-
+The gray fox predictive model is the most accurate model with an RMSE of 0.2669 for the test data, meaning it more accurately predicted gray fox distemper cases from these data. The raccoon prediction had a higher RMSE (0.7290).
 
 
 
 ## Discussion
-Initial introduction of CDV into wild carnivores in the US, in the 1960’s, was through gray foxes with subsequent spread to raccoons. [@Hoff1974]. An outbreak in raccoons in Berlin, Germany appears to have originated in foxes with transmission seeming to readily occur between the species. [@Renteria-Solis2014] This fueled the hypothesis that there may initially be peaks of cases in gray foxes with delayed spread to raccoons in Georgia.
-
-The analysis of the CDV case data in raccoons and gray foxes suggests a relationship between cases in the two species, with the ARIMA model produced for gray fox cases suggesting that monthly case numbers in gray foxes can quite accurately be predicted using the previous months gray fox data and the number of raccoon cases from this month.
-
-A second model for the prediction of raccoon cases using the previous months raccoon data in addition to gray fox cases from the current month and the previous two months was also quite accurate at predicting raccoon cases, albeit it had a slightly higher error than the other model. This makes it possible that the gray fox cases in previous months may be significant in causing cases in raccoons. However, as the data for the time series analysis and ARIMA model building is pooled for the whole state, it is possible that the cases contributing to the overall number per month could be separated by hundreds of miles.  
-
-In both predictive models the test data had a lower RMSE than the training data. This can be explained by the variability of the data over time. As shown in *Figure 1* the year on year variation in number of cases is higher prior to 1996. As the training data ran from the period April 1975-July 2011, the model had to cope with much more variability in this set of data than with the test data from August 2011-December 2019, which will negatively impact the accuracy. The higher RMSE in the raccoon pradiction model is also likely explained by the larger degree of variability in raccoon case numbers.
-
-The data suggests a correlation between breeding season and the number of cases reported, with positives more likely to occur during the breeding season.  This could be due to a number of reasons; there may be more contact between individual animals as they search for mates promoting aerosol spread of virus. Contact structure of a raccoon population can significantly impact disease transmission with raccoon contact networks being shown to change depending on the season (breeding vs. nonbreeding); Rabies has been shown to spread quickly in raccoons when introduced during the breeding season.) [@Reynolds2015]. Other potential influences of the breeding season on cases, aside from increased contact, may be that the  physiological strain of reproduction may leave animals more susceptible to the virus or as these cases are from animals found dead it could be that the increased movement during the breeding season leads to more being killed in other ways, such as on roads, and they happen to also be CDV positive at necropsy.    
-
-The spatial analysis of the data showed significant clustering of cases, which is in line with the ecology of the virus which tends to have epizootics where it spreads quickly amongst nearby susceptible. The primary mode of CDV infection is aerosol inhalation, suggesting habitat overlap and contact is important in transmission [@Hoff1974]. 
-
-There appeared to be a much greater number of cases in the northern part of the state. The possible reasons for this are diverse. Reporting bias due to a range of possible reasons; as the northern part of the state is more densely populated by humans, it is in closer proximity to SCWDS, there may more suitable habitat and a consequently greater population of susceptible raccoons and gray foxes. With this data it is very difficult to suggest which if any of these factors may be important in this distribution of reported cases. 
-
-Interestingly, there may be a parabolic relationship between human population density and number of cases, with very high densities and very low densities having lower number of cases. This may be due to suburban areas being a hotspot for disease circulation with these areas being attractive to raccoons and gray foxes particularly due to the balance of available habitat and easy scavenging opportunities. This is of particular relevance as the disease is suggested to spillback from raccoons into domestic dogs [@Kapil2011]. Further spatial analysis using open source GIS data on land use in the state may provide greater insight into this. 
 
 
+A 45-year necropsy data set of wild carnivores diagnosed with distemper at SCWDS was analyzed for spatial and temporal trends. This included 17 states and 9 species, which were primarily concentrated in the southeastern US. Distemper cases in different species tended to spatially cluster. Further analysis was carried out on raccoon and gray fox data from Georgia. Ripley’s K analysis showed significant clustering of cases and there appeared to be an association between human population density and number of cases in raccoons, with fewer cases occurring in counties with very low and very high human population densities.  There was a significant temporal association with the breeding season of foxes and raccoons with higher numbers of cases diagnosed.
 
-### Limitations
-There are significant limitations to using this data set to draw conclusions about CDV cases in wild animals in Georgia. This data set comes from passive surveillance only, with it being reliant on dead animals being found and presented to SCWDS by Department of Natural Resources officers for necropsy. This leaves the data open to significant influence by reporting bias, as the distribution of DNR officers and humans generally, is not uniform across the state. The map of cases per county seems to resemble the map of [State Parks and Historic Sites](https://gastateparks.org/sites/default/files/parks/images/webmaps/WebMap_dev.png) provided by the DNR. These sites are likely to have more DNR staff and consequently greater reporting of dead animals. 
+Georgia reported most cases among the 17 states with distemper cases, especially in the 1980s, probably in part due to the proximity to SCWDS. Interestingly, Louisiana submitted the most cases in the 2010s, but whether this is due to an actual increase in CDV epizootics or other factors related to detection or reporting is unknown. 
 
-Passive surveillance is also only showing part of the picture, with the results being heavily skewed towards symptomatic cases. In one study, gray foxes and raccoons in Tennessee (Nov. 2013 – Aug. 2014) were infected frequently, but passive surveillance only captured animals showing clinical signs. This did not account for asymptomatic cases, with 55% of asymptomatic animals tested being positive [@Pope2016].
+Spatial analysis showed significant clustering of distemper cases, which likely reflects the ecology of the virus which generally requires dense populations of susceptible hosts to facilitate viral spread, leading or contributing to epizootics [@Williams2001]. The primary mode of CDV infection is aerosol inhalation, suggesting habitat overlap and contact is important in transmission [@Hoff1974]. The immunizing nature of this disease is useful for spatial and temporal analysis, as cases in the same area a number of years later are likely to be due to anew outbreak that has spread back into the area after an increase in the susceptible population to above the threshold required for an outbreak. Disease presence can be used for analysis in this scenario, as one can assume that a case corresponds to an outbreak. 
 
-There are also the difficulties associated with the size of the data set when it comes to trying to examine spatial and temporal trends together. Currently it is only possible to have meaningful numbers for analysis by looking at spatial trends using all the data, but obviously these cases are occurring over a long period of time, the opposite is true for looking at temporal trends whereby only meaningful numbers can be gained by using cases over a huge area the size of Georgia. As discussed earlier, the acute immunizing nature of these disease makes analyzing spatial and temporal data more useful, as cases in the same area a number of years later are likely to be a new outbreak that has spread back into the area following an increase in the susceptible population.
+There may be a parabolic relationship between human population density and the number of distemper cases in raccoons, with very high and very low population densities experiencing lower numbers of cases. This may be due to suburban areas being a hotspot for disease circulation with these areas being attractive to raccoons and gray foxes due to the available habitat and easy scavenging opportunities. Raccoons can maintain higher density populations within urban and suburban environments [@Prange2003]. A similar pattern was seen in a studies in Germany of red foxes with prevalence of CDV higher in suburban and urban foxes compared to their rural counterparts, but with CDV risk being reduced in highly urbanized areas in Berlin [@Frolich2000; @Gras2018]. This is of particular relevance as the disease is suggested to spillback from raccoons into domestic dogs [@Kapil2011].
+There appeared to be a much greater number of distemper cases in the northern part of Georgia. There are numerous possible reasons for this. Reporting biases may have played a role. For example, the northern part of the state is more densely populated by humans, is in closer proximity to SCWDS and thus more convenient to deliver carcasses and may have more suitable habitat and thus more robust populations of raccoons and gray foxes. In addition, results in detection of distemper cases in our study are skewed towards those that involved obvious illness or death of wildlife. For example, in one study, gray foxes and raccoons in Tennessee (Nov. 2013 – Aug. 2014) were known to be frequently infected, but passive surveillance only captured those with clinical signs. This failed to account for subclinically infected animals, with 55% of subclinically infected animals testing positive by real-time RT-PCR assay [@Pope2016].The data suggest a correlation between breeding season and the number of distemper cases diagnosed in raccoons and gray foxes, with cases more likely to occur during the breeding season.. This could be due to a number of reasons. There may be more contact between individual animals as they search for mates, thereby promoting aerosol spread of virus. Contact structure of a raccoon population can significantly impact disease transmission with raccoon contact networks changing depending on the season. For example, rabies virus infection can spread quickly among raccoons when the virus is introduced during the breeding season [@Reynolds2015]. In addition, the physiological stress of reproduction may leave animals more susceptible to the virus or, as the cases in this study were from animals found moribund or dead, it could be that the increased movement during the breeding season leads to higher mortality rates from a variety of causes, such as vehicular collision, for which CDV may have contributed, but was not the primary cause of death.
+
+The ARIMA model for predicting monthly distemper cases in gray foxes could accurately predict this using the numbers of distemper cases in gray foxes from the previous two months and in raccoons from the current month, suggesting that there may be an association between cases in the two species.. Initial introduction of CDV into wild carnivores in the US in the 1960’s, was through gray foxes with subsequent spread to raccoons [@Hoff1974]. Similarly, a distemper outbreak in raccoons in Berlin, Germany appears to have originated in foxes, with transmission seeming to readily occur between the species [@Rentería-Solís2014]. 
+
+The raccoon prediction model was also accurate in predicting raccoon distemper cases, albeit with a higher error than the gray fox prediction model. This suggests a possible association between gray fox cases in previous months and raccoon cases in the current month. However, as the data for the time series analysis and ARIMA model building are pooled for the whole state, it is possible that the cases contributing to the overall number per month could be separated by hundreds of miles and thus the cases may not be related to each other. There are also limitations to the robustness of the data in concurrently analyzing spatial and temporal trends.  While this is a rare long-term data set, there are limitations to using such a large area (i.e. statewide across Georgia) to generate meaningful conclusions about temporal trends.
+
+In both predictive models, the test data, which uses the more recent data to test the accuracy of the model, had a lower error than the model training data. This can be explained by the variability of the case submission data over time. For example, the year to year variation in distemper case numbers among raccoons and gray foxes in Georgia is higher prior to 1996. The training data ran from April 1975-July 2011, and so the model had to cope with more variability in case numbers than for the test data (August 2011-December 2019), which likely reduced accuracy of the output. The higher RMSE in the raccoon prediction model may be explained by the larger degree of variability in raccoon case numbers throughout the study. 
 
 
 
-### Future Work
-There is enough information to be extracted from this passive surveillance data to suggest that more active systematic surveillance for CDV in wild carnivores may reveal vital information about the ecology of this disease in non-domestic species and its potential risk to both wild and domestic animals. 
-
-Information about the population sizes and densities of wild carnivores in the south east would be critical not only in determining the potential impact of this disease on population health but it trying to decipher how much of the variation in case numbers across the region is purely a function of population size. 
-Active surveillance would also identify more of the asymptomatic cases that are discussed above and give a more complete picture of disease burden.
-
-As the gray fox prediction model accurately predicted gray fox cases using the current months raccoon data this could be used to predict numbers of cases in other species if models like this for other wild carnivores could be constructed. Raccoons are the easiest of the wild carnivore species to capture and sample, so their use as a predictor for other less tractable species would be very useful.
-
-Ideally future data collection would contain specific coordinate data for the location of cases. This would enable the more specific spatial analysis to be conducted regarding land use particularly. Currently the data is categorized by county, but obviously counties can be very diverse in their land use, so more specific coordinates would help to pinpoint what habitats are more represented.
-
-More systematic data collection would allow for more in depth analysis of the spatio-temporal trends as there would be enough data to investigate epidemics within the region over a shorter period of time and try to tie this in to land use patterns. More comprehensive data collection would allow for the construction of more complex models which combine spatial and temporal aspects and may allow prediction of at risk areas based on the location of cases in the previous month. This could inform decision making regarding vaccination and other preventative strategies.
-
-
- 
- 
 ## Conclusions
-The results from this analysis suggest that there are temporal and spatial patterns of CDV cases within the two most commonly infected wild carnivores in Georgia; raccoons and gray foxes. Time series analysis and ARIMA model construction suggests that numbers of raccoon cases can be predicted using data on the number of gray foxes cases from the previous two months. There appears to be temporal trends in cases in both species, with cases more likely to occur during the breeding season. Spatially there tends to be clustering of cases of both species within the same areas, with cases appearing more likely to occur in areas of medium human population density with fewer cases in very densely and sparsely populated areas. Ultimately, there are enough potential relationships suggested from this passively collected data which would support a worthwhile study, with compressive sampling of wild carnivores over time and space to try to elucidate spillover trends between species, particularly in suburban areas.
 
+Results from this analysis suggest that CDV is widely spread with 9 different carnivore species represented from 17 states, with raccoon and gray foxes the most common species reported. The other species were generally reported in the same or adjacent counties to those with raccoon or gray fox cases. Cases are mostly reported in southeastern US states and within the most represented state, Georgia, there appears to be temporal and spatial patterns of CDV cases in raccoons and gray foxes. Our results also suggested that numbers of gray fox cases can be predicted using data on past cases in foxes and raccoons. Among wild carnivore species, raccoons are easy to capture and sample, and thus may serve as a useful predictor for other, less tractable species. There appears to be temporal trends in cases in both species, with cases more likely to occur during the breeding season. Spatially there tends to be clustering of cases of both species within the same areas, with cases with fewer cases in very densely and sparsely populated areas. 
+Ultimately, there are enough potential relationships suggested from this passively collected data which would support a worthwhile study, with comprehensive sampling of wild carnivores over time and space to try to elucidate spillover trends between species, particularly in suburban areas. This could inform decision making regarding vaccination and other strategies aimed at reducing transmission among both domestic and wild animals.
 
 
 
