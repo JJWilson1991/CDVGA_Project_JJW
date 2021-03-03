@@ -228,7 +228,7 @@ cent_SE_19<-left_join(sepSE_sf, SE_centroid_split)
 cent_spec_19<- left_join(cent_SE_19,CDV_Clean19 )
 
 #plot cases by species in SE
-SESpec<- ggplot(cent_spec_19) + geom_sf(aes(geometry=geom)) +  geom_point(data = cent_spec_19, aes(x = long, y = lat, color= Species), alpha = 0.5, position = position_jitter(width=0.05,height=0.05 ), na.rm = T) + scale_colour_discrete( na.translate=F )
+SESpec<- ggplot(cent_spec_19) + geom_sf(aes(geometry=geom)) +  geom_point(data = cent_spec_19, aes(x = long, y = lat, color= Species), alpha = 0.5, size= 1,position = position_jitter(width=0.05,height=0.05 ), na.rm = T)+ theme_minimal()+ scale_colour_discrete( na.translate=F ) +labs(x="Longitude", y="Latitude")
 SESpec
 
 
@@ -236,6 +236,7 @@ ggsave(here::here("results", "Figures_new", "SE_AllSpec.png"),plot = SESpec)
 
 
 SESpec +facet_wrap(~CollectionYear)
+SESpec +facet_wrap(~Species)
 ```
 ```{r}
 
@@ -862,4 +863,32 @@ ggsave(here::here("results", "Figures_new", "av_dens_spec_split_line.png"), plot
 hnm<-Cases_per_area_PopD_NA%>%filter(Freq>0)
 
 ggplot(hnm, aes(log10(Pop_Density)))+geom_histogram()
+```
+```{r}
+
+County_species_map
+
+GA_cases_Species19<-  ggplot() + 
+geom_sf(data=Georgia_coorod, aes(geometry=geom), fill="white")+  geom_sf(data = County_species_map, aes(geometry=geom, fill =Freq)) +
+  labs(fill= "Total cases 1975-2019") +  scale_fill_gradient(high = "purple", low="white", na.value="white", trans = "log10") + theme_map() + facet_wrap(~Species) + theme(legend.position="right") 
+
+GA_cases_Species19
+
+
+Av_pop_spec_split<-left_join(Av_County_density,Georgia_coorod)
+
+Av_pop_spec_split_point<-left_join(Av_pop_spec_split, County_species_map)
+
+wrapped_spec_dens<-ggplot(data=Av_pop_spec_split)+geom_sf(data=Av_pop_spec_split, aes(geometry=geom, fill=Mean_Pop_density))+geom_sf(aes(geometry=geom, fill=Mean_Pop_density)) +theme_map() + scale_fill_gradient(low = "beige", high = "chocolate4", trans= "log10", name="Human population density per square mile") +geom_point(data =County_species_map, aes(x = long, y = lat, colour= Species,  size=Freq),   na.rm = T)+ scale_colour_discrete( na.translate=F ) + scale_colour_discrete( na.translate=F )+ theme(legend.position="right") +facet_wrap(~Species, drop = T)# + guides(size=FALSE)
+
+wrapped_spec_dens
+                                                                                            
+ggsave(here::here("results", "Figures_new", "wrapped_spec_dens19.png"), plot = wrapped_spec_dens)
+
+```
+```{r}
+#do cases per county
+spavSpec_logpop<-ggplot(avSpecies_density, aes(log10(Mean_Pop_density), Freq, fill = Species, color = Species, group = Species)) + geom_point(aes(shape=Species))+geom_smooth() + theme_minimal() +labs(x="Population density per square mile of county, transformed to log base 10", y="Cases per County")#+ylim(0, 0.1)
+
+spavSpec_logpop
 ```

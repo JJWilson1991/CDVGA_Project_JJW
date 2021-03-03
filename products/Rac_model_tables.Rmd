@@ -1,0 +1,15 @@
+---
+title: "rac"
+author: "JJW"
+date: "05/11/2020"
+output: word_document
+---
+
+
+
+```{r, echo=FALSE}
+
+ractab<-readRDS(here::here("results", "Models","Raccoon_Models19.rds"))
+knitr::kable(ractab)
+
+```

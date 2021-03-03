@@ -124,7 +124,7 @@ plot(Kest(ripPointmap))
 
 #There is significant clustering of points as the K hat is above the K poi
 
-#Add envelope as the error margins
+#Add envelope as the "error margins"
 
 Ripleys_K<- envelope(ripPointmap)
 

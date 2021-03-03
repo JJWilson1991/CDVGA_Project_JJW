@@ -1,0 +1,15 @@
+---
+title: "tablesgf"
+author: "JJW"
+date: "05/11/2020"
+output: word_document
+---
+
+```{r, echo=FALSE}
+
+gftab<-readRDS(here::here("results", "Models","Gray_Fox_Models19.rds"))
+knitr::kable(gftab)
+
+```
+
+

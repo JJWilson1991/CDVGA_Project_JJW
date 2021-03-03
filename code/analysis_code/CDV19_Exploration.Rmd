@@ -80,8 +80,8 @@ column_spec(11, background = "#E1E1E1")%>%
   column_spec(2:11, width_min = "1.6cm", color = "black")
 
 
- Kab_spec_stat
- save_kable(x=Kab_spec_stat, file="Spec_State_table.png")
+ #Kab_spec_stat
+ #save_kable(x=Kab_spec_stat, file="Spec_State_table.png")
 # 
 # 
 # write.xlsx(Spec_state, "c:/mydata.xlsx") 
@@ -96,11 +96,13 @@ CDV19_clean$Species<-as.factor(as.character(CDV19_clean$Species))
 #The data we are most interested in is the Species data over time and the area data over time so we'll begin by exploring these
 
 Species_freq19 <- ggplot(CDV19_clean, aes(fct_infreq(Species))) +
-  geom_bar(aes( fill=fct_infreq(Species)))  +   scale_fill_npg()+
-theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 8), legend.position = "none") +labs(y="Number of Cases")  +geom_text(stat='count', aes(label=..count..), vjust=-0.5) +ylim(c(0,700))
+  geom_bar(aes( fill=fct_infreq(Species)))+theme_minimal()  +   scale_fill_npg()+
+theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 8), legend.position = "none") +labs(x="Species",y="Number of Cases")  +geom_text(stat='count', aes(label=..count..), vjust=-0.5) +ylim(c(0,700)) +coord_fixed(0.005)
 
 Species_freq19
 ggsave(here::here("results", "Figures_new", "Species_freq19.png"), plot = Species_freq19)
+```
+```{r}
 
 Speciestable19<- as.data.frame(with(CDV19_clean, table(Species))) 
 colnames(Speciestable19)[2] <- "n"
@@ -159,6 +161,18 @@ ggsave(here::here("results", "Figures_new", "allcasesallyears.png"), plot=allcas
 # 
 # ggplot(CDV19_clean, aes(CollectionYear))+geom_bar(aes(fill=fct_rev(fct_infreq(Species))))+scale_fill_npg()
 ```
+```{r}
+# Stacked
+ggplot(CDV19_clean, aes(fill=(State), x=CollectionYear)) + 
+    geom_area(aes(fill=fct_infreq(State),position="stack", stat="identity"))
+
+tgbnhy<-as.data.frame(table(CDV19_clean$CollectionYear, CDV19_clean$State))
+
+ggplot(tgbnhy,aes(x=Var1, y=Freq, fill=Var2)) + 
+    geom_area()
+
+```
+
 ```{r}
 library(RColorBrewer)
 #are there any obvious differneces in species by state?
@@ -237,8 +251,8 @@ ggsave(here::here("results", "Figures_new", "Sex_Species_freq19.png"), plot = Se
 StperYr19 <- with(CDV19_clean, table(State, CollectionYear))
 point_casesyear_state19 <- ggplot(as.data.frame(StperYr19), aes(CollectionYear, Freq, fill = State, color = State, group = State))  + 
   geom_point() +
-  geom_line() + 
-  theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 6))
+  geom_line()+theme_minimal() + 
+  theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 6)) +labs(x="Collection Year", y="Cases")
 
 point_casesyear_state19
 ggsave(here::here("results", "Figures_new",  "point_casesyear_state19.png"), plot=point_casesyear_state19)
@@ -246,6 +260,21 @@ ggsave(here::here("results", "Figures_new",  "point_casesyear_state19.png"), plo
 
 
 ```
+```{r}
+#plot cases per species over time
+SpperYr19 <- with(CDV19_clean, table(Species, CollectionYear))
+point_casesyear_species19 <- ggplot(as.data.frame(SpperYr19), aes(CollectionYear, Freq, fill = Species, color = Species, group = Species))  + 
+  geom_point() +
+  geom_line() +theme_minimal()+ 
+  theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 6)) +labs(x="Collection Year", y="Cases")
+
+point_casesyear_species19
+ggsave(here::here("results", "Figures_new",  "point_casesyear_species19.png"), plot=point_casesyear_species19)
+#the cases per state over time seem to follow a similar pattern but it may be worth plotting species cases per state and mapping location, maybe certain species are more affected in different states at different times?
+
+
+```
+
 ```{r}
 #do cases per state per year
 cases_state_wrapyear19 <- ggplot(CDV19_clean, aes(State, fill = State, color = State))  + 
